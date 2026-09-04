@@ -1,0 +1,13 @@
+[package]
+name = "app-log-print"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+log-core = { path = "../log-core" }
+log-proto = { path = "../log-proto" }
+tokio.workspace = true
+anyhow.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true

@@ -1,0 +1,13 @@
+[package]
+name = "input-serial"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+log-proto = { path = "../../log-proto" }
+log-plugin-sdk = { path = "../../log-plugin-sdk" }
+tokio.workspace = true
+anyhow.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
