@@ -1,0 +1,64 @@
+{
+  "date": "2026-09-08",
+  "environment": {
+    "os": "macOS 26.5 (25F71)",
+    "arch": "arm64",
+    "rust": "1.92.0",
+    "browser": "Chrome selected by built-in Computer Use"
+  },
+  "process_checks": [
+    "same real stream reaches both plugins; number split across source writes becomes 12.5",
+    "HTTP SSE delivers increasing live snapshots",
+    "CLI revision patch changes only selected session; stale writes rejected",
+    "both plugins export PNG/SVG with frozen revision, source metadata and embedded font",
+    "PTY real ANSI chart rendered, resized and changed by session CLI",
+    "HTML and all requested UI assets served from local process"
+  ],
+  "browser_observations": [
+    "Live two-curve plot observed in actual Chrome at desktop width with changing range/time/point counters.",
+    "CLI alpha revision 2 to 3 changed title, theme and window to 20 seconds without reloading; beta remained revision 1 and TUI remained revision 2.",
+    "Pause button changed the open view to PAUSED / revision 4 while the source continued; native selector then showed independent beta LIVE / revision 1.",
+    "Final build at 700x900 showed both curve names in legend, aligned controls and CLI-updated title in heading and session selector. Viewport override reset afterwards.",
+    "PNG exports from both plugins decoded; final Web PNG visually inspected with Chinese title, clear grid and both series."
+  ],
+  "tool_limitations": {
+    "visible_terminal": "Computer Use rejected cua.getApp(\"Terminal\"): not allowed to use com.apple.Terminal for safety reasons. No bypass attempted.",
+    "offline": "All shipped page/script/style assets are embedded and served locally. Host networking was not disabled during this review.",
+    "svg": "SVG root and embedded font checked; arbitrary external SVG viewer compatibility not exhaustively tested.",
+    "platforms": "This record covers local macOS only; Linux/Windows results belong in the root platform matrix."
+  },
+  "cleanup": {
+    "own_test_instance_stopped": true,
+    "state_file_removed": true,
+    "temporary_browser_tab_closed": true,
+    "viewport_restored": true
+  },
+  "images": {
+    "web-final.png": "7f80cf29243f68f6a80314fb93b36b5c3836ba7699aaaa6f3e268cb146b0d99e",
+    "tui-final.png": "b1800bb6c2808509295f287e4863d18335b98292de7fa19b5a51942ff95084cf"
+  },
+  "raw_artifacts_directory": "/var/folders/nn/fq8ngf2d1zn7ff9m7g_t5xpw0000gp/T/log-print-ui-sy3x7gqz",
+  "final_checks": {
+    "format": "passed",
+    "clippy": "cargo clippy -p log-plot -p output-tui -p output-webui -- -D warnings passed",
+    "javascript": "node --check plugins/outputs/output-webui/assets/app.js passed",
+    "integration": "python3 plugins/outputs/output-webui/tests/verify_ui.py --pty: 6/6 passed; includes web session selection URL",
+    "artifacts": "/var/folders/nn/fq8ngf2d1zn7ff9m7g_t5xpw0000gp/T/log-print-ui-p57vsn41",
+    "instance_stopped": true
+  },
+  "followup_validation": {
+    "linux_pty_resize": "passed after explicit terminal-size backend adapter; artifacts/linux/validation/formal-linux-pty-fixed-7e9c/report.json",
+    "detached_signal_handling": "ctrl_c registration failure now waits for supervisor control; fmt, strict clippy and macOS 6-group PTY regression passed",
+    "final_mac_short_artifacts": "/var/folders/nn/fq8ngf2d1zn7ff9m7g_t5xpw0000gp/T/log-print-ui-zo61d1r9",
+    "sustained_report": "plugins/outputs/output-webui/SUSTAINED.md",
+    "sustained_raw": "artifacts/ui/sustain-180s-1000lps/report.json",
+    "duration_s": 180,
+    "complete_lines_per_ui": 180000,
+    "session_changes": 8,
+    "all_sessions_isolated": true,
+    "known_gaps": 0,
+    "browser_rss_plateau_proven": false,
+    "unbounded_application_retention_found": false,
+    "transport_queue_occupancy_measured": false
+  }
+}

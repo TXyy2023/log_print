@@ -1,0 +1,50 @@
+name: Formal validation
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: formal-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: ${{ matrix.os }} / Python 3.12
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Validate actual workspace and child processes
+        run: python tests/run.py
+        env:
+          CARGO_TERM_COLOR: never
+          PYTHONUNBUFFERED: '1'
+          PYTHONUTF8: '1'
+          PYTHONIOENCODING: utf-8
+      - name: Upload command logs and result reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: validation-${{ matrix.os }}
+          path: |
+            artifacts/validation/
+            !artifacts/validation/**/state.json
+            !artifacts/validation/**/.log-print-runtime-*/**
+          if-no-files-found: warn
+          retention-days: 14

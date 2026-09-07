@@ -1,0 +1,186 @@
+{
+  "scenario": "log_print_save",
+  "platform": "macOS-26.5-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "python": "3.14.1",
+  "psutil": "7.2.2",
+  "logical_cpus": 10,
+  "physical_memory_bytes": 68719476736,
+  "cpu_model": "Apple M1 Max",
+  "created_at_utc": "2026-09-07T17:05:36Z",
+  "requested_duration_s": 12.0,
+  "target_records_per_second": 1000,
+  "samples": 12000,
+  "bytes_per_record": 96,
+  "output_bytes": 1152000,
+  "payload_sha256": "a90cd5255f66e56ffee249d0ba05a26584a9aed5d9f2b952fa1f7db797895982",
+  "exact_payload_and_order": true,
+  "actual_source_write_interval_s": 11.999319375,
+  "actual_source_bytes_per_second": 96005.4453088511,
+  "setup_elapsed_s": 0.223413542,
+  "latency": {
+    "observer_minus_source_write_before": {
+      "p50_ms": 1.095792,
+      "p95_ms": 6.430166,
+      "p99_ms": 88.654958,
+      "max_ms": 134.100417
+    },
+    "observer_minus_source_write_after": {
+      "p50_ms": 1.090375,
+      "p95_ms": 6.426416,
+      "p99_ms": 88.65175,
+      "max_ms": 134.097625
+    },
+    "source_write_bracket": {
+      "p50_ms": 0.003667,
+      "p95_ms": 0.0075,
+      "p99_ms": 0.0215,
+      "max_ms": 0.141416
+    },
+    "negative_after_count": 0
+  },
+  "resources": {
+    "duration_s": 12.034638542,
+    "tree_cpu_seconds": 10.665323867000001,
+    "tree_cpu_percent_one_core": 88.62188780974859,
+    "tree_peak_rss_bytes": 53526528,
+    "components": {
+      "log-print": {
+        "cpu_seconds": 0,
+        "peak_rss_bytes": 3735552,
+        "cpu_percent_one_core": 0.0
+      },
+      "log-print-core": {
+        "cpu_seconds": 8.723491323000001,
+        "peak_rss_bytes": 10158080,
+        "cpu_percent_one_core": 72.48652539547125
+      },
+      "output-raw": {
+        "cpu_seconds": 0.7440669959999999,
+        "peak_rss_bytes": 3588096,
+        "cpu_percent_one_core": 6.182711623645871
+      },
+      "input-program": {
+        "cpu_seconds": 0.9458461300000001,
+        "peak_rss_bytes": 4620288,
+        "cpu_percent_one_core": 7.8593646722256505
+      },
+      "source-python": {
+        "cpu_seconds": 0.251919418,
+        "peak_rss_bytes": 31424512,
+        "cpu_percent_one_core": 2.093286118405799
+      }
+    },
+    "harness_cpu_seconds": 0.2874079359999999,
+    "host_cpu_percent_mean": 37.42777777777778,
+    "sample_interval_s": 0.1,
+    "sample_count": 108,
+    "sampler_cpu_seconds": 0.8243099679999999
+  },
+  "configuration": {
+    "plugins": [
+      {
+        "id": "raw",
+        "bin": "/Users/a1234/Desktop/log_print/target/release/output-raw",
+        "reads": [
+          "bench"
+        ],
+        "config": {
+          "streams": [
+            "bench"
+          ],
+          "from": 1
+        }
+      },
+      {
+        "id": "source",
+        "bin": "/Users/a1234/Desktop/log_print/target/release/input-program",
+        "streams": [
+          {
+            "id": "bench"
+          },
+          {
+            "id": "bench.err"
+          }
+        ],
+        "save": {
+          "enabled": true,
+          "directory": "<temporary>/saved"
+        },
+        "config": {
+          "command": "/var/folders/nn/fq8ngf2d1zn7ff9m7g_t5xpw0000gp/T/log-print-bench-tools-_hkwqplz/venv/bin/python",
+          "args": [
+            "/Users/a1234/Desktop/log_print/tests/benchmark.py",
+            "--source",
+            "--source-dir",
+            "<temporary>",
+            "--rate",
+            "1000",
+            "--duration",
+            "12.0"
+          ],
+          "stdout_stream": "bench",
+          "stderr_stream": "bench.err",
+          "chunk_bytes": 4096
+        }
+      }
+    ]
+  },
+  "binary_sha256": {
+    "log-print": "b9e235f82f50aec33436162f9665a142e25a58e8a7ffd7764886292cd8fd3f6c",
+    "log-print-core": "02a9c58452d227ceef781a22dab8ea2d30e5f6e8e9b7a9854c7e5a9a21a57de2",
+    "input-program": "808b375c1476a24118bd9918169db604d5110460ba7144f1bd1d32469ecf5088",
+    "output-raw": "a5222126199ec448ea1e90af0a4334adce321ab0d76269c7bd38b0b066c2e8fe"
+  },
+  "stream_status": [
+    {
+      "blocked": null,
+      "buffer_bytes": 430176,
+      "buffer_oldest": 6666,
+      "buffer_records": 4096,
+      "epoch": "fcafa07b-297e-4a8f-88c6-c4998e1b86e3",
+      "evicted_through": 6665,
+      "head": 10761,
+      "id": "bench",
+      "oldest": 1,
+      "owner": "source",
+      "parents": [],
+      "received": 10761,
+      "save": {
+        "directory": "/var/folders/nn/fq8ngf2d1zn7ff9m7g_t5xpw0000gp/T/log-print-measure-5xs55qkr/saved",
+        "enabled": true,
+        "file_bytes": 67108864,
+        "total_bytes": 1073741824
+      },
+      "storage_bytes": 9937080,
+      "uncommitted_key": null,
+      "uncommitted_outcome": null
+    },
+    {
+      "blocked": null,
+      "buffer_bytes": 0,
+      "buffer_oldest": null,
+      "buffer_records": 0,
+      "epoch": "fc4cf83e-26c8-4447-b569-f80a2101471a",
+      "evicted_through": 0,
+      "head": 0,
+      "id": "bench.err",
+      "oldest": 1,
+      "owner": "source",
+      "parents": [],
+      "received": 0,
+      "save": {
+        "directory": "/var/folders/nn/fq8ngf2d1zn7ff9m7g_t5xpw0000gp/T/log-print-measure-5xs55qkr/saved",
+        "enabled": true,
+        "file_bytes": 67108864,
+        "total_bytes": 1073741824
+      },
+      "storage_bytes": 20668,
+      "uncommitted_key": null,
+      "uncommitted_outcome": null
+    }
+  ],
+  "saved_readback_exact": true,
+  "saved_records": 10761,
+  "saved_file_bytes": 9957748
+}

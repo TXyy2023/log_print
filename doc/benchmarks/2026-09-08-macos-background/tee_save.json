@@ -1,0 +1,67 @@
+{
+  "scenario": "tee_save",
+  "platform": "macOS-26.5-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "python": "3.14.1",
+  "psutil": "7.2.2",
+  "logical_cpus": 10,
+  "physical_memory_bytes": 68719476736,
+  "cpu_model": "Apple M1 Max",
+  "created_at_utc": "2026-09-07T17:05:23Z",
+  "requested_duration_s": 12.0,
+  "target_records_per_second": 1000,
+  "samples": 12000,
+  "bytes_per_record": 96,
+  "output_bytes": 1152000,
+  "payload_sha256": "a90cd5255f66e56ffee249d0ba05a26584a9aed5d9f2b952fa1f7db797895982",
+  "exact_payload_and_order": true,
+  "actual_source_write_interval_s": 11.999481917,
+  "actual_source_bytes_per_second": 96004.14484294772,
+  "setup_elapsed_s": 0.153612291,
+  "latency": {
+    "observer_minus_source_write_before": {
+      "p50_ms": 0.0365,
+      "p95_ms": 0.087334,
+      "p99_ms": 0.148667,
+      "max_ms": 3.795084
+    },
+    "observer_minus_source_write_after": {
+      "p50_ms": 0.032542,
+      "p95_ms": 0.079042,
+      "p99_ms": 0.138333,
+      "max_ms": 3.791917
+    },
+    "source_write_bracket": {
+      "p50_ms": 0.003292,
+      "p95_ms": 0.0085,
+      "p99_ms": 0.022959,
+      "max_ms": 0.102833
+    },
+    "negative_after_count": 0
+  },
+  "resources": {
+    "duration_s": 12.057707417,
+    "tree_cpu_seconds": 0.5071984549999999,
+    "tree_cpu_percent_one_core": 4.206425296776629,
+    "tree_peak_rss_bytes": 32636928,
+    "components": {
+      "source-python": {
+        "cpu_seconds": 0.236215837,
+        "peak_rss_bytes": 31457280,
+        "cpu_percent_one_core": 1.959044359186909
+      },
+      "tee": {
+        "cpu_seconds": 0.27098261799999995,
+        "peak_rss_bytes": 1179648,
+        "cpu_percent_one_core": 2.247380937589721
+      }
+    },
+    "harness_cpu_seconds": 0.2554684479999999,
+    "host_cpu_percent_mean": 18.834653465346534,
+    "sample_interval_s": 0.1,
+    "sample_count": 101,
+    "sampler_cpu_seconds": 1.5612299840000001
+  },
+  "tee_path": "/usr/bin/tee",
+  "tee_sha256": "66209fd96c22f02e56232db65cba8feccec0fa607a2f179a5e927ddc215651c6"
+}

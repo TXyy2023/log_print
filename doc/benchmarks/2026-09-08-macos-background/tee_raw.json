@@ -1,0 +1,67 @@
+{
+  "scenario": "tee_raw",
+  "platform": "macOS-26.5-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "python": "3.14.1",
+  "psutil": "7.2.2",
+  "logical_cpus": 10,
+  "physical_memory_bytes": 68719476736,
+  "cpu_model": "Apple M1 Max",
+  "created_at_utc": "2026-09-07T17:04:57Z",
+  "requested_duration_s": 12.0,
+  "target_records_per_second": 1000,
+  "samples": 12000,
+  "bytes_per_record": 96,
+  "output_bytes": 1152000,
+  "payload_sha256": "a90cd5255f66e56ffee249d0ba05a26584a9aed5d9f2b952fa1f7db797895982",
+  "exact_payload_and_order": true,
+  "actual_source_write_interval_s": 11.998992917,
+  "actual_source_bytes_per_second": 96008.05734020086,
+  "setup_elapsed_s": 0.147446292,
+  "latency": {
+    "observer_minus_source_write_before": {
+      "p50_ms": 0.021542,
+      "p95_ms": 0.054375,
+      "p99_ms": 0.117,
+      "max_ms": 7.188958
+    },
+    "observer_minus_source_write_after": {
+      "p50_ms": 0.017583,
+      "p95_ms": 0.047167,
+      "p99_ms": 0.104417,
+      "max_ms": 7.180291
+    },
+    "source_write_bracket": {
+      "p50_ms": 0.003208,
+      "p95_ms": 0.00925,
+      "p99_ms": 0.024125,
+      "max_ms": 2.424709
+    },
+    "negative_after_count": 3
+  },
+  "resources": {
+    "duration_s": 12.06416725,
+    "tree_cpu_seconds": 0.31730466300000004,
+    "tree_cpu_percent_one_core": 2.6301414463563577,
+    "tree_peak_rss_bytes": 32325632,
+    "components": {
+      "source-python": {
+        "cpu_seconds": 0.23622141600000002,
+        "peak_rss_bytes": 31145984,
+        "cpu_percent_one_core": 1.9580416211487786
+      },
+      "tee": {
+        "cpu_seconds": 0.08108324700000001,
+        "peak_rss_bytes": 1179648,
+        "cpu_percent_one_core": 0.6720998252075792
+      }
+    },
+    "harness_cpu_seconds": 0.2583342,
+    "host_cpu_percent_mean": 16.014,
+    "sample_interval_s": 0.1,
+    "sample_count": 100,
+    "sampler_cpu_seconds": 1.653713504
+  },
+  "tee_path": "/usr/bin/tee",
+  "tee_sha256": "66209fd96c22f02e56232db65cba8feccec0fa607a2f179a5e927ddc215651c6"
+}

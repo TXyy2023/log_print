@@ -1,0 +1,283 @@
+{
+  "scenario": "log_print_plot",
+  "platform": "macOS-26.5-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "python": "3.14.1",
+  "psutil": "7.2.2",
+  "logical_cpus": 10,
+  "physical_memory_bytes": 68719476736,
+  "cpu_model": "Apple M1 Max",
+  "created_at_utc": "2026-09-07T17:08:24Z",
+  "requested_duration_s": 12.0,
+  "target_records_per_second": 1000,
+  "samples": 12000,
+  "bytes_per_record": 96,
+  "output_bytes": 1152000,
+  "payload_sha256": "a90cd5255f66e56ffee249d0ba05a26584a9aed5d9f2b952fa1f7db797895982",
+  "exact_payload_and_order": true,
+  "actual_source_write_interval_s": 11.999325375,
+  "actual_source_bytes_per_second": 96005.39730342965,
+  "output_observation_window_s": 11.999799708,
+  "actual_output_bytes_per_second": 96001.60236274505,
+  "setup_elapsed_s": 0.239012833,
+  "latency": {
+    "observer_minus_source_write_before": {
+      "p50_ms": 0.33025,
+      "p95_ms": 0.796,
+      "p99_ms": 2.726,
+      "max_ms": 9.0935
+    },
+    "observer_minus_source_write_after": {
+      "p50_ms": 0.325958,
+      "p95_ms": 0.783084,
+      "p99_ms": 2.718125,
+      "max_ms": 9.081667
+    },
+    "source_write_bracket": {
+      "p50_ms": 0.003667,
+      "p95_ms": 0.010875,
+      "p99_ms": 0.027208,
+      "max_ms": 1.554541
+    },
+    "negative_after_count": 0
+  },
+  "resources": {
+    "duration_s": 12.034236875,
+    "tree_cpu_seconds": 5.8536478249999995,
+    "tree_cpu_percent_one_core": 48.64162045173305,
+    "tree_peak_rss_bytes": 56262656,
+    "components": {
+      "log-print": {
+        "cpu_seconds": 0,
+        "peak_rss_bytes": 3670016,
+        "cpu_percent_one_core": 0.0
+      },
+      "log-print-core": {
+        "cpu_seconds": 3.1696852509999998,
+        "peak_rss_bytes": 7405568,
+        "cpu_percent_one_core": 26.338896964748333
+      },
+      "output-raw": {
+        "cpu_seconds": 0.823317449,
+        "peak_rss_bytes": 3260416,
+        "cpu_percent_one_core": 6.841459558689301
+      },
+      "input-program": {
+        "cpu_seconds": 1.160919795,
+        "peak_rss_bytes": 4096000,
+        "cpu_percent_one_core": 9.6468085767175
+      },
+      "output-tui": {
+        "cpu_seconds": 0.448857159,
+        "peak_rss_bytes": 6455296,
+        "cpu_percent_one_core": 3.7298348342507595
+      },
+      "source-python": {
+        "cpu_seconds": 0.250868171,
+        "peak_rss_bytes": 31375360,
+        "cpu_percent_one_core": 2.084620517327153
+      }
+    },
+    "harness_cpu_seconds": 0.3161269120000001,
+    "host_cpu_percent_mean": 23.672641509433966,
+    "sample_interval_s": 0.1,
+    "sample_count": 106,
+    "sampler_cpu_seconds": 0.9615041280000001
+  },
+  "configuration": {
+    "plugins": [
+      {
+        "id": "raw",
+        "bin": "/Users/a1234/Desktop/log_print/target/release/output-raw",
+        "reads": [
+          "bench"
+        ],
+        "config": {
+          "streams": [
+            "bench"
+          ],
+          "from": 1
+        }
+      },
+      {
+        "id": "source",
+        "bin": "/Users/a1234/Desktop/log_print/target/release/input-program",
+        "streams": [
+          {
+            "id": "bench"
+          },
+          {
+            "id": "bench.err"
+          }
+        ],
+        "save": {
+          "enabled": false,
+          "directory": "<temporary>/saved"
+        },
+        "config": {
+          "command": "/var/folders/nn/fq8ngf2d1zn7ff9m7g_t5xpw0000gp/T/log-print-bench-tools-_hkwqplz/venv/bin/python",
+          "args": [
+            "/Users/a1234/Desktop/log_print/tests/benchmark.py",
+            "--source",
+            "--source-dir",
+            "<temporary>",
+            "--rate",
+            "1000",
+            "--duration",
+            "12.0"
+          ],
+          "stdout_stream": "bench",
+          "stderr_stream": "bench.err",
+          "chunk_bytes": 4096
+        }
+      },
+      {
+        "id": "tui",
+        "bin": "/Users/a1234/Desktop/log_print/target/release/output-tui",
+        "reads": [
+          "bench"
+        ],
+        "config": {
+          "streams": [
+            "bench"
+          ],
+          "tty": "/dev/ttys000",
+          "sessions": [
+            {
+              "id": "default",
+              "refresh_ms": 100,
+              "max_points": 2048,
+              "series": [
+                {
+                  "name": "value",
+                  "stream": "bench",
+                  "pattern": "value=(?P<value>[-+0-9.]+)"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "software_version": "1.0.0",
+  "build_profile": "release",
+  "source_state": "uncommitted working tree; historical git HEAD is not the tested version; binary SHA256 identifies tested artifact",
+  "rustc_version": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+  "binary_sha256": {
+    "log-print": "b9e235f82f50aec33436162f9665a142e25a58e8a7ffd7764886292cd8fd3f6c",
+    "log-print-core": "02a9c58452d227ceef781a22dab8ea2d30e5f6e8e9b7a9854c7e5a9a21a57de2",
+    "input-program": "808b375c1476a24118bd9918169db604d5110460ba7144f1bd1d32469ecf5088",
+    "output-raw": "a5222126199ec448ea1e90af0a4334adce321ab0d76269c7bd38b0b066c2e8fe",
+    "output-tui": "f2d32f98283ee78ca56ed8887ad3ac78d05c3fc417594b94dd85d36e643d72bd"
+  },
+  "stream_status": [
+    {
+      "blocked": null,
+      "buffer_bytes": 403584,
+      "buffer_oldest": 7565,
+      "buffer_records": 4096,
+      "epoch": "8228956a-dfb8-41d1-b2f4-af23ac27a344",
+      "evicted_through": 7564,
+      "head": 11660,
+      "id": "bench",
+      "oldest": 7565,
+      "owner": "source",
+      "parents": [],
+      "received": 11660,
+      "save": {
+        "directory": "/var/folders/nn/fq8ngf2d1zn7ff9m7g_t5xpw0000gp/T/log-print-measure-7p3tu10p/saved",
+        "enabled": false,
+        "file_bytes": 67108864,
+        "total_bytes": 1073741824
+      },
+      "storage_bytes": null,
+      "uncommitted_key": null,
+      "uncommitted_outcome": null
+    },
+    {
+      "blocked": null,
+      "buffer_bytes": 0,
+      "buffer_oldest": null,
+      "buffer_records": 0,
+      "epoch": "0c0f22e7-4b93-48d4-9332-f8c6c03a8a61",
+      "evicted_through": 0,
+      "head": 0,
+      "id": "bench.err",
+      "oldest": 1,
+      "owner": "source",
+      "parents": [],
+      "received": 0,
+      "save": {
+        "directory": "/var/folders/nn/fq8ngf2d1zn7ff9m7g_t5xpw0000gp/T/log-print-measure-7p3tu10p/saved",
+        "enabled": false,
+        "file_bytes": 67108864,
+        "total_bytes": 1073741824
+      },
+      "storage_bytes": null,
+      "uncommitted_key": null,
+      "uncommitted_outcome": null
+    }
+  ],
+  "plot_sessions": {
+    "generation": 11662,
+    "limits": {
+      "max_series": 8,
+      "max_sessions": 16,
+      "total_points": 131072,
+      "view_points_per_series": 512
+    },
+    "sessions": [
+      {
+        "config": {
+          "id": "default",
+          "max_points": 2048,
+          "paused": false,
+          "refresh_ms": 100,
+          "series": [
+            {
+              "capture": "value",
+              "json_pointer": null,
+              "name": "value",
+              "pattern": "value=(?P<value>[-+0-9.]+)",
+              "stream": "bench"
+            }
+          ],
+          "theme": "dark",
+          "title": "Log signals",
+          "window_secs": 60.0,
+          "y_max": null,
+          "y_min": null
+        },
+        "id": "default",
+        "points": 2048,
+        "revision": 1
+      }
+    ],
+    "streams": {
+      "bench": {
+        "disconnect_reason": null,
+        "disconnected": false,
+        "disconnections": 0,
+        "duplicate_records": 0,
+        "epoch": "8228956a-dfb8-41d1-b2f4-af23ac27a344",
+        "gaps": 0,
+        "invalid_utf8": 0,
+        "last_gap": null,
+        "last_seq": 11660,
+        "lines": 12000,
+        "oversized_lines": 0,
+        "pending_bytes": 0,
+        "records": 11660,
+        "timestamp_regressions": 0
+      }
+    }
+  },
+  "terminal": {
+    "columns": 100,
+    "rows": 30,
+    "rendered_bytes": 8572,
+    "external_emulator": "not_running",
+    "render_sink": "drained PTY"
+  }
+}

@@ -1,0 +1,17 @@
+[package]
+name = "input-program"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+uuid.workspace = true
+log-proto.workspace = true
+log-plugin-sdk.workspace = true
+io-plugin-util = { path = "../io-plugin-util" }
+process-wrap = { version = "10", features = ["tokio1"] }

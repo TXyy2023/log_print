@@ -1,0 +1,18 @@
+[package]
+name = "output-webui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+log-proto.workspace = true
+log-plugin-sdk.workspace = true
+log-plot = { path = "../../../crates/log-plot" }
+axum = "0.8.9"
+async-stream = "0.3"
+futures-core = "0.3"

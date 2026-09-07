@@ -1,0 +1,20 @@
+[package]
+name = "output-tui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+tokio.workspace = true
+serde_json.workspace = true
+clap.workspace = true
+log-proto.workspace = true
+log-plugin-sdk.workspace = true
+log-plot = { path = "../../../crates/log-plot" }
+ratatui = "0.30.2"
+crossterm = "0.29.0"
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"

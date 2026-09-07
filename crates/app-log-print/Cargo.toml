@@ -3,11 +3,18 @@ name = "app-log-print"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "log-print"
+path = "src/main.rs"
 
 [dependencies]
-log-core = { path = "../log-core" }
-log-proto = { path = "../log-proto" }
-tokio.workspace = true
 anyhow.workspace = true
-tracing.workspace = true
-tracing-subscriber.workspace = true
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+uuid.workspace = true
+clap.workspace = true
+log-proto.workspace = true
+log-plugin-sdk.workspace = true

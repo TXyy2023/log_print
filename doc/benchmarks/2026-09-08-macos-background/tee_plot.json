@@ -1,0 +1,86 @@
+{
+  "scenario": "tee_plot",
+  "platform": "macOS-26.5-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "python": "3.14.1",
+  "psutil": "7.2.2",
+  "logical_cpus": 10,
+  "physical_memory_bytes": 68719476736,
+  "cpu_model": "Apple M1 Max",
+  "created_at_utc": "2026-09-07T17:05:48Z",
+  "requested_duration_s": 12.0,
+  "target_records_per_second": 1000,
+  "samples": 12000,
+  "bytes_per_record": 96,
+  "output_bytes": 1152000,
+  "payload_sha256": "a90cd5255f66e56ffee249d0ba05a26584a9aed5d9f2b952fa1f7db797895982",
+  "exact_payload_and_order": true,
+  "actual_source_write_interval_s": 11.999315958,
+  "actual_source_bytes_per_second": 96005.47264796008,
+  "setup_elapsed_s": 0.168279459,
+  "latency": {
+    "observer_minus_source_write_before": {
+      "p50_ms": 0.029709,
+      "p95_ms": 0.069791,
+      "p99_ms": 0.129166,
+      "max_ms": 15.327417
+    },
+    "observer_minus_source_write_after": {
+      "p50_ms": 0.025708,
+      "p95_ms": 0.062667,
+      "p99_ms": 0.12125,
+      "max_ms": 15.279958
+    },
+    "source_write_bracket": {
+      "p50_ms": 0.00325,
+      "p95_ms": 0.008375,
+      "p99_ms": 0.022875,
+      "max_ms": 1.281917
+    },
+    "negative_after_count": 1
+  },
+  "resources": {
+    "duration_s": 12.070978708,
+    "tree_cpu_seconds": 1.7632130869999998,
+    "tree_cpu_percent_one_core": 14.60704330321978,
+    "tree_peak_rss_bytes": 62980096,
+    "components": {
+      "source-python": {
+        "cpu_seconds": 0.23750503699999997,
+        "peak_rss_bytes": 31391744,
+        "cpu_percent_one_core": 1.9675706729777784
+      },
+      "tee": {
+        "cpu_seconds": 0.166264626,
+        "peak_rss_bytes": 1179648,
+        "cpu_percent_one_core": 1.3773914280025088
+      },
+      "extractor-python": {
+        "cpu_seconds": 0.180270459,
+        "peak_rss_bytes": 28164096,
+        "cpu_percent_one_core": 1.4934204041013375
+      },
+      "ttyplot": {
+        "cpu_seconds": 1.1791729649999998,
+        "peak_rss_bytes": 2244608,
+        "cpu_percent_one_core": 9.768660798138157
+      }
+    },
+    "harness_cpu_seconds": 0.3996164799999997,
+    "host_cpu_percent_mean": 32.83225806451613,
+    "sample_interval_s": 0.1,
+    "sample_count": 93,
+    "sampler_cpu_seconds": 2.4210077439999997
+  },
+  "ttyplot_version": "ttyplot 1.7.6",
+  "ttyplot_sha256": "6bfc10a3015366223e0150664fa8cfceeed5040efec0850c3930b3a1d0041550",
+  "tee_path": "/usr/bin/tee",
+  "tee_sha256": "66209fd96c22f02e56232db65cba8feccec0fa607a2f179a5e927ddc215651c6",
+  "terminal": {
+    "columns": 100,
+    "rows": 30,
+    "rendered_bytes": 3267512,
+    "external_emulator": "not_running",
+    "render_sink": "drained PTY"
+  }
+}

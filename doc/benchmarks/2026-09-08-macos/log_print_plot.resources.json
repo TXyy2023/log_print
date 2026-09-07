@@ -1,0 +1,5832 @@
+[
+  {
+    "time_ns": 526887158626333,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.004828541,
+        "rss_bytes": 3096576,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.003426999,
+        "rss_bytes": 2834432,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.003528333,
+        "rss_bytes": 2949120,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.007831833,
+        "rss_bytes": 5177344,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.061656789000000004,
+        "rss_bytes": 27934720,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 45662208
+  },
+  {
+    "time_ns": 526887272660791,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.028657041,
+        "rss_bytes": 3522560,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.010454125,
+        "rss_bytes": 2981888,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.014243125,
+        "rss_bytes": 3391488,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.011848666,
+        "rss_bytes": 5537792,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.063849957,
+        "rss_bytes": 27951104,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 47054848
+  },
+  {
+    "time_ns": 526887389818958,
+    "host_cpu_percent": 31.9,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.052487915999999996,
+        "rss_bytes": 3686400,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.017818541,
+        "rss_bytes": 2981888,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.024420666,
+        "rss_bytes": 3391488,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.015636832,
+        "rss_bytes": 5619712,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.06589758300000001,
+        "rss_bytes": 27967488,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 47316992
+  },
+  {
+    "time_ns": 526887503428875,
+    "host_cpu_percent": 30.3,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.07669204,
+        "rss_bytes": 3719168,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.025220207,
+        "rss_bytes": 2981888,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.034441376,
+        "rss_bytes": 3391488,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.019646416,
+        "rss_bytes": 5767168,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.06780333300000001,
+        "rss_bytes": 27967488,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 47497216
+  },
+  {
+    "time_ns": 526887617684291,
+    "host_cpu_percent": 36.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.1018795,
+        "rss_bytes": 3784704,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.032974874,
+        "rss_bytes": 2981888,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.045425666,
+        "rss_bytes": 3391488,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.023665166,
+        "rss_bytes": 5832704,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.070242082,
+        "rss_bytes": 27983872,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 47644672
+  },
+  {
+    "time_ns": 526887728266375,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.125297664,
+        "rss_bytes": 3833856,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.039905374,
+        "rss_bytes": 2981888,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.055630998,
+        "rss_bytes": 3391488,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.027625624,
+        "rss_bytes": 5914624,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.072405792,
+        "rss_bytes": 28000256,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 47792128
+  },
+  {
+    "time_ns": 526887843847375,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.150552916,
+        "rss_bytes": 3915776,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.047178373999999995,
+        "rss_bytes": 2981888,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.065914498,
+        "rss_bytes": 3391488,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.031659,
+        "rss_bytes": 5947392,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.074495748,
+        "rss_bytes": 28016640,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 47923200
+  },
+  {
+    "time_ns": 526887958936666,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.17591616799999998,
+        "rss_bytes": 3964928,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.054125248,
+        "rss_bytes": 2981888,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.07651208400000001,
+        "rss_bytes": 3391488,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.035506417,
+        "rss_bytes": 5980160,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.076596206,
+        "rss_bytes": 28049408,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 48037888
+  },
+  {
+    "time_ns": 526888067179750,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.199546,
+        "rss_bytes": 3997696,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.060699292,
+        "rss_bytes": 2981888,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.086345376,
+        "rss_bytes": 3391488,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.039115958,
+        "rss_bytes": 6012928,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.07860916800000001,
+        "rss_bytes": 28065792,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 48119808
+  },
+  {
+    "time_ns": 526888177268416,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.22377766400000002,
+        "rss_bytes": 4030464,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.067877668,
+        "rss_bytes": 2981888,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.096649836,
+        "rss_bytes": 3407872,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.042971876,
+        "rss_bytes": 6062080,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.080818664,
+        "rss_bytes": 28082176,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 48234496
+  },
+  {
+    "time_ns": 526888294029791,
+    "host_cpu_percent": 34.6,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.24894628800000002,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.075008836,
+        "rss_bytes": 2981888,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.106972832,
+        "rss_bytes": 3407872,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.04681046,
+        "rss_bytes": 6127616,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.082729996,
+        "rss_bytes": 28114944,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 48398336
+  },
+  {
+    "time_ns": 526888406579291,
+    "host_cpu_percent": 37.5,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.273208,
+        "rss_bytes": 4161536,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.082384332,
+        "rss_bytes": 2981888,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.11681074799999999,
+        "rss_bytes": 3407872,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.050855332,
+        "rss_bytes": 6127616,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.084663128,
+        "rss_bytes": 28114944,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 48463872
+  },
+  {
+    "time_ns": 526888526322958,
+    "host_cpu_percent": 33.6,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.30084708,
+        "rss_bytes": 4194304,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.089985668,
+        "rss_bytes": 2981888,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.127819584,
+        "rss_bytes": 3407872,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.054985082000000005,
+        "rss_bytes": 6160384,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.086862792,
+        "rss_bytes": 28147712,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 48562176
+  },
+  {
+    "time_ns": 526888640561375,
+    "host_cpu_percent": 41.6,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.327974416,
+        "rss_bytes": 4259840,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.097783248,
+        "rss_bytes": 2981888,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.138734288,
+        "rss_bytes": 3407872,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.05912275,
+        "rss_bytes": 6176768,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.089176832,
+        "rss_bytes": 28164096,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 48660480
+  },
+  {
+    "time_ns": 526888753718583,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.35271096,
+        "rss_bytes": 4472832,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.104717624,
+        "rss_bytes": 3031040,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.14881104,
+        "rss_bytes": 3571712,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.06282583,
+        "rss_bytes": 6275072,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.09138137199999999,
+        "rss_bytes": 28196864,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 49217536
+  },
+  {
+    "time_ns": 526888864966958,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.380031248,
+        "rss_bytes": 4571136,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.112548168,
+        "rss_bytes": 3031040,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.15972128800000002,
+        "rss_bytes": 3588096,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.067020456,
+        "rss_bytes": 6275072,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.093772996,
+        "rss_bytes": 28213248,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 49348608
+  },
+  {
+    "time_ns": 526888982319125,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.408774128,
+        "rss_bytes": 4669440,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.12051546,
+        "rss_bytes": 3031040,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.171572752,
+        "rss_bytes": 3604480,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.071275166,
+        "rss_bytes": 6275072,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.09628720800000001,
+        "rss_bytes": 28246016,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 49496064
+  },
+  {
+    "time_ns": 526889100683583,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.436786208,
+        "rss_bytes": 4800512,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.127954292,
+        "rss_bytes": 3031040,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.183245624,
+        "rss_bytes": 3637248,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.075701248,
+        "rss_bytes": 6275072,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.098799624,
+        "rss_bytes": 28262400,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 49676288
+  },
+  {
+    "time_ns": 526889215744291,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.463990416,
+        "rss_bytes": 4898816,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.135901208,
+        "rss_bytes": 3047424,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.194375248,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.08098670799999999,
+        "rss_bytes": 6307840,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.10116108400000001,
+        "rss_bytes": 28278784,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 49872896
+  },
+  {
+    "time_ns": 526889325854875,
+    "host_cpu_percent": 33.5,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.49138415999999996,
+        "rss_bytes": 4915200,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.143459952,
+        "rss_bytes": 3047424,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.205382168,
+        "rss_bytes": 3686400,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.085023336,
+        "rss_bytes": 6324224,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.103425372,
+        "rss_bytes": 28311552,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 49954816
+  },
+  {
+    "time_ns": 526889445637708,
+    "host_cpu_percent": 34.1,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.521250368,
+        "rss_bytes": 5079040,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.15188592,
+        "rss_bytes": 3063808,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.21741637599999997,
+        "rss_bytes": 3735552,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.089560956,
+        "rss_bytes": 6324224,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.10612575,
+        "rss_bytes": 28327936,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 50200576
+  },
+  {
+    "time_ns": 526889559548875,
+    "host_cpu_percent": 40.5,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.547889328,
+        "rss_bytes": 5095424,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.159345296,
+        "rss_bytes": 3063808,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.227954544,
+        "rss_bytes": 3735552,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.093526916,
+        "rss_bytes": 6324224,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.108166496,
+        "rss_bytes": 28344320,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 50233344
+  },
+  {
+    "time_ns": 526889669069291,
+    "host_cpu_percent": 38.3,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.574433568,
+        "rss_bytes": 5144576,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.16662771199999998,
+        "rss_bytes": 3063808,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.237785456,
+        "rss_bytes": 3735552,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.097329748,
+        "rss_bytes": 6324224,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.110108292,
+        "rss_bytes": 28360704,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 50298880
+  },
+  {
+    "time_ns": 526889785695125,
+    "host_cpu_percent": 58.1,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.602015264,
+        "rss_bytes": 5210112,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.17410245600000002,
+        "rss_bytes": 3063808,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.248188832,
+        "rss_bytes": 3735552,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.101415372,
+        "rss_bytes": 6340608,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.112523332,
+        "rss_bytes": 28393472,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 50413568
+  },
+  {
+    "time_ns": 526889901878083,
+    "host_cpu_percent": 41.6,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.6309201600000001,
+        "rss_bytes": 5275648,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.181652048,
+        "rss_bytes": 3080192,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.259549576,
+        "rss_bytes": 3751936,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.105401168,
+        "rss_bytes": 6340608,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.11501258,
+        "rss_bytes": 28409856,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 50528256
+  },
+  {
+    "time_ns": 526890011072500,
+    "host_cpu_percent": 46.7,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.6592144,
+        "rss_bytes": 5324800,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.18941433600000002,
+        "rss_bytes": 3080192,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.270809248,
+        "rss_bytes": 3751936,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.109552124,
+        "rss_bytes": 6340608,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.117322668,
+        "rss_bytes": 28442624,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 50610176
+  },
+  {
+    "time_ns": 526890118736291,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.6875601600000001,
+        "rss_bytes": 5390336,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.196971664,
+        "rss_bytes": 3080192,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.281489832,
+        "rss_bytes": 3751936,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.11353849599999999,
+        "rss_bytes": 6340608,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.11942187600000001,
+        "rss_bytes": 28459008,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 50692096
+  },
+  {
+    "time_ns": 526890235772625,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.717204544,
+        "rss_bytes": 5406720,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.205104456,
+        "rss_bytes": 3080192,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.292354048,
+        "rss_bytes": 3751936,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.118073244,
+        "rss_bytes": 6356992,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.12143537600000001,
+        "rss_bytes": 28475392,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 50741248
+  },
+  {
+    "time_ns": 526890346699416,
+    "host_cpu_percent": 38.9,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.745849184,
+        "rss_bytes": 5488640,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.212403664,
+        "rss_bytes": 3080192,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.302563,
+        "rss_bytes": 3751936,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.122154544,
+        "rss_bytes": 6356992,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.123475204,
+        "rss_bytes": 28508160,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 50855936
+  },
+  {
+    "time_ns": 526890465168166,
+    "host_cpu_percent": 34.2,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.776495968,
+        "rss_bytes": 5521408,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.220313416,
+        "rss_bytes": 3080192,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.3136738,
+        "rss_bytes": 3751936,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.12622746,
+        "rss_bytes": 6356992,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.125746956,
+        "rss_bytes": 28524544,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 50905088
+  },
+  {
+    "time_ns": 526890573533125,
+    "host_cpu_percent": 43.9,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.805161536,
+        "rss_bytes": 5570560,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.227943832,
+        "rss_bytes": 3080192,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.324405536,
+        "rss_bytes": 3751936,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.130334744,
+        "rss_bytes": 6356992,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.128072044,
+        "rss_bytes": 28540928,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 50970624
+  },
+  {
+    "time_ns": 526890683710166,
+    "host_cpu_percent": 37.3,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.83246016,
+        "rss_bytes": 5603328,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.235061904,
+        "rss_bytes": 3080192,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.334359328,
+        "rss_bytes": 3751936,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.133904248,
+        "rss_bytes": 6356992,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.130013084,
+        "rss_bytes": 28557312,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 51019776
+  },
+  {
+    "time_ns": 526890801030291,
+    "host_cpu_percent": 34.2,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.8612027200000001,
+        "rss_bytes": 5685248,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.242396464,
+        "rss_bytes": 3080192,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.34467192,
+        "rss_bytes": 3751936,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.13778346,
+        "rss_bytes": 6373376,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.132057168,
+        "rss_bytes": 28590080,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 51150848
+  },
+  {
+    "time_ns": 526890920468833,
+    "host_cpu_percent": 32.5,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.8919375679999999,
+        "rss_bytes": 5750784,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.250497376,
+        "rss_bytes": 3080192,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.355921744,
+        "rss_bytes": 3751936,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.14186542,
+        "rss_bytes": 6373376,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.134213628,
+        "rss_bytes": 28606464,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 51232768
+  },
+  {
+    "time_ns": 526891037521041,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.9232398079999999,
+        "rss_bytes": 5783552,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.258751336,
+        "rss_bytes": 3080192,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.367088384,
+        "rss_bytes": 3751936,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.146457628,
+        "rss_bytes": 6373376,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.13658554,
+        "rss_bytes": 28639232,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 51298304
+  },
+  {
+    "time_ns": 526891154713708,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.9537374080000001,
+        "rss_bytes": 5832704,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.266240328,
+        "rss_bytes": 3080192,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.377813248,
+        "rss_bytes": 3751936,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.15051604,
+        "rss_bytes": 6373376,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.138854496,
+        "rss_bytes": 28655616,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 51363840
+  },
+  {
+    "time_ns": 526891271556708,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 0.9840488000000001,
+        "rss_bytes": 5865472,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.274183168,
+        "rss_bytes": 3080192,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.388819072,
+        "rss_bytes": 3751936,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.154546536,
+        "rss_bytes": 6373376,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.140996292,
+        "rss_bytes": 28672000,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 51412992
+  },
+  {
+    "time_ns": 526891381565000,
+    "host_cpu_percent": 36.8,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.013793888,
+        "rss_bytes": 5914624,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.281668912,
+        "rss_bytes": 3080192,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.399563536,
+        "rss_bytes": 3751936,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.158785668,
+        "rss_bytes": 6373376,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.14301546,
+        "rss_bytes": 28704768,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 51494912
+  },
+  {
+    "time_ns": 526891501177375,
+    "host_cpu_percent": 31.9,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.045125536,
+        "rss_bytes": 6062080,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.28960912,
+        "rss_bytes": 3080192,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.41131924799999997,
+        "rss_bytes": 3801088,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.16351158,
+        "rss_bytes": 6373376,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.145657336,
+        "rss_bytes": 28721152,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 51707904
+  },
+  {
+    "time_ns": 526891623609500,
+    "host_cpu_percent": 44.2,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.076820224,
+        "rss_bytes": 6111232,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.29725840800000003,
+        "rss_bytes": 3080192,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.42260312,
+        "rss_bytes": 3801088,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.16795404,
+        "rss_bytes": 6373376,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.148073372,
+        "rss_bytes": 28753920,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 51789824
+  },
+  {
+    "time_ns": 526891740534750,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.10894512,
+        "rss_bytes": 6160384,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.305389792,
+        "rss_bytes": 3080192,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.43408904000000004,
+        "rss_bytes": 3817472,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.172663544,
+        "rss_bytes": 6389760,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.150754168,
+        "rss_bytes": 28770304,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 51888128
+  },
+  {
+    "time_ns": 526891848675791,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.138794464,
+        "rss_bytes": 6209536,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.312926784,
+        "rss_bytes": 3096576,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.444857328,
+        "rss_bytes": 3833856,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.17704104,
+        "rss_bytes": 6389760,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.153144752,
+        "rss_bytes": 28786688,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 51986432
+  },
+  {
+    "time_ns": 526891960962958,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.170462016,
+        "rss_bytes": 6258688,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.320945792,
+        "rss_bytes": 3096576,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.456027088,
+        "rss_bytes": 3833856,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.181497832,
+        "rss_bytes": 6389760,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.155640204,
+        "rss_bytes": 28803072,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 52051968
+  },
+  {
+    "time_ns": 526892078030375,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.202141248,
+        "rss_bytes": 6275072,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.32899100800000003,
+        "rss_bytes": 3096576,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.467370832,
+        "rss_bytes": 3833856,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.185578496,
+        "rss_bytes": 6389760,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.15808588,
+        "rss_bytes": 28835840,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 52101120
+  },
+  {
+    "time_ns": 526892192774291,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.2349109120000001,
+        "rss_bytes": 6307840,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.337187712,
+        "rss_bytes": 3112960,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.47918782400000004,
+        "rss_bytes": 3850240,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.190237128,
+        "rss_bytes": 6406144,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.160648792,
+        "rss_bytes": 28852224,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 52199424
+  },
+  {
+    "time_ns": 526892300522208,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.266832128,
+        "rss_bytes": 6324224,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.344991424,
+        "rss_bytes": 3112960,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.490129424,
+        "rss_bytes": 3850240,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.194371624,
+        "rss_bytes": 6406144,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.16304554,
+        "rss_bytes": 28884992,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 52248576
+  },
+  {
+    "time_ns": 526892417643000,
+    "host_cpu_percent": 35.2,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.2963476479999998,
+        "rss_bytes": 6651904,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.35238524800000004,
+        "rss_bytes": 3178496,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.500566128,
+        "rss_bytes": 4046848,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.198422536,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.165132416,
+        "rss_bytes": 28901376,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 52903936
+  },
+  {
+    "time_ns": 526892531291000,
+    "host_cpu_percent": 34.2,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.3293431039999999,
+        "rss_bytes": 6668288,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.36062446400000003,
+        "rss_bytes": 3178496,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.5122829760000001,
+        "rss_bytes": 4046848,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.20290996,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.167743336,
+        "rss_bytes": 28917760,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 52936704
+  },
+  {
+    "time_ns": 526892644896375,
+    "host_cpu_percent": 40.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.361188608,
+        "rss_bytes": 6701056,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.36847366400000003,
+        "rss_bytes": 3178496,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.5235447520000001,
+        "rss_bytes": 4046848,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.207279872,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.170135712,
+        "rss_bytes": 28950528,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 53002240
+  },
+  {
+    "time_ns": 526892756638291,
+    "host_cpu_percent": 33.3,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.393076672,
+        "rss_bytes": 6717440,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.37609732799999995,
+        "rss_bytes": 3178496,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.535408128,
+        "rss_bytes": 4046848,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.211898168,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.173033912,
+        "rss_bytes": 28966912,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 53035008
+  },
+  {
+    "time_ns": 526892874719083,
+    "host_cpu_percent": 35.3,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.427723328,
+        "rss_bytes": 6733824,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.38455104,
+        "rss_bytes": 3178496,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.5474678399999999,
+        "rss_bytes": 4046848,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.216278248,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.175588752,
+        "rss_bytes": 28983296,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 53067776
+  },
+  {
+    "time_ns": 526892991971291,
+    "host_cpu_percent": 40.9,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.460798464,
+        "rss_bytes": 6766592,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.39289513600000003,
+        "rss_bytes": 3178496,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.559314128,
+        "rss_bytes": 4046848,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.22066075200000002,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.177924,
+        "rss_bytes": 28999680,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 53116928
+  },
+  {
+    "time_ns": 526893107836083,
+    "host_cpu_percent": 33.9,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.4926729600000002,
+        "rss_bytes": 6782976,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.40052475200000004,
+        "rss_bytes": 3178496,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.570342656,
+        "rss_bytes": 4046848,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.224944032,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.180348336,
+        "rss_bytes": 29032448,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 53166080
+  },
+  {
+    "time_ns": 526893217037958,
+    "host_cpu_percent": 38.2,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.523821056,
+        "rss_bytes": 6848512,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.408460048,
+        "rss_bytes": 3178496,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.581735296,
+        "rss_bytes": 4046848,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.22953592,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.182760956,
+        "rss_bytes": 29048832,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 53248000
+  },
+  {
+    "time_ns": 526893328409041,
+    "host_cpu_percent": 36.7,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.557095232,
+        "rss_bytes": 6864896,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.416743616,
+        "rss_bytes": 3178496,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.593149344,
+        "rss_bytes": 4046848,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.233808672,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.185510664,
+        "rss_bytes": 29081600,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 53297152
+  },
+  {
+    "time_ns": 526893445862791,
+    "host_cpu_percent": 31.9,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.588438784,
+        "rss_bytes": 6881280,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.424732864,
+        "rss_bytes": 3178496,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.604884992,
+        "rss_bytes": 4046848,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.23807183199999998,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.187939456,
+        "rss_bytes": 29097984,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 53329920
+  },
+  {
+    "time_ns": 526893566743291,
+    "host_cpu_percent": 32.2,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.620010176,
+        "rss_bytes": 6914048,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.432762672,
+        "rss_bytes": 3194880,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.616184208,
+        "rss_bytes": 4046848,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.242547168,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.190402248,
+        "rss_bytes": 29114368,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 53395456
+  },
+  {
+    "time_ns": 526893686594708,
+    "host_cpu_percent": 40.5,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.6522556800000001,
+        "rss_bytes": 6930432,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.44093932799999996,
+        "rss_bytes": 3194880,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.627787552,
+        "rss_bytes": 4046848,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.24704315999999998,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.192819832,
+        "rss_bytes": 29147136,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 53444608
+  },
+  {
+    "time_ns": 526893804331958,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.683359488,
+        "rss_bytes": 6946816,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.44861737599999996,
+        "rss_bytes": 3211264,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.638405312,
+        "rss_bytes": 4063232,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.250959376,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.194947876,
+        "rss_bytes": 29163520,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 53510144
+  },
+  {
+    "time_ns": 526893919552333,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.716726784,
+        "rss_bytes": 6979584,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.457057936,
+        "rss_bytes": 3211264,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.650224128,
+        "rss_bytes": 4079616,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.255445448,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.1978103,
+        "rss_bytes": 29196288,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 53592064
+  },
+  {
+    "time_ns": 526894027606291,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.7485896959999998,
+        "rss_bytes": 6995968,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.465066752,
+        "rss_bytes": 3211264,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.6614707200000001,
+        "rss_bytes": 4079616,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.25989308,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.200122032,
+        "rss_bytes": 29196288,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 53608448
+  },
+  {
+    "time_ns": 526894148570958,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.784595456,
+        "rss_bytes": 7012352,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.473922656,
+        "rss_bytes": 3211264,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.673885792,
+        "rss_bytes": 4079616,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.26496475199999997,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.202987792,
+        "rss_bytes": 29229056,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 53657600
+  },
+  {
+    "time_ns": 526894268830166,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.819364736,
+        "rss_bytes": 7045120,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.482244192,
+        "rss_bytes": 3211264,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.685915776,
+        "rss_bytes": 4079616,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.269660752,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.205426296,
+        "rss_bytes": 29245440,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 53706752
+  },
+  {
+    "time_ns": 526894382582208,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.8505968,
+        "rss_bytes": 7061504,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.490053168,
+        "rss_bytes": 3211264,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.6966501119999999,
+        "rss_bytes": 4079616,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.273750632,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.207578908,
+        "rss_bytes": 29278208,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 53755904
+  },
+  {
+    "time_ns": 526894500001875,
+    "host_cpu_percent": 34.4,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.885095872,
+        "rss_bytes": 7094272,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.49906496,
+        "rss_bytes": 3211264,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.708673376,
+        "rss_bytes": 4079616,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.27856104,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.210309452,
+        "rss_bytes": 29294592,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 53805056
+  },
+  {
+    "time_ns": 526894611002125,
+    "host_cpu_percent": 37.6,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.913739456,
+        "rss_bytes": 7143424,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.506241728,
+        "rss_bytes": 3211264,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.7191162879999999,
+        "rss_bytes": 4079616,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.282625616,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.212631464,
+        "rss_bytes": 29327360,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 53886976
+  },
+  {
+    "time_ns": 526894732393875,
+    "host_cpu_percent": 39.8,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.949918656,
+        "rss_bytes": 7176192,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.515028416,
+        "rss_bytes": 3211264,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.731471616,
+        "rss_bytes": 4079616,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.28772104,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.21528208,
+        "rss_bytes": 29343744,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 53936128
+  },
+  {
+    "time_ns": 526894850365708,
+    "host_cpu_percent": 33.9,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 1.980880128,
+        "rss_bytes": 7208960,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.522944304,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.7424701760000001,
+        "rss_bytes": 4079616,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.29188196,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.218493704,
+        "rss_bytes": 29360128,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54018048
+  },
+  {
+    "time_ns": 526894959393708,
+    "host_cpu_percent": 34.3,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.012298816,
+        "rss_bytes": 7274496,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.531142144,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.753577888,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.29614488,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.22101304,
+        "rss_bytes": 29392896,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54132736
+  },
+  {
+    "time_ns": 526895075883833,
+    "host_cpu_percent": 38.9,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.0458682240000003,
+        "rss_bytes": 7290880,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.539612576,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.765489952,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.30113112799999997,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.22364392,
+        "rss_bytes": 29409280,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54165504
+  },
+  {
+    "time_ns": 526895184368250,
+    "host_cpu_percent": 35.1,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.077029504,
+        "rss_bytes": 7323648,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.547086336,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.776003552,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.305117128,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.22584704,
+        "rss_bytes": 29442048,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54231040
+  },
+  {
+    "time_ns": 526895298003666,
+    "host_cpu_percent": 35.1,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.108952384,
+        "rss_bytes": 7340032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.554905104,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.787032256,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.309420168,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.228358952,
+        "rss_bytes": 29442048,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54247424
+  },
+  {
+    "time_ns": 526895416213000,
+    "host_cpu_percent": 35.3,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.140187456,
+        "rss_bytes": 7356416,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.563142256,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.7980634879999999,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.31365625599999997,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.23048970400000002,
+        "rss_bytes": 29474816,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54296576
+  },
+  {
+    "time_ns": 526895524236083,
+    "host_cpu_percent": 35.2,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.1713655679999997,
+        "rss_bytes": 7389184,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.570986944,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.809016864,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.318067832,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.232947464,
+        "rss_bytes": 29491200,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54345728
+  },
+  {
+    "time_ns": 526895642432333,
+    "host_cpu_percent": 34.2,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.206056832,
+        "rss_bytes": 7389184,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.579247696,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.8218919680000001,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.322748864,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.236021712,
+        "rss_bytes": 29523968,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54378496
+  },
+  {
+    "time_ns": 526895754605250,
+    "host_cpu_percent": 35.4,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.23745472,
+        "rss_bytes": 7389184,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.5867952,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.832657408,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.327046616,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.238526288,
+        "rss_bytes": 29540352,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54394880
+  },
+  {
+    "time_ns": 526895869666041,
+    "host_cpu_percent": 30.6,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.268585344,
+        "rss_bytes": 7389184,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.594614736,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.8435330240000001,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.331120376,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.24096383999999998,
+        "rss_bytes": 29556736,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54411264
+  },
+  {
+    "time_ns": 526895984062625,
+    "host_cpu_percent": 42.6,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.29838464,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.602027968,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.85349904,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.335415368,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.243106536,
+        "rss_bytes": 29589504,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54460416
+  },
+  {
+    "time_ns": 526896100959041,
+    "host_cpu_percent": 35.4,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.3315518720000004,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.610215328,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.86529872,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.340070376,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.2455602,
+        "rss_bytes": 29605888,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54476800
+  },
+  {
+    "time_ns": 526896216821666,
+    "host_cpu_percent": 36.8,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.3673244159999998,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.61904688,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.877991808,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.344884456,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.248509696,
+        "rss_bytes": 29638656,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54509568
+  },
+  {
+    "time_ns": 526896329258708,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.3995124480000003,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.626957408,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.889095712,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.348933088,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.25079304,
+        "rss_bytes": 29655040,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54525952
+  },
+  {
+    "time_ns": 526896446744375,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.432091264,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.6349854880000001,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.9002165440000001,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.352968912,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.25297229600000004,
+        "rss_bytes": 29671424,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54542336
+  },
+  {
+    "time_ns": 526896561933250,
+    "host_cpu_percent": 37.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.4652364799999997,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.643280096,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.91170832,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.35758584000000004,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.255268744,
+        "rss_bytes": 29687808,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54558720
+  },
+  {
+    "time_ns": 526896677568958,
+    "host_cpu_percent": 39.8,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.49702528,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.6508585600000001,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.922375456,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.36166968,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.257612664,
+        "rss_bytes": 29720576,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54591488
+  },
+  {
+    "time_ns": 526896793010125,
+    "host_cpu_percent": 37.4,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.529345152,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.65941928,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.933864864,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.365993328,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.259916208,
+        "rss_bytes": 29736960,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54607872
+  },
+  {
+    "time_ns": 526896901686125,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.561697024,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.667492736,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.945162912,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.37033392,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.262590368,
+        "rss_bytes": 29753344,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54624256
+  },
+  {
+    "time_ns": 526897016149666,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.593721984,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.6754171840000001,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.95613888,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.374953824,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.264880664,
+        "rss_bytes": 29786112,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54657024
+  },
+  {
+    "time_ns": 526897134579500,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.628294784,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.683811424,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.96785264,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.379422832,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.26741970400000004,
+        "rss_bytes": 29802496,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54673408
+  },
+  {
+    "time_ns": 526897252636875,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.661100544,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.692076736,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.978949696,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.38410070399999996,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.26983804,
+        "rss_bytes": 29835264,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54706176
+  },
+  {
+    "time_ns": 526897370192916,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.696161152,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.7005164800000001,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 0.9908974079999999,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.388807376,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.272377408,
+        "rss_bytes": 29851648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54722560
+  },
+  {
+    "time_ns": 526897490239375,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.728301696,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.7088108799999999,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 1.001688288,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.39333496,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.274590048,
+        "rss_bytes": 29884416,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54755328
+  },
+  {
+    "time_ns": 526897606036000,
+    "host_cpu_percent": 35.4,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.759948416,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.716970624,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 1.0129410559999998,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.397593136,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.277029416,
+        "rss_bytes": 29900800,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54771712
+  },
+  {
+    "time_ns": 526897727937708,
+    "host_cpu_percent": 40.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.79287872,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.725708416,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 1.025427616,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.40281308800000004,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.279564592,
+        "rss_bytes": 29933568,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54804480
+  },
+  {
+    "time_ns": 526897845833666,
+    "host_cpu_percent": 36.8,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.823766912,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.733847424,
+        "rss_bytes": 3244032,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 1.036572768,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.407143072,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.28202879200000003,
+        "rss_bytes": 29933568,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54804480
+  },
+  {
+    "time_ns": 526897958062958,
+    "host_cpu_percent": 35.5,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.855120768,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.7421220479999999,
+        "rss_bytes": 3260416,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 1.048426048,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.41161795199999995,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.284499912,
+        "rss_bytes": 29966336,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54853632
+  },
+  {
+    "time_ns": 526898073884375,
+    "host_cpu_percent": 35.4,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.885275392,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.750120128,
+        "rss_bytes": 3260416,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 1.0598901440000001,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.41605688,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.287073792,
+        "rss_bytes": 29982720,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54870016
+  },
+  {
+    "time_ns": 526898188954500,
+    "host_cpu_percent": 34.8,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.9170068479999998,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.758471936,
+        "rss_bytes": 3260416,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 1.071478592,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.420570208,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.289473584,
+        "rss_bytes": 30015488,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54902784
+  },
+  {
+    "time_ns": 526898310270375,
+    "host_cpu_percent": 36.1,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.948267648,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.7673167359999999,
+        "rss_bytes": 3260416,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 1.08325104,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.424827824,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.291982536,
+        "rss_bytes": 30031872,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54919168
+  },
+  {
+    "time_ns": 526898427480250,
+    "host_cpu_percent": 36.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 2.979622784,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.7759218240000001,
+        "rss_bytes": 3260416,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 1.094658304,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.42956953600000003,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.294399744,
+        "rss_bytes": 30048256,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54935552
+  },
+  {
+    "time_ns": 526898536422291,
+    "host_cpu_percent": 44.1,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 3.010281344,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.784165888,
+        "rss_bytes": 3260416,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 1.105255136,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.43374625599999994,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.296629504,
+        "rss_bytes": 30081024,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54968320
+  },
+  {
+    "time_ns": 526898654936500,
+    "host_cpu_percent": 41.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 3.04107072,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.792396544,
+        "rss_bytes": 3260416,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 1.11677872,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.43808216,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.29891007999999997,
+        "rss_bytes": 30097408,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 54984704
+  },
+  {
+    "time_ns": 526898772456791,
+    "host_cpu_percent": 33.3,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 3.0738753279999997,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.8012151359999999,
+        "rss_bytes": 3260416,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 1.1284345279999999,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.44286736,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.30126212,
+        "rss_bytes": 30130176,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 55017472
+  },
+  {
+    "time_ns": 526898887466791,
+    "host_cpu_percent": 38.1,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 3.1038929919999996,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.8088639040000001,
+        "rss_bytes": 3260416,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 1.13939008,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.446924576,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.303497424,
+        "rss_bytes": 30146560,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 55033856
+  },
+  {
+    "time_ns": 526899004462083,
+    "host_cpu_percent": 33.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 3.13390336,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.8164478399999999,
+        "rss_bytes": 3260416,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 1.1499967359999999,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.450914048,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.305639952,
+        "rss_bytes": 30179328,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 55066624
+  },
+  {
+    "time_ns": 526899121465791,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 3.164648704,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.824270816,
+        "rss_bytes": 3260416,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 1.161031104,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.455153376,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.30774640799999997,
+        "rss_bytes": 30179328,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 55066624
+  },
+  {
+    "time_ns": 526899187388958,
+    "host_cpu_percent": 36.5,
+    "processes": [
+      {
+        "pid": 11854,
+        "role": "log-print",
+        "cpu_seconds": 0.007161499,
+        "rss_bytes": 3670016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11856,
+        "role": "log-print-core",
+        "cpu_seconds": 3.174513792,
+        "rss_bytes": 7405568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11857,
+        "role": "output-raw",
+        "cpu_seconds": 0.826744448,
+        "rss_bytes": 3260416,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11859,
+        "role": "input-program",
+        "cpu_seconds": 1.164448128,
+        "rss_bytes": 4096000,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11860,
+        "role": "output-tui",
+        "cpu_seconds": 0.456688992,
+        "rss_bytes": 6455296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 11861,
+        "role": "source-python",
+        "cpu_seconds": 0.31252495999999996,
+        "rss_bytes": 31375360,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 56262656
+  }
+]

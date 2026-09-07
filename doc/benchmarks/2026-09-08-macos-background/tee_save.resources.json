@@ -1,0 +1,2325 @@
+[
+  {
+    "time_ns": 526706430096708,
+    "host_cpu_percent": 52.9,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.057458331,
+        "rss_bytes": 27869184,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.002249249,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29048832
+  },
+  {
+    "time_ns": 526706551675250,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.059848126,
+        "rss_bytes": 27885568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.004632375,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29065216
+  },
+  {
+    "time_ns": 526706665146875,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.062006333,
+        "rss_bytes": 27901952,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.007129124000000001,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29081600
+  },
+  {
+    "time_ns": 526706791164541,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.064438291,
+        "rss_bytes": 27901952,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.010097832999999999,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29081600
+  },
+  {
+    "time_ns": 526706910399416,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.066483918,
+        "rss_bytes": 27918336,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.012606166,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29097984
+  },
+  {
+    "time_ns": 526707031781875,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.068764834,
+        "rss_bytes": 27934720,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.015246374,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29114368
+  },
+  {
+    "time_ns": 526707158167916,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.071112956,
+        "rss_bytes": 27951104,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.01821004,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29130752
+  },
+  {
+    "time_ns": 526707282486208,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.073562668,
+        "rss_bytes": 27983872,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.021065083000000002,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29163520
+  },
+  {
+    "time_ns": 526707403561208,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.07576991599999999,
+        "rss_bytes": 28000256,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.023633999,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29179904
+  },
+  {
+    "time_ns": 526707522742416,
+    "host_cpu_percent": 33.7,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.07783196,
+        "rss_bytes": 28033024,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.026184583,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29212672
+  },
+  {
+    "time_ns": 526707643898166,
+    "host_cpu_percent": 35.6,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.08015979200000001,
+        "rss_bytes": 28049408,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.028837291999999997,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29229056
+  },
+  {
+    "time_ns": 526707765027500,
+    "host_cpu_percent": 32.2,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.08234749799999999,
+        "rss_bytes": 28082176,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.031421999,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29261824
+  },
+  {
+    "time_ns": 526707882241583,
+    "host_cpu_percent": 33.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.084511792,
+        "rss_bytes": 28098560,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.033956708,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29278208
+  },
+  {
+    "time_ns": 526708006111833,
+    "host_cpu_percent": 32.2,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.086659708,
+        "rss_bytes": 28114944,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.036416580000000004,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29294592
+  },
+  {
+    "time_ns": 526708125242333,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.088820124,
+        "rss_bytes": 28147712,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.038955206,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29327360
+  },
+  {
+    "time_ns": 526708246918541,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.090973458,
+        "rss_bytes": 28164096,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.041599501,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29343744
+  },
+  {
+    "time_ns": 526708370768250,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.09389033199999999,
+        "rss_bytes": 28196864,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.045254625,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29376512
+  },
+  {
+    "time_ns": 526708488336000,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.096593336,
+        "rss_bytes": 28213248,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.048174126,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29392896
+  },
+  {
+    "time_ns": 526708603461208,
+    "host_cpu_percent": 44.1,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.098978208,
+        "rss_bytes": 28246016,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.050687165,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29425664
+  },
+  {
+    "time_ns": 526708726752041,
+    "host_cpu_percent": 33.9,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.101025544,
+        "rss_bytes": 28262400,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.053127414,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29442048
+  },
+  {
+    "time_ns": 526708843231208,
+    "host_cpu_percent": 33.9,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.10312128799999999,
+        "rss_bytes": 28278784,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.055606457,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29458432
+  },
+  {
+    "time_ns": 526708961438333,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.105496376,
+        "rss_bytes": 28295168,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.058450833,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29474816
+  },
+  {
+    "time_ns": 526709083526666,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.10796054,
+        "rss_bytes": 28327936,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.061222372,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29507584
+  },
+  {
+    "time_ns": 526709205270000,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.11077879199999999,
+        "rss_bytes": 28344320,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.064624543,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29523968
+  },
+  {
+    "time_ns": 526709329312208,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.113002456,
+        "rss_bytes": 28377088,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.06728195799999999,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29556736
+  },
+  {
+    "time_ns": 526709448054958,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.11539408400000001,
+        "rss_bytes": 28393472,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.070098625,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29573120
+  },
+  {
+    "time_ns": 526709569949666,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.117965668,
+        "rss_bytes": 28426240,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.072810294,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29605888
+  },
+  {
+    "time_ns": 526709682236000,
+    "host_cpu_percent": 38.1,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.119706664,
+        "rss_bytes": 28442624,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.07483621,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29622272
+  },
+  {
+    "time_ns": 526709803900875,
+    "host_cpu_percent": 28.6,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.12195325200000001,
+        "rss_bytes": 28475392,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.077439205,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29655040
+  },
+  {
+    "time_ns": 526709927987791,
+    "host_cpu_percent": 30.6,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.12395741199999999,
+        "rss_bytes": 28491776,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.079935912,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29671424
+  },
+  {
+    "time_ns": 526710050615291,
+    "host_cpu_percent": 40.2,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.126389708,
+        "rss_bytes": 28508160,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.082730206,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29687808
+  },
+  {
+    "time_ns": 526710173756458,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.129080712,
+        "rss_bytes": 28573696,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.085827662,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29753344
+  },
+  {
+    "time_ns": 526710297476750,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.131232088,
+        "rss_bytes": 28590080,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.088356251,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29769728
+  },
+  {
+    "time_ns": 526710410549916,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.13329071199999998,
+        "rss_bytes": 28622848,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.090608583,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29802496
+  },
+  {
+    "time_ns": 526710531598500,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.135313748,
+        "rss_bytes": 28639232,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.093064999,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29818880
+  },
+  {
+    "time_ns": 526710649139291,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.13744,
+        "rss_bytes": 28688384,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.095506125,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29868032
+  },
+  {
+    "time_ns": 526710767419166,
+    "host_cpu_percent": 34.4,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.139986376,
+        "rss_bytes": 28704768,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.098477835,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29884416
+  },
+  {
+    "time_ns": 526710889595500,
+    "host_cpu_percent": 31.4,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.142112872,
+        "rss_bytes": 28721152,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.100972705,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29900800
+  },
+  {
+    "time_ns": 526711014346083,
+    "host_cpu_percent": 36.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.144604124,
+        "rss_bytes": 28737536,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.10371824800000001,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29917184
+  },
+  {
+    "time_ns": 526711133723541,
+    "host_cpu_percent": 38.5,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.146646832,
+        "rss_bytes": 28770304,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.105979203,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29949952
+  },
+  {
+    "time_ns": 526711254283166,
+    "host_cpu_percent": 33.9,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.148859664,
+        "rss_bytes": 28786688,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.10885249799999999,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29966336
+  },
+  {
+    "time_ns": 526711378370291,
+    "host_cpu_percent": 31.2,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.151315376,
+        "rss_bytes": 28819456,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.111530914,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 29999104
+  },
+  {
+    "time_ns": 526711501311416,
+    "host_cpu_percent": 33.3,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.153675584,
+        "rss_bytes": 28835840,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.11430004299999999,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30015488
+  },
+  {
+    "time_ns": 526711619523708,
+    "host_cpu_percent": 37.4,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.155844664,
+        "rss_bytes": 28868608,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.117021417,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30048256
+  },
+  {
+    "time_ns": 526711742661625,
+    "host_cpu_percent": 45.2,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.158216212,
+        "rss_bytes": 28884992,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.11992574700000001,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30064640
+  },
+  {
+    "time_ns": 526711871137666,
+    "host_cpu_percent": 37.9,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.161027456,
+        "rss_bytes": 28917760,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.12306895600000001,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30097408
+  },
+  {
+    "time_ns": 526711993210041,
+    "host_cpu_percent": 33.6,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.163405248,
+        "rss_bytes": 28934144,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.125876208,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30113792
+  },
+  {
+    "time_ns": 526712117674083,
+    "host_cpu_percent": 32.5,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.165593252,
+        "rss_bytes": 28966912,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.128555502,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30146560
+  },
+  {
+    "time_ns": 526712241792333,
+    "host_cpu_percent": 32.2,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.16773304,
+        "rss_bytes": 28983296,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.131124581,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30162944
+  },
+  {
+    "time_ns": 526712358710958,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.169955748,
+        "rss_bytes": 29016064,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.13353075,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30195712
+  },
+  {
+    "time_ns": 526712483870666,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.17258578800000002,
+        "rss_bytes": 29032448,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.13664187400000002,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30212096
+  },
+  {
+    "time_ns": 526712601957875,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.174528456,
+        "rss_bytes": 29065216,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.138913831,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30244864
+  },
+  {
+    "time_ns": 526712725985666,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.176952044,
+        "rss_bytes": 29097984,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.141553496,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30277632
+  },
+  {
+    "time_ns": 526712848557916,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.17894349999999998,
+        "rss_bytes": 29114368,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.144022333,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30294016
+  },
+  {
+    "time_ns": 526712974927916,
+    "host_cpu_percent": 34.5,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.181617624,
+        "rss_bytes": 29147136,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.147016747,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30326784
+  },
+  {
+    "time_ns": 526713092430291,
+    "host_cpu_percent": 29.3,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.18377700400000002,
+        "rss_bytes": 29163520,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.14964350399999998,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30343168
+  },
+  {
+    "time_ns": 526713215125166,
+    "host_cpu_percent": 43.1,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.186309164,
+        "rss_bytes": 29196288,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.152578423,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30375936
+  },
+  {
+    "time_ns": 526713334630000,
+    "host_cpu_percent": 43.8,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.18873795999999998,
+        "rss_bytes": 29212672,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.15540434,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30392320
+  },
+  {
+    "time_ns": 526713451527083,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.190985496,
+        "rss_bytes": 29245440,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.158026579,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30425088
+  },
+  {
+    "time_ns": 526713571541958,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.19341483199999998,
+        "rss_bytes": 29261824,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.16077633,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30441472
+  },
+  {
+    "time_ns": 526713694379541,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.19547408,
+        "rss_bytes": 29278208,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.163187836,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30457856
+  },
+  {
+    "time_ns": 526713818402375,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.197798672,
+        "rss_bytes": 29294592,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.166014631,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30474240
+  },
+  {
+    "time_ns": 526713935724125,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.199930664,
+        "rss_bytes": 29327360,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.168749702,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30507008
+  },
+  {
+    "time_ns": 526714057442958,
+    "host_cpu_percent": 32.3,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.20217458,
+        "rss_bytes": 29343744,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.171646504,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30523392
+  },
+  {
+    "time_ns": 526714180971416,
+    "host_cpu_percent": 35.4,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.205532952,
+        "rss_bytes": 29376512,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.174734827,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30556160
+  },
+  {
+    "time_ns": 526714294825500,
+    "host_cpu_percent": 31.2,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.207822168,
+        "rss_bytes": 29392896,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.177392084,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30572544
+  },
+  {
+    "time_ns": 526714417828375,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.21019300400000002,
+        "rss_bytes": 29409280,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.180151709,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30588928
+  },
+  {
+    "time_ns": 526714541270000,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.21238165599999997,
+        "rss_bytes": 29442048,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.18288183,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30621696
+  },
+  {
+    "time_ns": 526714656614750,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.214649288,
+        "rss_bytes": 29474816,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.185518453,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30654464
+  },
+  {
+    "time_ns": 526714780594500,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.21707761600000003,
+        "rss_bytes": 29507584,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.18843467,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30687232
+  },
+  {
+    "time_ns": 526714898933708,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.219142424,
+        "rss_bytes": 29523968,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.190836118,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30703616
+  },
+  {
+    "time_ns": 526715021113375,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.22139008799999998,
+        "rss_bytes": 29556736,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.193534078,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30736384
+  },
+  {
+    "time_ns": 526715142921833,
+    "host_cpu_percent": 35.6,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.223619952,
+        "rss_bytes": 29573120,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.196220455,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30752768
+  },
+  {
+    "time_ns": 526715264061208,
+    "host_cpu_percent": 32.2,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.226097416,
+        "rss_bytes": 29605888,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.19905100199999998,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30785536
+  },
+  {
+    "time_ns": 526715379467750,
+    "host_cpu_percent": 35.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.228216408,
+        "rss_bytes": 29622272,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.20145354,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30801920
+  },
+  {
+    "time_ns": 526715499268958,
+    "host_cpu_percent": 35.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.23026871200000001,
+        "rss_bytes": 29655040,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.203828871,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30834688
+  },
+  {
+    "time_ns": 526715618747208,
+    "host_cpu_percent": 33.1,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.23272796,
+        "rss_bytes": 29671424,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.206508623,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30851072
+  },
+  {
+    "time_ns": 526715735015208,
+    "host_cpu_percent": 30.1,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.23484332800000002,
+        "rss_bytes": 29687808,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.208910962,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30867456
+  },
+  {
+    "time_ns": 526715855553958,
+    "host_cpu_percent": 32.2,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.23710695199999998,
+        "rss_bytes": 29704192,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.211599755,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30883840
+  },
+  {
+    "time_ns": 526715967321125,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.23925707999999998,
+        "rss_bytes": 29736960,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.214106338,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30916608
+  },
+  {
+    "time_ns": 526716092623333,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.241420792,
+        "rss_bytes": 29753344,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.216686716,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30932992
+  },
+  {
+    "time_ns": 526716211044500,
+    "host_cpu_percent": 34.7,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.243559376,
+        "rss_bytes": 29786112,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.219306797,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30965760
+  },
+  {
+    "time_ns": 526716328896833,
+    "host_cpu_percent": 33.6,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.24588120800000002,
+        "rss_bytes": 29802496,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.221996494,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30982144
+  },
+  {
+    "time_ns": 526716448668208,
+    "host_cpu_percent": 35.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.24810888,
+        "rss_bytes": 29818880,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.224664534,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 30998528
+  },
+  {
+    "time_ns": 526716572378250,
+    "host_cpu_percent": 36.3,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.25055804800000003,
+        "rss_bytes": 29851648,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.227492965,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 31031296
+  },
+  {
+    "time_ns": 526716695188208,
+    "host_cpu_percent": 29.7,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.252703496,
+        "rss_bytes": 29884416,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.230040576,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 31064064
+  },
+  {
+    "time_ns": 526716808726541,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.254725664,
+        "rss_bytes": 29917184,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.232414383,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 31096832
+  },
+  {
+    "time_ns": 526716931072000,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.257035664,
+        "rss_bytes": 29933568,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.23507608600000002,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 31113216
+  },
+  {
+    "time_ns": 526717057964208,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.259753584,
+        "rss_bytes": 29966336,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.238087002,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 31145984
+  },
+  {
+    "time_ns": 526717181807750,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.262115424,
+        "rss_bytes": 29982720,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.241048173,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 31162368
+  },
+  {
+    "time_ns": 526717301299041,
+    "host_cpu_percent": 44.9,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.264706168,
+        "rss_bytes": 30015488,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.243957458,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 31195136
+  },
+  {
+    "time_ns": 526717425489916,
+    "host_cpu_percent": 40.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.267349456,
+        "rss_bytes": 30031872,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.247145377,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 31211520
+  },
+  {
+    "time_ns": 526717548081833,
+    "host_cpu_percent": 43.3,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.270542328,
+        "rss_bytes": 30064640,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.250922669,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 31244288
+  },
+  {
+    "time_ns": 526717672072291,
+    "host_cpu_percent": 44.7,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.273185328,
+        "rss_bytes": 30081024,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.25413833,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 31260672
+  },
+  {
+    "time_ns": 526717791048958,
+    "host_cpu_percent": 38.7,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.275616336,
+        "rss_bytes": 30113792,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.25691336800000003,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 31293440
+  },
+  {
+    "time_ns": 526717910816666,
+    "host_cpu_percent": 35.3,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.27791424,
+        "rss_bytes": 30130176,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.259659252,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 31309824
+  },
+  {
+    "time_ns": 526718029231958,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.280094744,
+        "rss_bytes": 30146560,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.262306543,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 31326208
+  },
+  {
+    "time_ns": 526718151984041,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.28294295999999997,
+        "rss_bytes": 30162944,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.265568505,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 31342592
+  },
+  {
+    "time_ns": 526718265175500,
+    "host_cpu_percent": 0.0,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.285886824,
+        "rss_bytes": 30195712,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.268790451,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 31375360
+  },
+  {
+    "time_ns": 526718388499583,
+    "host_cpu_percent": 40.6,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.288402744,
+        "rss_bytes": 30212096,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.271824747,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 31391744
+  },
+  {
+    "time_ns": 526718475886750,
+    "host_cpu_percent": 36.2,
+    "processes": [
+      {
+        "pid": 10456,
+        "role": "source-python",
+        "cpu_seconds": 0.293674168,
+        "rss_bytes": 31457280,
+        "read_bytes": null,
+        "write_bytes": null
+      },
+      {
+        "pid": 10457,
+        "role": "tee",
+        "cpu_seconds": 0.27323186699999996,
+        "rss_bytes": 1179648,
+        "read_bytes": null,
+        "write_bytes": null
+      }
+    ],
+    "tree_rss_bytes": 32636928
+  }
+]

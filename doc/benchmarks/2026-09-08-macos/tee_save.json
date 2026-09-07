@@ -1,0 +1,69 @@
+{
+  "scenario": "tee_save",
+  "platform": "macOS-26.5-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "python": "3.14.1",
+  "psutil": "7.2.2",
+  "logical_cpus": 10,
+  "physical_memory_bytes": 68719476736,
+  "cpu_model": "Apple M1 Max",
+  "created_at_utc": "2026-09-07T17:07:46Z",
+  "requested_duration_s": 12.0,
+  "target_records_per_second": 1000,
+  "samples": 12000,
+  "bytes_per_record": 96,
+  "output_bytes": 1152000,
+  "payload_sha256": "a90cd5255f66e56ffee249d0ba05a26584a9aed5d9f2b952fa1f7db797895982",
+  "exact_payload_and_order": true,
+  "actual_source_write_interval_s": 11.999340958,
+  "actual_source_bytes_per_second": 96005.27262557347,
+  "output_observation_window_s": 11.999385208,
+  "actual_output_bytes_per_second": 96004.91858799238,
+  "setup_elapsed_s": 0.140960917,
+  "latency": {
+    "observer_minus_source_write_before": {
+      "p50_ms": 0.037625,
+      "p95_ms": 0.123042,
+      "p99_ms": 0.73575,
+      "max_ms": 6.027375
+    },
+    "observer_minus_source_write_after": {
+      "p50_ms": 0.033333,
+      "p95_ms": 0.113166,
+      "p99_ms": 0.687541,
+      "max_ms": 5.272958
+    },
+    "source_write_bracket": {
+      "p50_ms": 0.003333,
+      "p95_ms": 0.010834,
+      "p99_ms": 0.028375,
+      "max_ms": 5.058708
+    },
+    "negative_after_count": 1
+  },
+  "resources": {
+    "duration_s": 12.057158708,
+    "tree_cpu_seconds": 0.5176476640000001,
+    "tree_cpu_percent_one_core": 4.293280668658178,
+    "tree_peak_rss_bytes": 32718848,
+    "components": {
+      "source-python": {
+        "cpu_seconds": 0.243664121,
+        "peak_rss_bytes": 31539200,
+        "cpu_percent_one_core": 2.0209082993850562
+      },
+      "tee": {
+        "cpu_seconds": 0.27398354300000005,
+        "peak_rss_bytes": 1179648,
+        "cpu_percent_one_core": 2.2723723692731213
+      }
+    },
+    "harness_cpu_seconds": 0.26453483200000005,
+    "host_cpu_percent_mean": 16.587,
+    "sample_interval_s": 0.1,
+    "sample_count": 100,
+    "sampler_cpu_seconds": 1.5917516159999998
+  },
+  "tee_path": "/usr/bin/tee",
+  "tee_sha256": "66209fd96c22f02e56232db65cba8feccec0fa607a2f179a5e927ddc215651c6"
+}
