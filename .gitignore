@@ -1,9 +1,14 @@
 /target/
-/dist/
 **/target/
+/local-archive/
+/test/
+/dist/
+/.log-print/
+/example.log
+/artifacts/
+**/__pycache__/
+*.pyc
 .DS_Store
 *.orig
-
-# 文档类文件不进仓库（保留在本地磁盘，仅不跟踪）
-*.md
-*.html
+*.env
+!*.env.example

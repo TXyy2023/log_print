@@ -1,12 +1,15 @@
 [package]
-name = "log-plugin-sdk"
+name = "io-plugin-util"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+rust-version.workspace = true
+
 [dependencies]
-log-proto.workspace = true
 anyhow.workspace = true
+tokio.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-tokio.workspace = true
 uuid.workspace = true
+log-proto.workspace = true
+log-plugin-sdk.workspace = true

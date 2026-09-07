@@ -1,0 +1,41 @@
+name: Manual macOS self-hosted validation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: log-print-self-hosted
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    if: ${{ vars.LOG_PRINT_SELF_HOSTED_ENABLED == 'true' && github.ref == 'refs/heads/main' }}
+    runs-on: [self-hosted, macOS, ARM64, log-print-ci]
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Run installed local toolchain without login shell
+        shell: bash
+        run: bash ci/self-hosted/run-macos.sh
+        env:
+          LOG_PRINT_SELF_HOSTED_ENABLED: 'true'
+          CARGO_TERM_COLOR: never
+          PYTHONUNBUFFERED: '1'
+          PYTHONUTF8: '1'
+          PYTHONIOENCODING: utf-8
+      - name: Upload validation reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: validation-self-hosted-macos
+          path: |
+            artifacts/validation/
+            !artifacts/validation/**/state.json
+            !artifacts/validation/**/.log-print-runtime-*/**
+          if-no-files-found: warn
+          retention-days: 14

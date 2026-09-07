@@ -1,0 +1,25 @@
+{
+  "core": {
+    "buffer_bytes": 4194304,
+    "buffer_records": 4096
+  },
+  "plugins": [
+    {
+      "id": "file",
+      "bin": "input-file",
+      "streams": [{"id": "logs"}],
+      "config": {
+        "path": "example.log",
+        "stream": "logs",
+        "from_start": false,
+        "poll_ms": 50
+      }
+    },
+    {
+      "id": "raw",
+      "bin": "output-raw",
+      "reads": ["logs"],
+      "config": {"streams": ["logs"], "from": 1}
+    }
+  ]
+}

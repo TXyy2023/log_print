@@ -1,0 +1,97 @@
+{
+  "plugins": [
+    {
+      "id": "source",
+      "bin": "input-program",
+      "streams": [
+        {
+          "id": "sensor"
+        },
+        {
+          "id": "source-errors"
+        }
+      ],
+      "config": {
+        "command": "python3",
+        "args": [
+          "-u",
+          "examples/dashboard-source.py"
+        ],
+        "stdout_stream": "sensor",
+        "stderr_stream": "source-errors"
+      }
+    },
+    {
+      "id": "web",
+      "bin": "output-webui",
+      "reads": [
+        "sensor"
+      ],
+      "config": {
+        "streams": [
+          "sensor"
+        ],
+        "sessions": [
+          {
+            "id": "overview",
+            "title": "Live telemetry",
+            "series": [
+              {
+                "name": "Temperature",
+                "stream": "sensor",
+                "pattern": "temperature=(?P<value>[-+0-9.eE]+)"
+              },
+              {
+                "name": "Voltage",
+                "stream": "sensor",
+                "pattern": "voltage=(?P<value>[-+0-9.eE]+)"
+              }
+            ]
+          },
+          {
+            "id": "temperature",
+            "title": "Temperature",
+            "series": [
+              {
+                "name": "Temperature",
+                "stream": "sensor",
+                "pattern": "temperature=(?P<value>[-+0-9.eE]+)"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "tui",
+      "bin": "output-tui",
+      "autostart": false,
+      "reads": [
+        "sensor"
+      ],
+      "config": {
+        "streams": [
+          "sensor"
+        ],
+        "sessions": [
+          {
+            "id": "overview",
+            "title": "Live telemetry",
+            "series": [
+              {
+                "name": "Temperature",
+                "stream": "sensor",
+                "pattern": "temperature=(?P<value>[-+0-9.eE]+)"
+              },
+              {
+                "name": "Voltage",
+                "stream": "sensor",
+                "pattern": "voltage=(?P<value>[-+0-9.eE]+)"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
