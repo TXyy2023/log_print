@@ -1,0 +1,67 @@
+{
+  "scenario": "dashboard README in a clean temporary working directory",
+  "commands": [
+    {
+      "args": [
+        "start",
+        "--config",
+        "examples/dashboard.json"
+      ],
+      "returncode": 0
+    },
+    {
+      "args": [
+        "status"
+      ],
+      "returncode": 0
+    },
+    {
+      "args": [
+        "session",
+        "list",
+        "web"
+      ],
+      "returncode": 0
+    },
+    {
+      "args": [
+        "session",
+        "set",
+        "web",
+        "overview",
+        "--revision",
+        "1",
+        "--json",
+        "{\"window_secs\":20}"
+      ],
+      "returncode": 0
+    },
+    {
+      "args": [
+        "session",
+        "export",
+        "web",
+        "overview",
+        "--revision",
+        "2",
+        "--path",
+        "<TEMP>/.log-print/overview.png"
+      ],
+      "returncode": 0
+    },
+    {
+      "args": [
+        "stop"
+      ],
+      "returncode": 0
+    }
+  ],
+  "success": true,
+  "series": 2,
+  "displayed_points": 10,
+  "revision": 2,
+  "png_bytes": 31433,
+  "python": "Python 3.14.1",
+  "state_removed": true,
+  "owned_pids_exited": true
+}

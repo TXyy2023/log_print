@@ -15,6 +15,9 @@
 | Ratatui+Crossterm、Axum+ECharts | 分别适配终端和浏览器；两个独立插件、同等首版能力，采用成熟曲线组件，无网络CDN依赖 |
 | Plotters+内嵌授权字体导出 | PNG/SVG不依赖外部浏览器或系统字体；中文资产增加安装和SVG体积，实际大小与资源报告保留 |
 | session revision 和有界图表窗口 | 防止并发CLI覆盖，导出冻结对应配置和可用范围；显示窗口/抽样不改变原始Core数据 |
+| Windows后台CLI清除调用者stdio继承位 | Rust普通spawn会继承额外可继承句柄，重定向日志不足以保证调用者PIPE得到EOF；仅清本CLI有效标准句柄的INHERIT标志，不关闭或替换句柄，指定日志/NUL由Rust正常复制。用真实PIPE start/status/read/stop而非仅文件输出验收 |
 | 无 watchdog、自动重启和额外云服务 | 保持首版范围；正常退出、错误反馈、按需启停和验收测量不等于运行时监控 |
 
 选型核对来源：[Tokio framing](https://tokio.rs/tokio/tutorial/framing)、[Tokio channels](https://tokio.rs/tokio/tutorial/channels)、[SQLite pragma](https://www.sqlite.org/pragma.html)、[serialport](https://docs.rs/serialport/latest/serialport/)、[Ratatui](https://docs.rs/ratatui/0.30.2/ratatui/)、[Axum SSE](https://docs.rs/axum/0.8.9/axum/response/sse/)、[ECharts 6.1.0](https://github.com/apache/echarts/releases/tag/6.1.0)、[Plotters](https://docs.rs/plotters/0.3.7/plotters/)。实际 Rust 版本锁定在 Cargo.lock；源码及许可证见 THIRD_PARTY.md。
+
+Windows机制与API依据：[Rust 1.98 process实现](https://github.com/rust-lang/rust/blob/1.98.0/library/std/src/sys/process/windows.rs)、[SetHandleInformation](https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-sethandleinformation)。实现使用稳定windows-sys绑定，未启用Rust不稳定进程属性接口。

@@ -1,0 +1,109 @@
+{
+  "prior_quickstart_sha256": "3aa20aa7b80a9dd3c45f21c93957d5777090779f2c059032213219ab4825d2ea",
+  "platform": "macOS-26.5-arm64-arm-64bit-Mach-O",
+  "executed_at_utc": "2026-09-07T17:57:21Z",
+  "binary_version": "1.0.0",
+  "profile": "release",
+  "git_head": "f5a3a2356290e3c85638beac89e780b1bedc71b2",
+  "working_tree_dirty": true,
+  "code_dirty": false,
+  "code_dirty_scope": [
+    "Cargo.toml",
+    "Cargo.lock",
+    "crates",
+    "plugins"
+  ],
+  "harness_python": "3.14.1",
+  "binary_sha256": {
+    "log-print": "c1add4601a428c014507dd7986b310581313f839d9dc3ceb8322ddbe38f0f24e",
+    "log-print-core": "6c79af3dbee01f35af780b6e7e18948329ff4c0cc233594d2a45280b178bd768",
+    "input-file": "36aab6f39789f386236bbc2388fbf8841acb23d91328320c33e12eb4d7056586",
+    "output-raw": "3baca29ed686bceab4b4696ef43f105cb04af0e76a082dac79a77ddb6dd4e638"
+  },
+  "document_sha256": {
+    "README.md": "11f51c98b0fd04a8187041c00b629d47b7a0d2f2be68d281c971cbade1ba357f",
+    "skills/log-print/SKILL.md": "111817ee215f536c97a4a5e1640fd892b55db2c78d877d0120278c1e6cf486b6",
+    "examples/basic.json": "a173255ba329b3d5f25debfff8bab0ad0f40b04c401744e196358ab9567136ca"
+  },
+  "passed": 2,
+  "failed": 0,
+  "cases": [
+    {
+      "case": "README",
+      "initial_directory": "only copied release binaries and examples/basic.json",
+      "expected_hex": "74656d70657261747572653d32332e350a",
+      "observed_hex": "74656d70657261747572653d32332e350a",
+      "bytes_equal": true,
+      "owned_processes_before_stop": [
+        {
+          "pid": 36347,
+          "name": "log-print",
+          "created_at": 1788803842.373982
+        },
+        {
+          "pid": 36348,
+          "name": "log-print-core",
+          "created_at": 1788803842.39173
+        },
+        {
+          "pid": 36354,
+          "name": "input-file",
+          "created_at": 1788803842.912583
+        },
+        {
+          "pid": 36355,
+          "name": "output-raw",
+          "created_at": 1788803842.916325
+        }
+      ],
+      "plugins_connected": {
+        "file": true,
+        "raw": true
+      },
+      "head": 0,
+      "status": "passed",
+      "live_owned_pids_after_stop": [],
+      "state_removed": true,
+      "runtime_directories_removed": true
+    },
+    {
+      "case": "Skill",
+      "initial_directory": "only copied release binaries and examples/basic.json",
+      "expected_hex": "74656d70657261747572653d32332e350a",
+      "observed_hex": "74656d70657261747572653d32332e350a",
+      "bytes_equal": true,
+      "owned_processes_before_stop": [
+        {
+          "pid": 36362,
+          "name": "log-print",
+          "created_at": 1788803844.185627
+        },
+        {
+          "pid": 36363,
+          "name": "log-print-core",
+          "created_at": 1788803844.199691
+        },
+        {
+          "pid": 36364,
+          "name": "input-file",
+          "created_at": 1788803844.463499
+        },
+        {
+          "pid": 36365,
+          "name": "output-raw",
+          "created_at": 1788803844.464403
+        }
+      ],
+      "plugins_connected": {
+        "file": true,
+        "raw": true
+      },
+      "head": 1,
+      "status": "passed",
+      "live_owned_pids_after_stop": [],
+      "state_removed": true,
+      "runtime_directories_removed": true
+    }
+  ],
+  "source_report_sha256": "8615aefabd546d31a3670804d006a141fe80579711cd2c0459927156752d8c51"
+}

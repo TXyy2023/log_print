@@ -58,7 +58,7 @@ Python 和 Rust 是必需项，缺失即失败；Node.js、C、C++、Go、shell 
 | --- | --- |
 | macOS：Python `Path.replace` | 真实跟随进程中的完整替换字节和段变更验收 |
 | Windows：Python 3.12 `Path.replace` / 旧 `MoveFileExW` | 已实测拒绝替换打开的目标；保留为 API 限制，不计通过 |
-| Windows：临时 Rust `std::fs::rename` 程序 | 更新后的 CI 采用此入口；必须真正替换打开的目标，核对完整字节及 `reason=replaced` / segment；通过状态以最新 CI 产物为准 |
+| Windows：临时 Rust `std::fs::rename` 程序 | a0be668的[三平台CI](https://github.com/TXyy2023/log_print/actions/runs/34150338258)实际通过；真正替换打开的目标，核对完整字节及 `reason=replaced` / segment |
 
 Windows 夹具所用现代 Rust 会在需要时调用 `FileRenameInfoEx` 的 `REPLACE_IF_EXISTS | POSIX_SEMANTICS`；旧文件句柄保持有效，路径指向新文件。这是实际替换，不是截断、停止读取或跳过。测试临时生成源码并使用现有 `rustc` 编译，结束后清理；该 I/O 测试在 Windows 上需要 Rust 编译器。[Rust 实现](https://github.com/rust-lang/rust/blob/1.98.0/library/std/src/sys/fs/windows.rs)、[微软语义说明](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-fscc/4217551b-d2c0-42cb-9dc1-69a716cf6d0c)。
 

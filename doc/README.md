@@ -1,6 +1,6 @@
 # 正式文档入口
 
-- [README](../README.md)：用途、构建、启动到停止的最小流程
+- [README](../README.md)：用途、构建、启动到停止的最小流程；[1.0.0版本说明](release-notes.md)
 - [架构](architecture.md)、[IPC](ipc-protocol.md)、[配置/保存](configuration.md)、[CLI](cli.md)、[Rust SDK](sdk.md)
 - [实施决定](decisions.md)、[完整执行计划](todolist-structured.md)、[实施进度及本地归档](implementation-progress.md)
 - [真实验收](validation.md)、[输入覆盖](input-coverage.md)、[性能与对照](performance.md)、[双UI持续负载](../plugins/outputs/output-webui/SUSTAINED.md)、[CI](../ci/README.md)

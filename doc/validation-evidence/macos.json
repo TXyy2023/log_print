@@ -1,0 +1,106 @@
+{
+  "source_report_sha256": "0e303c8ed5e3a280e02be0cec30edb87e91f67bff5a4492902919a6ec282b42c",
+  "complete_selected_suite": true,
+  "environment": {
+    "timestamp": "2026-09-07T17:31:55.414212+00:00",
+    "platform": "macOS-26.5-arm64-arm-64bit-Mach-O",
+    "system": "Darwin",
+    "architecture": "arm64",
+    "python": "3.14.1 (main, Dec  4 2025, 01:29:51) [Clang 17.0.0 (clang-1700.0.13.5)]",
+    "rustc": {
+      "command": [
+        "rustc",
+        "-Vv"
+      ],
+      "returncode": 0,
+      "stdout": "rustc 1.92.0 (ded5c06cf 2025-12-08)\nbinary: rustc\ncommit-hash: ded5c06cf21d2b93bffd5d884aa6e96934ee4234\ncommit-date: 2025-12-08\nhost: aarch64-apple-darwin\nrelease: 1.92.0\nLLVM version: 21.1.3",
+      "stderr": ""
+    },
+    "cargo": {
+      "command": [
+        "cargo",
+        "-V"
+      ],
+      "returncode": 0,
+      "stdout": "cargo 1.92.0 (344c4567c 2025-10-21)",
+      "stderr": ""
+    },
+    "git_head": {
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "returncode": 0,
+      "stdout": "e0b92037c649250fd77a2ce16eda6acba165ee5d",
+      "stderr": ""
+    }
+  },
+  "stages": [
+    {
+      "name": "fmt",
+      "returncode": 0,
+      "status": "pass",
+      "seconds": 0.237
+    },
+    {
+      "name": "clippy",
+      "returncode": 0,
+      "status": "pass",
+      "seconds": 0.344
+    },
+    {
+      "name": "rust-tests",
+      "returncode": 0,
+      "status": "pass",
+      "seconds": 1.318
+    },
+    {
+      "name": "build",
+      "returncode": 0,
+      "status": "pass",
+      "seconds": 0.24
+    },
+    {
+      "name": "protocol",
+      "returncode": 0,
+      "status": "pass",
+      "seconds": 15.922
+    },
+    {
+      "name": "supervisor",
+      "returncode": 0,
+      "status": "pass",
+      "seconds": 6.219
+    },
+    {
+      "name": "reliability-review",
+      "returncode": 0,
+      "status": "pass",
+      "seconds": 2.879
+    },
+    {
+      "name": "io",
+      "returncode": 0,
+      "status": "pass",
+      "seconds": 4.131
+    },
+    {
+      "name": "languages",
+      "returncode": 0,
+      "status": "pass",
+      "seconds": 7.074
+    },
+    {
+      "name": "ui",
+      "returncode": 0,
+      "status": "pass",
+      "seconds": 5.074
+    }
+  ],
+  "boundaries": [
+    "This host only; does not establish other-platform execution.",
+    "Headless/UI test success does not establish an actual desktop visual review.",
+    "No real-device, power-loss, or benchmark results are inferred from this suite."
+  ]
+}

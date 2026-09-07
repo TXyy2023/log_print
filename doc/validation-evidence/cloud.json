@@ -1,0 +1,2278 @@
+{
+  "schema": 1,
+  "run": 34150338258,
+  "url": "https://github.com/TXyy2023/log_print/actions/runs/34150338258",
+  "head": "a0be66806d16f70032b9f868f615bb2f0001e0c7",
+  "status": "completed",
+  "conclusion": "success",
+  "created_at": "2026-09-07T18:07:04Z",
+  "completed_at": "2026-09-07T18:12:05Z",
+  "summarized_at": "2026-09-07T18:14:23.385123+00:00",
+  "artifact_path_base": "artifacts/ci",
+  "platforms": [
+    {
+      "platform": "ubuntu",
+      "job": {
+        "id": 101831108404,
+        "url": "https://github.com/TXyy2023/log_print/actions/runs/34150338258/job/101831108404",
+        "conclusion": "success",
+        "started_at": "2026-09-07T18:07:06Z",
+        "completed_at": "2026-09-07T18:08:49Z"
+      },
+      "artifact": {
+        "id": 10029155627,
+        "name": "validation-ubuntu-latest",
+        "size_in_bytes": 15812311,
+        "archive_digest": "sha256:b0f31e1aa7a1afb3fa37175bd0b2ccf1eec0d4f25a50b870e0beac9288b1b9e7",
+        "api_url": "https://api.github.com/repos/TXyy2023/log_print/actions/artifacts/10029155627",
+        "root": "34150338258-ubuntu/20260907T180718Z-linux-2464"
+      },
+      "environment": {
+        "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+        "system": "Linux",
+        "architecture": "x86_64",
+        "python": "3.12.14 (main, Aug 13 2026, 02:47:42) [GCC 13.3.0]",
+        "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8",
+        "cargo": "cargo 1.98.1 (797e8a9bc 2026-08-05)",
+        "ci": {
+          "CI": "true",
+          "GITHUB_ACTIONS": "true",
+          "RUNNER_OS": "Linux",
+          "RUNNER_ARCH": "X64"
+        }
+      },
+      "complete_selected_suite": true,
+      "iteration_only": false,
+      "stage_counts": {
+        "pass": 10
+      },
+      "total_stage_seconds": 88.392,
+      "stages": [
+        {
+          "name": "fmt",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 0.164,
+          "timeout_seconds": 1800,
+          "log": "fmt.log"
+        },
+        {
+          "name": "clippy",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 30.128,
+          "timeout_seconds": 1800,
+          "log": "clippy.log"
+        },
+        {
+          "name": "rust-tests",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 31.782,
+          "timeout_seconds": 1800,
+          "log": "rust-tests.log"
+        },
+        {
+          "name": "build",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 5.463,
+          "timeout_seconds": 1800,
+          "log": "build.log"
+        },
+        {
+          "name": "protocol",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 3.117,
+          "timeout_seconds": 1800,
+          "log": "protocol.log"
+        },
+        {
+          "name": "supervisor",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 5.368,
+          "timeout_seconds": 120,
+          "log": "supervisor.log"
+        },
+        {
+          "name": "reliability-review",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 1.165,
+          "timeout_seconds": 1800,
+          "log": "reliability-review.log"
+        },
+        {
+          "name": "io",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 0.715,
+          "timeout_seconds": 1800,
+          "log": "io.log"
+        },
+        {
+          "name": "languages",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 7.074,
+          "timeout_seconds": 1800,
+          "log": "languages.log"
+        },
+        {
+          "name": "ui",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 3.416,
+          "timeout_seconds": 1800,
+          "log": "ui.log"
+        }
+      ],
+      "rust_tests": {
+        "passed": 20,
+        "failed": 0,
+        "ignored": 0,
+        "source": "rust-tests.log"
+      },
+      "protocol": {
+        "counts": {
+          "pass": 11
+        },
+        "cases": [
+          {
+            "case": "test_bytes_permissions_epochs",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.0518
+          },
+          {
+            "case": "test_multistream_and_derived",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.0253
+          },
+          {
+            "case": "test_ring_and_live_only",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.0274
+          },
+          {
+            "case": "test_history_live_race",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.0986
+          },
+          {
+            "case": "test_slow_output_isolation",
+            "status": "pass",
+            "detail": null,
+            "seconds": 1.6643
+          },
+          {
+            "case": "test_saved_restart_rotation_idempotency",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.8162
+          },
+          {
+            "case": "test_capacity_failure_isolation",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.1867
+          },
+          {
+            "case": "test_hot_journal_process_recovery",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.0737
+          },
+          {
+            "case": "test_unwritable_manual_resume",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.0317
+          },
+          {
+            "case": "test_oversized_wire",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.0297
+          },
+          {
+            "case": "test_control_separate_from_data",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.0237
+          }
+        ],
+        "source": "protocol-results.json"
+      },
+      "reliability": {
+        "counts": {
+          "pass": 6
+        },
+        "cases": [
+          {
+            "case": "test_missing_tail_segment_blocks_saved_stream",
+            "status": "pass",
+            "seconds": 0.293
+          },
+          {
+            "case": "test_missing_all_segments_is_not_new_history",
+            "status": "pass",
+            "seconds": 0.115
+          },
+          {
+            "case": "test_interior_row_and_checksum_damage_are_reported",
+            "status": "pass",
+            "seconds": 0.186
+          },
+          {
+            "case": "test_processing_feedback_cannot_hide_behind_empty_parents",
+            "status": "pass",
+            "seconds": 0.021
+          },
+          {
+            "case": "test_rst_during_hello_releases_plugin_identity",
+            "status": "pass",
+            "seconds": 0.438
+          },
+          {
+            "case": "test_idempotency_includes_source_timestamp",
+            "status": "pass",
+            "seconds": 0.023
+          }
+        ],
+        "source": "reliability-review-results.json"
+      },
+      "supervisor": {
+        "source": "supervisor.log",
+        "pipe_captures": [
+          {
+            "cli_number": 1,
+            "command": [
+              "start"
+            ],
+            "exit": 0,
+            "seconds": 0.115
+          },
+          {
+            "cli_number": 2,
+            "command": [
+              "status"
+            ],
+            "exit": 0,
+            "seconds": 0.008
+          },
+          {
+            "cli_number": 3,
+            "command": [
+              "read",
+              "logs",
+              "--raw"
+            ],
+            "exit": 0,
+            "seconds": 0.004
+          },
+          {
+            "cli_number": 16,
+            "command": [
+              "stop"
+            ],
+            "exit": 0,
+            "seconds": 0.064
+          }
+        ],
+        "both_stdout_and_stderr_eof_verified": true,
+        "background_healthy_after_start_and_status_eof": true,
+        "pass_lines": [
+          "PASS bounded read wait observes delayed bytes and returns an honest empty timeout",
+          "PASS PIPE capture start/status/read/stop reaches both EOFs while preserving background lifecycle",
+          "PASS real bytes, sibling PPIDs, permissions, auth, runtime config, plugin restart, graceful stop",
+          "PASS partial startup cleanup",
+          "PASS startup interruption cleans up owned processes",
+          "PASS Core death cleans up owned plugins"
+        ],
+        "skip_lines": []
+      },
+      "io": {
+        "counts": {
+          "passed": 7
+        },
+        "cases": [
+          {
+            "case": "program_raw",
+            "status": "passed"
+          },
+          {
+            "case": "file_follow",
+            "status": "passed"
+          },
+          {
+            "case": "file_tail_registration",
+            "status": "passed"
+          },
+          {
+            "case": "replay_transform",
+            "status": "passed"
+          },
+          {
+            "case": "multi_parent_transform",
+            "status": "passed"
+          },
+          {
+            "case": "source_tree_cleanup",
+            "status": "passed"
+          },
+          {
+            "case": "serial_pty_not_physical_hardware",
+            "status": "passed"
+          }
+        ],
+        "source": "io.log",
+        "real_hardware": "not_tested",
+        "file_replacement_fixture": "Rust std::fs::rename on Windows; Path.replace on POSIX",
+        "file_replacement_assertions": [
+          "Replacement bytes arrive in the output without stopping input-file.",
+          "Plugin status reports reason=replaced and segment=2."
+        ],
+        "file_replacement_assertion_source": "examples/io/verify.py at tested commit"
+      },
+      "languages": {
+        "passed": 7,
+        "skipped": 0,
+        "failed": 0,
+        "cases": [
+          {
+            "language": "python",
+            "status": "passed",
+            "version": "Python 3.12.14",
+            "required": true,
+            "observed_before_source_exit": true,
+            "nul_and_non_utf8_preserved": true
+          },
+          {
+            "language": "rust",
+            "status": "passed",
+            "version": "rustc 1.98.1 (48a229cea 2026-09-01)",
+            "required": true,
+            "observed_before_source_exit": true,
+            "nul_and_non_utf8_preserved": true
+          },
+          {
+            "language": "node",
+            "status": "passed",
+            "version": "v22.23.2",
+            "required": false,
+            "observed_before_source_exit": true,
+            "nul_and_non_utf8_preserved": true
+          },
+          {
+            "language": "c",
+            "status": "passed",
+            "version": "cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+            "required": false,
+            "observed_before_source_exit": true,
+            "nul_and_non_utf8_preserved": true
+          },
+          {
+            "language": "cpp",
+            "status": "passed",
+            "version": "c++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+            "required": false,
+            "observed_before_source_exit": true,
+            "nul_and_non_utf8_preserved": true
+          },
+          {
+            "language": "go",
+            "status": "passed",
+            "version": "go version go1.24.13 linux/amd64",
+            "required": false,
+            "observed_before_source_exit": true,
+            "nul_and_non_utf8_preserved": true
+          },
+          {
+            "language": "shell",
+            "status": "passed",
+            "version": "POSIX shell; version unavailable",
+            "required": false,
+            "observed_before_source_exit": true,
+            "nul_and_non_utf8_preserved": true
+          }
+        ],
+        "source": "input-languages.json"
+      },
+      "ui": {
+        "successful": true,
+        "stopped": true,
+        "terminal_mode": "pty",
+        "checks": [
+          "same real stream reaches both plugins; number split across source writes becomes 12.5",
+          "HTTP SSE delivers increasing live snapshots",
+          "CLI revision patch changes only selected session; stale writes rejected",
+          "both plugins export PNG/SVG with frozen revision, source metadata and embedded font",
+          "PTY real ANSI chart rendered, resized and changed by session CLI",
+          "HTML and all requested UI assets served from local process"
+        ],
+        "check_count": 6,
+        "cli_command_count": 29,
+        "cli_capture": "Original subprocess.run(capture_output=True) path",
+        "browser_review": "not performed by this script",
+        "visible_terminal_review": false,
+        "exports": [
+          "ui/tui.png",
+          "ui/tui.svg",
+          "ui/web.png",
+          "ui/web.svg"
+        ],
+        "source": "ui/report.json"
+      },
+      "platform_conditional_not_run": [],
+      "report_log_export_sha256": [
+        {
+          "path": "build.log",
+          "sha256": "f47ce5880e379f2b038d29a8143bacdd1a4297d5b8ec7159c48e704063aebbec",
+          "bytes": 1062
+        },
+        {
+          "path": "clippy.log",
+          "sha256": "ffae9c63348b045fa758be0b47348391da2d590eef2c56c36cce3613ef2ae049",
+          "bytes": 15956
+        },
+        {
+          "path": "environment.json",
+          "sha256": "b20bc596a90f5aaa56d41845660323f9cda04d1885163c7537551bf94499dab2",
+          "bytes": 1283
+        },
+        {
+          "path": "fmt.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "input-languages.json",
+          "sha256": "9a62ae2d737404a48e165269824c1c5f02ac95ccb321b71a573f9ebc92b5cacf",
+          "bytes": 4253
+        },
+        {
+          "path": "io.log",
+          "sha256": "e30990e92b91447e59f7bf2dcba281817dde2f391091d27092dc63ff2525ef03",
+          "bytes": 624
+        },
+        {
+          "path": "languages.log",
+          "sha256": "43dfe2a5c0bad1e667cc487fd60e20d19b369b4b0e26f1b2b0c0d78bc9ed7349",
+          "bytes": 4341
+        },
+        {
+          "path": "protocol-results.json",
+          "sha256": "001cae5e5a000b22ca6a6bbf1fdf4170bea0b3e6754fa003b8f3ba64e6ca8571",
+          "bytes": 1531
+        },
+        {
+          "path": "protocol.log",
+          "sha256": "ba88036a0ad17038f7555410a03f1351cddfefdd7959ccc4da8e28620e127a4e",
+          "bytes": 1036
+        },
+        {
+          "path": "reliability-review-results.json",
+          "sha256": "2f091a4dd927406688f3d05d8ebc596f596361176ee30cb7aae827225d458405",
+          "bytes": 774
+        },
+        {
+          "path": "reliability-review.log",
+          "sha256": "87a7e2ba767a03c57f9e8fef04a93fa6b8fc3acf6ba894be346b8aece9dc3abf",
+          "bytes": 578
+        },
+        {
+          "path": "results.json",
+          "sha256": "4ce842f9a8878ec601a084a6046ebb517f32d9be66c892b341e6633dfd0d9500",
+          "bytes": 7145
+        },
+        {
+          "path": "rust-tests.log",
+          "sha256": "620d29837128ae14531a6b94dff2df4fe791b67aa02d2dd9229d42b34e58b720",
+          "bytes": 11733
+        },
+        {
+          "path": "supervisor-cli/cli-001.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-001.stdout.log",
+          "sha256": "476ae91a2afe7b06e1dd442f0225be78d47ff8a039ffb1c38e2d15517a21f8ef",
+          "bytes": 261
+        },
+        {
+          "path": "supervisor-cli/cli-002.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-002.stdout.log",
+          "sha256": "2d5045cca8756ffeec85bda0a064e29dde17ce43a53249d4e8aeed17f32e431b",
+          "bytes": 3597
+        },
+        {
+          "path": "supervisor-cli/cli-003.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-003.stdout.log",
+          "sha256": "6ce592b34496ab22d6d9e79ae5120d819071f0449e1569d6bd0c493983863bc3",
+          "bytes": 19
+        },
+        {
+          "path": "supervisor-cli/cli-004.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-004.stdout.log",
+          "sha256": "fced2d251bf6772d99b966c85c46ea2acc25051491e2c24f87e422fa9ef9606f",
+          "bytes": 527
+        },
+        {
+          "path": "supervisor-cli/cli-005.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-005.stdout.log",
+          "sha256": "fc3b69c8b84543be92b48bbe5b7d30e27efdd017fd8bb74cda07083a153dbb40",
+          "bytes": 624
+        },
+        {
+          "path": "supervisor-cli/cli-006.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-006.stdout.log",
+          "sha256": "7cc2f7a1f71cfb882049240dcbec264e72d663263a9f662285d4e3052afe0340",
+          "bytes": 527
+        },
+        {
+          "path": "supervisor-cli/cli-007.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-007.stdout.log",
+          "sha256": "b6a25b3bc414036b4c0a13300ab8c90fb53d485f7372c2b7f35b7005ebcaee21",
+          "bytes": 160
+        },
+        {
+          "path": "supervisor-cli/cli-008.stderr.log",
+          "sha256": "3b4be70278cea7ddbb41d8d8d5260fef532e247a2efd48ee5fb0583bbf7edb85",
+          "bytes": 119
+        },
+        {
+          "path": "supervisor-cli/cli-008.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-009.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-009.stdout.log",
+          "sha256": "6ad7173737e57082d031ce336afcb9f37ce31c83877f93a71497c99d8a051353",
+          "bytes": 197
+        },
+        {
+          "path": "supervisor-cli/cli-010.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-010.stdout.log",
+          "sha256": "e03f275ef051ba457510f32ed4e8982ae17c0bc26b81664f1d75164c0554783b",
+          "bytes": 1191
+        },
+        {
+          "path": "supervisor-cli/cli-011.stderr.log",
+          "sha256": "2280286423b46552616a6d47e81ab2188ac75fe62ec6a024917792cd11616387",
+          "bytes": 50
+        },
+        {
+          "path": "supervisor-cli/cli-011.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-012.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-012.stdout.log",
+          "sha256": "e03f275ef051ba457510f32ed4e8982ae17c0bc26b81664f1d75164c0554783b",
+          "bytes": 1191
+        },
+        {
+          "path": "supervisor-cli/cli-013.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-013.stdout.log",
+          "sha256": "dfbae0b57154c1b0aeb5f81d80061af657cff36836a918caf7a2b2fbed7b66ba",
+          "bytes": 131
+        },
+        {
+          "path": "supervisor-cli/cli-014.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-014.stdout.log",
+          "sha256": "88d1bdeb8029a8cb81d8a91f799da3da11e8fd5bbe3b291a2bbf4554554deb53",
+          "bytes": 55
+        },
+        {
+          "path": "supervisor-cli/cli-015.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-015.stdout.log",
+          "sha256": "461fbab972f34caf57dc0c6382f4ea7eb534483de4312f7a51e864fee0abfcaf",
+          "bytes": 239
+        },
+        {
+          "path": "supervisor-cli/cli-016.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-016.stdout.log",
+          "sha256": "f9f2eb7acedcba36d118e62270a0d89be75edcc00ec82bdd5fd0e735c562d575",
+          "bytes": 38
+        },
+        {
+          "path": "supervisor-cli/cli-017.stderr.log",
+          "sha256": "92ed628f797e50c4f74a53db4ddf8d97008a47ed193dc392dea6a41aa233d272",
+          "bytes": 404
+        },
+        {
+          "path": "supervisor-cli/cli-017.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-018.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-018.stdout.log",
+          "sha256": "e2996b38c7e8241ddbaa1d36c087730ce4720e41965f229a052453de250ed576",
+          "bytes": 261
+        },
+        {
+          "path": "supervisor-cli/cli-019.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-019.stdout.log",
+          "sha256": "4aec9000cd595e515aea635d4e7aad625bf35e1e226e7c8e5910441742bcd9ba",
+          "bytes": 3598
+        },
+        {
+          "path": "supervisor.log",
+          "sha256": "5d2d8329069721586d95dcbb3365151f96dfcd115fb0e7c40da348a1ef9a3814",
+          "bytes": 3036
+        },
+        {
+          "path": "ui/config.json",
+          "sha256": "70147238765fc9712db39f8acc3f0a756d743efb2eeb231ff20d4625ddbeea3a",
+          "bytes": 2482
+        },
+        {
+          "path": "ui/report.json",
+          "sha256": "3837a7435988dd38db675f6cd3269a0a524f5451a7408da1eb00c1b23b89eafe",
+          "bytes": 5505
+        },
+        {
+          "path": "ui/source.log",
+          "sha256": "df97d6c144da8d89a6bc624c8ecc1cd2e23461c3cea087bd3d549610e0a52961",
+          "bytes": 1473
+        },
+        {
+          "path": "ui/state.json.stderr.log",
+          "sha256": "9b7e6ed0f883d7de45be114105b7831c92005455cae5f0e252d4c837685ae2b7",
+          "bytes": 798
+        },
+        {
+          "path": "ui/state.json.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "ui/tui.png",
+          "sha256": "5d79d41dd831d05640c312b7cb3ca8b52c8a529e1615cdba08468e8294efff37",
+          "bytes": 33034
+        },
+        {
+          "path": "ui/tui.png.json",
+          "sha256": "a6ce7acb3f984a8c90d0aa59f6d2e983f9beb2b424ac90aed4e0f382c88c747a",
+          "bytes": 10911
+        },
+        {
+          "path": "ui/tui.svg",
+          "sha256": "dc25cf8e3efc4030f69076ef1b29a6a2ccbd6e5999dbad29215cc46afa6f0884",
+          "bytes": 11114335
+        },
+        {
+          "path": "ui/tui.svg.json",
+          "sha256": "aa4fef9cf3191fba95c586c036be0c7ee9034fed2c9caa84f377fcb5919d02f2",
+          "bytes": 10911
+        },
+        {
+          "path": "ui/web.png",
+          "sha256": "e4ba764c1bfa8f746c92aa4414ae302e78ef545e326912f61b750427e6721cc0",
+          "bytes": 39484
+        },
+        {
+          "path": "ui/web.png.json",
+          "sha256": "668ce99c752757387751a8fdd1cadfc63aa8d18ce82582ae2a8da0cb72e8d191",
+          "bytes": 10919
+        },
+        {
+          "path": "ui/web.svg",
+          "sha256": "d8762330f03caa577303656a7306bc3cdf9ba460cc8b104ba475563420c2c5cc",
+          "bytes": 11114996
+        },
+        {
+          "path": "ui/web.svg.json",
+          "sha256": "6befef793e83076adef61f981a0817e414d026dd17dc14b1a1c2e0acf848d038",
+          "bytes": 10919
+        },
+        {
+          "path": "ui.log",
+          "sha256": "e75e9c6534998613598b0c4ce833975a7cb97d53d8ad954dab2f564c61732753",
+          "bytes": 1024
+        }
+      ]
+    },
+    {
+      "platform": "macos",
+      "job": {
+        "id": 101831108349,
+        "url": "https://github.com/TXyy2023/log_print/actions/runs/34150338258/job/101831108349",
+        "conclusion": "success",
+        "started_at": "2026-09-07T18:07:13Z",
+        "completed_at": "2026-09-07T18:09:53Z"
+      },
+      "artifact": {
+        "id": 10029177747,
+        "name": "validation-macos-latest",
+        "size_in_bytes": 15828708,
+        "archive_digest": "sha256:8537bd353c537a98ab803703801d205dddadc29a41fbeffd9b1db9cf2366dbc4",
+        "api_url": "https://api.github.com/repos/TXyy2023/log_print/actions/artifacts/10029177747",
+        "root": "34150338258-macos/20260907T180730Z-darwin-5606"
+      },
+      "environment": {
+        "platform": "macOS-26.6.2-arm64-arm-64bit",
+        "system": "Darwin",
+        "architecture": "arm64",
+        "python": "3.12.10 (v3.12.10:0cc81280367, Apr  8 2025, 08:46:59) [Clang 13.0.0 (clang-1300.0.29.30)]",
+        "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: aarch64-apple-darwin\nrelease: 1.98.1\nLLVM version: 22.1.8",
+        "cargo": "cargo 1.98.1 (797e8a9bc 2026-08-05)",
+        "ci": {
+          "CI": "true",
+          "GITHUB_ACTIONS": "true",
+          "RUNNER_OS": "macOS",
+          "RUNNER_ARCH": "ARM64"
+        }
+      },
+      "complete_selected_suite": true,
+      "iteration_only": false,
+      "stage_counts": {
+        "pass": 10
+      },
+      "total_stage_seconds": 133.661,
+      "stages": [
+        {
+          "name": "fmt",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 0.4,
+          "timeout_seconds": 1800,
+          "log": "fmt.log"
+        },
+        {
+          "name": "clippy",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 43.935,
+          "timeout_seconds": 1800,
+          "log": "clippy.log"
+        },
+        {
+          "name": "rust-tests",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 43.437,
+          "timeout_seconds": 1800,
+          "log": "rust-tests.log"
+        },
+        {
+          "name": "build",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 10.239,
+          "timeout_seconds": 1800,
+          "log": "build.log"
+        },
+        {
+          "name": "protocol",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 5.262,
+          "timeout_seconds": 1800,
+          "log": "protocol.log"
+        },
+        {
+          "name": "supervisor",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 6.436,
+          "timeout_seconds": 120,
+          "log": "supervisor.log"
+        },
+        {
+          "name": "reliability-review",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 3.944,
+          "timeout_seconds": 1800,
+          "log": "reliability-review.log"
+        },
+        {
+          "name": "io",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 1.988,
+          "timeout_seconds": 1800,
+          "log": "io.log"
+        },
+        {
+          "name": "languages",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 8.872,
+          "timeout_seconds": 1800,
+          "log": "languages.log"
+        },
+        {
+          "name": "ui",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 9.148,
+          "timeout_seconds": 1800,
+          "log": "ui.log"
+        }
+      ],
+      "rust_tests": {
+        "passed": 20,
+        "failed": 0,
+        "ignored": 0,
+        "source": "rust-tests.log"
+      },
+      "protocol": {
+        "counts": {
+          "pass": 11
+        },
+        "cases": [
+          {
+            "case": "test_bytes_permissions_epochs",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.1653
+          },
+          {
+            "case": "test_multistream_and_derived",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.1912
+          },
+          {
+            "case": "test_ring_and_live_only",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.2062
+          },
+          {
+            "case": "test_history_live_race",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.1233
+          },
+          {
+            "case": "test_slow_output_isolation",
+            "status": "pass",
+            "detail": null,
+            "seconds": 1.7566
+          },
+          {
+            "case": "test_saved_restart_rotation_idempotency",
+            "status": "pass",
+            "detail": null,
+            "seconds": 1.4021
+          },
+          {
+            "case": "test_capacity_failure_isolation",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.3733
+          },
+          {
+            "case": "test_hot_journal_process_recovery",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.3548
+          },
+          {
+            "case": "test_unwritable_manual_resume",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.1255
+          },
+          {
+            "case": "test_oversized_wire",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.0591
+          },
+          {
+            "case": "test_control_separate_from_data",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.0455
+          }
+        ],
+        "source": "protocol-results.json"
+      },
+      "reliability": {
+        "counts": {
+          "pass": 6
+        },
+        "cases": [
+          {
+            "case": "test_missing_tail_segment_blocks_saved_stream",
+            "status": "pass",
+            "seconds": 0.58
+          },
+          {
+            "case": "test_missing_all_segments_is_not_new_history",
+            "status": "pass",
+            "seconds": 0.233
+          },
+          {
+            "case": "test_interior_row_and_checksum_damage_are_reported",
+            "status": "pass",
+            "seconds": 0.531
+          },
+          {
+            "case": "test_processing_feedback_cannot_hide_behind_empty_parents",
+            "status": "pass",
+            "seconds": 0.036
+          },
+          {
+            "case": "test_rst_during_hello_releases_plugin_identity",
+            "status": "pass",
+            "seconds": 2.155
+          },
+          {
+            "case": "test_idempotency_includes_source_timestamp",
+            "status": "pass",
+            "seconds": 0.189
+          }
+        ],
+        "source": "reliability-review-results.json"
+      },
+      "supervisor": {
+        "source": "supervisor.log",
+        "pipe_captures": [
+          {
+            "cli_number": 1,
+            "command": [
+              "start"
+            ],
+            "exit": 0,
+            "seconds": 0.182
+          },
+          {
+            "cli_number": 2,
+            "command": [
+              "status"
+            ],
+            "exit": 0,
+            "seconds": 0.016
+          },
+          {
+            "cli_number": 3,
+            "command": [
+              "read",
+              "logs",
+              "--raw"
+            ],
+            "exit": 0,
+            "seconds": 0.014
+          },
+          {
+            "cli_number": 16,
+            "command": [
+              "stop"
+            ],
+            "exit": 0,
+            "seconds": 0.072
+          }
+        ],
+        "both_stdout_and_stderr_eof_verified": true,
+        "background_healthy_after_start_and_status_eof": true,
+        "pass_lines": [
+          "PASS bounded read wait observes delayed bytes and returns an honest empty timeout",
+          "PASS PIPE capture start/status/read/stop reaches both EOFs while preserving background lifecycle",
+          "PASS real bytes, sibling PPIDs, permissions, auth, runtime config, plugin restart, graceful stop",
+          "PASS partial startup cleanup",
+          "PASS startup interruption cleans up owned processes",
+          "PASS Core death cleans up owned plugins"
+        ],
+        "skip_lines": []
+      },
+      "io": {
+        "counts": {
+          "passed": 6,
+          "skipped": 1
+        },
+        "cases": [
+          {
+            "case": "program_raw",
+            "status": "passed"
+          },
+          {
+            "case": "file_follow",
+            "status": "passed"
+          },
+          {
+            "case": "file_tail_registration",
+            "status": "passed"
+          },
+          {
+            "case": "replay_transform",
+            "status": "passed"
+          },
+          {
+            "case": "multi_parent_transform",
+            "status": "passed"
+          },
+          {
+            "case": "source_tree_cleanup",
+            "status": "passed"
+          },
+          {
+            "case": "serial_pty_not_physical_hardware",
+            "status": "skipped",
+            "reason": "macOS PTY rejects serial driver configuration with ENOTTY; physical serial hardware not tested"
+          }
+        ],
+        "source": "io.log",
+        "real_hardware": "not_tested",
+        "file_replacement_fixture": "Rust std::fs::rename on Windows; Path.replace on POSIX",
+        "file_replacement_assertions": [
+          "Replacement bytes arrive in the output without stopping input-file.",
+          "Plugin status reports reason=replaced and segment=2."
+        ],
+        "file_replacement_assertion_source": "examples/io/verify.py at tested commit"
+      },
+      "languages": {
+        "passed": 6,
+        "skipped": 1,
+        "failed": 0,
+        "cases": [
+          {
+            "language": "python",
+            "status": "passed",
+            "version": "Python 3.12.10",
+            "required": true,
+            "observed_before_source_exit": true,
+            "nul_and_non_utf8_preserved": true
+          },
+          {
+            "language": "rust",
+            "status": "passed",
+            "version": "rustc 1.98.1 (48a229cea 2026-09-01)",
+            "required": true,
+            "observed_before_source_exit": true,
+            "nul_and_non_utf8_preserved": true
+          },
+          {
+            "language": "node",
+            "status": "passed",
+            "version": "v24.20.0",
+            "required": false,
+            "observed_before_source_exit": true,
+            "nul_and_non_utf8_preserved": true
+          },
+          {
+            "language": "c",
+            "status": "passed",
+            "version": "Apple clang version 21.0.0 (clang-2100.1.1.101)",
+            "required": false,
+            "observed_before_source_exit": true,
+            "nul_and_non_utf8_preserved": true
+          },
+          {
+            "language": "cpp",
+            "status": "passed",
+            "version": "Apple clang version 21.0.0 (clang-2100.1.1.101)",
+            "required": false,
+            "observed_before_source_exit": true,
+            "nul_and_non_utf8_preserved": true
+          },
+          {
+            "language": "go",
+            "status": "skipped",
+            "reason": "tool not found on PATH",
+            "required": false
+          },
+          {
+            "language": "shell",
+            "status": "passed",
+            "version": "3.2.57(1)-release",
+            "required": false,
+            "observed_before_source_exit": true,
+            "nul_and_non_utf8_preserved": true
+          }
+        ],
+        "source": "input-languages.json"
+      },
+      "ui": {
+        "successful": true,
+        "stopped": true,
+        "terminal_mode": "pty",
+        "checks": [
+          "same real stream reaches both plugins; number split across source writes becomes 12.5",
+          "HTTP SSE delivers increasing live snapshots",
+          "CLI revision patch changes only selected session; stale writes rejected",
+          "both plugins export PNG/SVG with frozen revision, source metadata and embedded font",
+          "PTY real ANSI chart rendered, resized and changed by session CLI",
+          "HTML and all requested UI assets served from local process"
+        ],
+        "check_count": 6,
+        "cli_command_count": 30,
+        "cli_capture": "Original subprocess.run(capture_output=True) path",
+        "browser_review": "not performed by this script",
+        "visible_terminal_review": false,
+        "exports": [
+          "ui/tui.png",
+          "ui/tui.svg",
+          "ui/web.png",
+          "ui/web.svg"
+        ],
+        "source": "ui/report.json"
+      },
+      "platform_conditional_not_run": [],
+      "report_log_export_sha256": [
+        {
+          "path": "build.log",
+          "sha256": "7da9965d674cfaa7288a32afc4dc479e5aec8640abbd9be98cf90ff271dcb9e2",
+          "bytes": 1072
+        },
+        {
+          "path": "clippy.log",
+          "sha256": "4f81edef93c14731bff4e7aa3186a23fd50b0d4a1657f0073ac79f2c02f8f248",
+          "bytes": 15824
+        },
+        {
+          "path": "environment.json",
+          "sha256": "c15bd7ce197f8c7a0fbb908da70f72d72d036bcc5dc5349d075de822632a6087",
+          "bytes": 1316
+        },
+        {
+          "path": "fmt.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "input-languages.json",
+          "sha256": "ac2dc3433da9bb4d07bcdac8a64e53a1849f724f0551940c6b7325d181335bd8",
+          "bytes": 3871
+        },
+        {
+          "path": "io.log",
+          "sha256": "a3174fb00d1de048bc230b362b149f07a49ce47d3e00ae120e34a78bff8ae3a8",
+          "bytes": 740
+        },
+        {
+          "path": "languages.log",
+          "sha256": "8b3e84fc6dc297beddf01c90e7cceca3d2359273cdc6dbb470b77f379fb3ebcb",
+          "bytes": 3960
+        },
+        {
+          "path": "protocol-results.json",
+          "sha256": "1f8aa3d15e8efff0cdf5b808bf8f3881ac5db207571d537f5a6947fd06f5b11b",
+          "bytes": 1571
+        },
+        {
+          "path": "protocol.log",
+          "sha256": "3d7b1b0ace6a20e0157191ffad331c81910e04fac459d602360c88602b5ba080",
+          "bytes": 1036
+        },
+        {
+          "path": "reliability-review-results.json",
+          "sha256": "58b4cc348607edefa5d71731d7ff1a4b99d04d1a1c7cf2d8ad6ae05beb868d26",
+          "bytes": 773
+        },
+        {
+          "path": "reliability-review.log",
+          "sha256": "13f420d98eebe0d6725500a4b790884d3843db8f561118d9bc3641d5c50409f9",
+          "bytes": 577
+        },
+        {
+          "path": "results.json",
+          "sha256": "c40a0fe174973036b5a81755dc0a4ffae88f46159b2c04aa2cc5d8e830208362",
+          "bytes": 7275
+        },
+        {
+          "path": "rust-tests.log",
+          "sha256": "b25f951f1f8ba00b896121ac19552952cab1a96f5d64f4d687ce2070766899fb",
+          "bytes": 11674
+        },
+        {
+          "path": "supervisor-cli/cli-001.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-001.stdout.log",
+          "sha256": "e9bc6509e8e222c875ab6d8d642ea3cc2999339868bd8dea266c8b12c2cc6494",
+          "bytes": 393
+        },
+        {
+          "path": "supervisor-cli/cli-002.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-002.stdout.log",
+          "sha256": "0a39adfbbfb77341029a6f810e701dab279bf420270a0f7902db8a73b196b249",
+          "bytes": 3825
+        },
+        {
+          "path": "supervisor-cli/cli-003.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-003.stdout.log",
+          "sha256": "6ce592b34496ab22d6d9e79ae5120d819071f0449e1569d6bd0c493983863bc3",
+          "bytes": 19
+        },
+        {
+          "path": "supervisor-cli/cli-004.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-004.stdout.log",
+          "sha256": "338dc44b65ff9359d0129e527949e570120b67f34c9bbbcf37273189357ff500",
+          "bytes": 527
+        },
+        {
+          "path": "supervisor-cli/cli-005.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-005.stdout.log",
+          "sha256": "7af861c632c810f6a70cfaa8d97b5cfd21cd03575662f9d3e8a0268ad5ed644c",
+          "bytes": 624
+        },
+        {
+          "path": "supervisor-cli/cli-006.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-006.stdout.log",
+          "sha256": "3fa392e45894859d92b065b2a86eac6aa4ab71dd6c17d15fd175dd3b4db303c8",
+          "bytes": 527
+        },
+        {
+          "path": "supervisor-cli/cli-007.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-007.stdout.log",
+          "sha256": "f45c5ba745dc4c03753ead49e31cb9e641c97c86f249fbdd781f99dbd0347367",
+          "bytes": 160
+        },
+        {
+          "path": "supervisor-cli/cli-008.stderr.log",
+          "sha256": "3b4be70278cea7ddbb41d8d8d5260fef532e247a2efd48ee5fb0583bbf7edb85",
+          "bytes": 119
+        },
+        {
+          "path": "supervisor-cli/cli-008.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-009.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-009.stdout.log",
+          "sha256": "ad867edf58431ebb51a3fad7537c52df470e4fe7dc93317067ec07106652623c",
+          "bytes": 241
+        },
+        {
+          "path": "supervisor-cli/cli-010.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-010.stdout.log",
+          "sha256": "375c43776c57bdd182c0dc476b8c46f353d2eae68b7d4d5fef25a7c6f67286ab",
+          "bytes": 1331
+        },
+        {
+          "path": "supervisor-cli/cli-011.stderr.log",
+          "sha256": "2280286423b46552616a6d47e81ab2188ac75fe62ec6a024917792cd11616387",
+          "bytes": 50
+        },
+        {
+          "path": "supervisor-cli/cli-011.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-012.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-012.stdout.log",
+          "sha256": "375c43776c57bdd182c0dc476b8c46f353d2eae68b7d4d5fef25a7c6f67286ab",
+          "bytes": 1331
+        },
+        {
+          "path": "supervisor-cli/cli-013.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-013.stdout.log",
+          "sha256": "dfbae0b57154c1b0aeb5f81d80061af657cff36836a918caf7a2b2fbed7b66ba",
+          "bytes": 131
+        },
+        {
+          "path": "supervisor-cli/cli-014.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-014.stdout.log",
+          "sha256": "269a913be43d2a26b6058693063dd6e5601d2ecc08278cd40342da040a23fdb8",
+          "bytes": 55
+        },
+        {
+          "path": "supervisor-cli/cli-015.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-015.stdout.log",
+          "sha256": "7cf9ad9c688204c78c140e385e6190ef4a580883b5898d657df06ff3d21b2288",
+          "bytes": 239
+        },
+        {
+          "path": "supervisor-cli/cli-016.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-016.stdout.log",
+          "sha256": "7a3071534ad6796afe0e98ff85a8f6253f9115965a54bf8f9c60dbf41fa4f786",
+          "bytes": 38
+        },
+        {
+          "path": "supervisor-cli/cli-017.stderr.log",
+          "sha256": "7dfd28cc9b35619685e9d9a4eedc5e8a2c760dc924f45598abdda17f9fcbab8a",
+          "bytes": 404
+        },
+        {
+          "path": "supervisor-cli/cli-017.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-018.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-018.stdout.log",
+          "sha256": "e64890143564f0748047525baa2ff401b28fd1dce1729c5108f662eb115617d1",
+          "bytes": 395
+        },
+        {
+          "path": "supervisor-cli/cli-019.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-019.stdout.log",
+          "sha256": "cf8063fd3633f7f819fbff0f8476e1d1cacd8668f66a2d4646b48f48f8a26227",
+          "bytes": 3831
+        },
+        {
+          "path": "supervisor.log",
+          "sha256": "d69c8688d74dba876157af6def28b75f991929fbf24e58f0bb67646659699db5",
+          "bytes": 3300
+        },
+        {
+          "path": "ui/config.json",
+          "sha256": "557fd67cf255a9b9390fbaea65689443933526edb40e44245ec453627c80c17f",
+          "bytes": 2486
+        },
+        {
+          "path": "ui/report.json",
+          "sha256": "62b43929ea38b99dacddd89d6d73f23dbcb79e9242c02fe89e4335f40aef2490",
+          "bytes": 5591
+        },
+        {
+          "path": "ui/source.log",
+          "sha256": "df97d6c144da8d89a6bc624c8ecc1cd2e23461c3cea087bd3d549610e0a52961",
+          "bytes": 1473
+        },
+        {
+          "path": "ui/state.json.stderr.log",
+          "sha256": "84dd2dd45a53b257cba23ff8a11f1be0e57c7ece93f95bb7746bf14f090a36a4",
+          "bytes": 806
+        },
+        {
+          "path": "ui/state.json.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "ui/tui.png",
+          "sha256": "1c13b26d1345a513250deb19b68008b976b46f67b735667bc85259b8876fc329",
+          "bytes": 37089
+        },
+        {
+          "path": "ui/tui.png.json",
+          "sha256": "7358c05465630e0506b744742737b22740e1e0bb08053b7e710a9c7875348224",
+          "bytes": 10861
+        },
+        {
+          "path": "ui/tui.svg",
+          "sha256": "a52e27645ca2cd69679c1f7842fa171636ac84115ff093f9ed4573dcb5bbbe9d",
+          "bytes": 11114335
+        },
+        {
+          "path": "ui/tui.svg.json",
+          "sha256": "a4720c16949133330c9aa7b6830f7100ab7ad5ed26e82cad43e63016ca8c7fd6",
+          "bytes": 10861
+        },
+        {
+          "path": "ui/web.png",
+          "sha256": "f802d071083992a294ad21da8b7117ad42067c86932b3da422fb28d606cc5437",
+          "bytes": 48228
+        },
+        {
+          "path": "ui/web.png.json",
+          "sha256": "5b7f1c5e861fab36c55745f3d7795fd377acf0c4224e3173fabc13e0000c1d03",
+          "bytes": 10869
+        },
+        {
+          "path": "ui/web.svg",
+          "sha256": "8da8d69705a557101225d6caaaa03dde7a54c0a0cf0f302dfcddec474fbc16fb",
+          "bytes": 11114914
+        },
+        {
+          "path": "ui/web.svg.json",
+          "sha256": "5003cd57d47c8555ae2ad28aa6c9e50359a1c812b6c2c633970a25e446fbcfcc",
+          "bytes": 10869
+        },
+        {
+          "path": "ui.log",
+          "sha256": "975a856de80c41533ffa32e6ec775ef570bef93b711777d14cb1f696d54d278b",
+          "bytes": 1034
+        }
+      ]
+    },
+    {
+      "platform": "windows",
+      "job": {
+        "id": 101831108139,
+        "url": "https://github.com/TXyy2023/log_print/actions/runs/34150338258/job/101831108139",
+        "conclusion": "success",
+        "started_at": "2026-09-07T18:07:06Z",
+        "completed_at": "2026-09-07T18:12:05Z"
+      },
+      "artifact": {
+        "id": 10029225841,
+        "name": "validation-windows-latest",
+        "size_in_bytes": 15810637,
+        "archive_digest": "sha256:618bff84052436b84d906082406eb7acc17892b04995d6dd659392a998d9b2e4",
+        "api_url": "https://api.github.com/repos/TXyy2023/log_print/actions/artifacts/10029225841",
+        "root": "34150338258-windows/20260907T180741Z-windows-8424"
+      },
+      "environment": {
+        "platform": "Windows-2025Server-10.0.26100-SP0",
+        "system": "Windows",
+        "architecture": "AMD64",
+        "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+        "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-pc-windows-msvc\nrelease: 1.98.1\nLLVM version: 22.1.8",
+        "cargo": "cargo 1.98.1 (797e8a9bc 2026-08-05)",
+        "ci": {
+          "CI": "true",
+          "GITHUB_ACTIONS": "true",
+          "RUNNER_OS": "Windows",
+          "RUNNER_ARCH": "X64"
+        }
+      },
+      "complete_selected_suite": true,
+      "iteration_only": false,
+      "stage_counts": {
+        "pass": 10
+      },
+      "total_stage_seconds": 252.032,
+      "stages": [
+        {
+          "name": "fmt",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 0.797,
+          "timeout_seconds": 1800,
+          "log": "fmt.log"
+        },
+        {
+          "name": "clippy",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 96.922,
+          "timeout_seconds": 1800,
+          "log": "clippy.log"
+        },
+        {
+          "name": "rust-tests",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 88.25,
+          "timeout_seconds": 1800,
+          "log": "rust-tests.log"
+        },
+        {
+          "name": "build",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 19.61,
+          "timeout_seconds": 1800,
+          "log": "build.log"
+        },
+        {
+          "name": "protocol",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 5.843,
+          "timeout_seconds": 1800,
+          "log": "protocol.log"
+        },
+        {
+          "name": "supervisor",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 4.828,
+          "timeout_seconds": 120,
+          "log": "supervisor.log"
+        },
+        {
+          "name": "reliability-review",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 3.641,
+          "timeout_seconds": 1800,
+          "log": "reliability-review.log"
+        },
+        {
+          "name": "io",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 1.578,
+          "timeout_seconds": 1800,
+          "log": "io.log"
+        },
+        {
+          "name": "languages",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 25.641,
+          "timeout_seconds": 1800,
+          "log": "languages.log"
+        },
+        {
+          "name": "ui",
+          "status": "pass",
+          "returncode": 0,
+          "seconds": 4.922,
+          "timeout_seconds": 1800,
+          "log": "ui.log"
+        }
+      ],
+      "rust_tests": {
+        "passed": 20,
+        "failed": 0,
+        "ignored": 0,
+        "source": "rust-tests.log"
+      },
+      "protocol": {
+        "counts": {
+          "pass": 10,
+          "skip": 1
+        },
+        "cases": [
+          {
+            "case": "test_bytes_permissions_epochs",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.125
+          },
+          {
+            "case": "test_multistream_and_derived",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.047
+          },
+          {
+            "case": "test_ring_and_live_only",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.078
+          },
+          {
+            "case": "test_history_live_race",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.172
+          },
+          {
+            "case": "test_slow_output_isolation",
+            "status": "pass",
+            "detail": null,
+            "seconds": 1.813
+          },
+          {
+            "case": "test_saved_restart_rotation_idempotency",
+            "status": "pass",
+            "detail": null,
+            "seconds": 1.75
+          },
+          {
+            "case": "test_capacity_failure_isolation",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.562
+          },
+          {
+            "case": "test_hot_journal_process_recovery",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.641
+          },
+          {
+            "case": "test_unwritable_manual_resume",
+            "status": "skip",
+            "detail": {
+              "skip": "POSIX permission injection; quota failure tested on every platform"
+            },
+            "seconds": 0.0
+          },
+          {
+            "case": "test_oversized_wire",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.062
+          },
+          {
+            "case": "test_control_separate_from_data",
+            "status": "pass",
+            "detail": null,
+            "seconds": 0.047
+          }
+        ],
+        "source": "protocol-results.json"
+      },
+      "reliability": {
+        "counts": {
+          "pass": 6
+        },
+        "cases": [
+          {
+            "case": "test_missing_tail_segment_blocks_saved_stream",
+            "status": "pass",
+            "seconds": 1.141
+          },
+          {
+            "case": "test_missing_all_segments_is_not_new_history",
+            "status": "pass",
+            "seconds": 0.375
+          },
+          {
+            "case": "test_interior_row_and_checksum_damage_are_reported",
+            "status": "pass",
+            "seconds": 0.844
+          },
+          {
+            "case": "test_processing_feedback_cannot_hide_behind_empty_parents",
+            "status": "pass",
+            "seconds": 0.015
+          },
+          {
+            "case": "test_rst_during_hello_releases_plugin_identity",
+            "status": "pass",
+            "seconds": 1.11
+          },
+          {
+            "case": "test_idempotency_includes_source_timestamp",
+            "status": "pass",
+            "seconds": 0.046
+          }
+        ],
+        "source": "reliability-review-results.json"
+      },
+      "supervisor": {
+        "source": "supervisor.log",
+        "pipe_captures": [
+          {
+            "cli_number": 1,
+            "command": [
+              "start"
+            ],
+            "exit": 0,
+            "seconds": 1.391
+          },
+          {
+            "cli_number": 2,
+            "command": [
+              "status"
+            ],
+            "exit": 0,
+            "seconds": 0.015
+          },
+          {
+            "cli_number": 3,
+            "command": [
+              "read",
+              "logs",
+              "--raw"
+            ],
+            "exit": 0,
+            "seconds": 0.016
+          },
+          {
+            "cli_number": 16,
+            "command": [
+              "stop"
+            ],
+            "exit": 0,
+            "seconds": 0.11
+          }
+        ],
+        "both_stdout_and_stderr_eof_verified": true,
+        "background_healthy_after_start_and_status_eof": true,
+        "pass_lines": [
+          "PASS bounded read wait observes delayed bytes and returns an honest empty timeout",
+          "PASS PIPE capture start/status/read/stop reaches both EOFs while preserving background lifecycle",
+          "PASS real bytes, sibling PPIDs, permissions, auth, runtime config, plugin restart, graceful stop",
+          "PASS partial startup cleanup"
+        ],
+        "skip_lines": [
+          "SKIP POSIX PPID/Core-death injection on Windows; other lifecycle checks ran"
+        ]
+      },
+      "io": {
+        "counts": {
+          "passed": 6
+        },
+        "cases": [
+          {
+            "case": "program_raw",
+            "status": "passed"
+          },
+          {
+            "case": "file_follow",
+            "status": "passed"
+          },
+          {
+            "case": "file_tail_registration",
+            "status": "passed"
+          },
+          {
+            "case": "replay_transform",
+            "status": "passed"
+          },
+          {
+            "case": "multi_parent_transform",
+            "status": "passed"
+          },
+          {
+            "case": "source_tree_cleanup",
+            "status": "passed"
+          }
+        ],
+        "source": "io.log",
+        "real_hardware": "not_tested",
+        "file_replacement_fixture": "Rust std::fs::rename on Windows; Path.replace on POSIX",
+        "file_replacement_assertions": [
+          "Replacement bytes arrive in the output without stopping input-file.",
+          "Plugin status reports reason=replaced and segment=2."
+        ],
+        "file_replacement_assertion_source": "examples/io/verify.py at tested commit"
+      },
+      "languages": {
+        "passed": 7,
+        "skipped": 0,
+        "failed": 0,
+        "cases": [
+          {
+            "language": "python",
+            "status": "passed",
+            "version": "Python 3.12.10",
+            "required": true,
+            "observed_before_source_exit": true,
+            "nul_and_non_utf8_preserved": true
+          },
+          {
+            "language": "rust",
+            "status": "passed",
+            "version": "rustc 1.98.1 (48a229cea 2026-09-01)",
+            "required": true,
+            "observed_before_source_exit": true,
+            "nul_and_non_utf8_preserved": true
+          },
+          {
+            "language": "node",
+            "status": "passed",
+            "version": "v22.23.2",
+            "required": false,
+            "observed_before_source_exit": true,
+            "nul_and_non_utf8_preserved": true
+          },
+          {
+            "language": "c",
+            "status": "passed",
+            "version": "cc.EXE (x86_64-posix-seh-rev1, Built by MinGW-Builds project) 15.2.0",
+            "required": false,
+            "observed_before_source_exit": true,
+            "nul_and_non_utf8_preserved": true
+          },
+          {
+            "language": "cpp",
+            "status": "passed",
+            "version": "c++.EXE (x86_64-posix-seh-rev1, Built by MinGW-Builds project) 15.2.0",
+            "required": false,
+            "observed_before_source_exit": true,
+            "nul_and_non_utf8_preserved": true
+          },
+          {
+            "language": "go",
+            "status": "passed",
+            "version": "go version go1.24.13 windows/amd64",
+            "required": false,
+            "observed_before_source_exit": true,
+            "nul_and_non_utf8_preserved": true
+          },
+          {
+            "language": "shell",
+            "status": "passed",
+            "version": "7.6.5",
+            "required": false,
+            "observed_before_source_exit": true,
+            "nul_and_non_utf8_preserved": true
+          }
+        ],
+        "source": "input-languages.json"
+      },
+      "ui": {
+        "successful": true,
+        "stopped": true,
+        "terminal_mode": "headless",
+        "checks": [
+          "same real stream reaches both plugins; number split across source writes becomes 12.5",
+          "HTTP SSE delivers increasing live snapshots",
+          "CLI revision patch changes only selected session; stale writes rejected",
+          "both plugins export PNG/SVG with frozen revision, source metadata and embedded font",
+          "HTML and all requested UI assets served from local process"
+        ],
+        "check_count": 5,
+        "cli_command_count": 25,
+        "cli_capture": "Original subprocess.run(capture_output=True) path",
+        "browser_review": "not performed by this script",
+        "visible_terminal_review": false,
+        "exports": [
+          "ui/tui.png",
+          "ui/tui.svg",
+          "ui/web.png",
+          "ui/web.svg"
+        ],
+        "source": "ui/report.json"
+      },
+      "platform_conditional_not_run": [
+        {
+          "stage": "io",
+          "case": "serial_pty_not_physical_hardware",
+          "reason": "examples/io/verify.py calls serial_pty only on POSIX; no Windows PTY or physical serial device was tested."
+        },
+        {
+          "stage": "supervisor",
+          "case": "POSIX PPID and mode-bit assertions",
+          "reason": "The ps PPID and chmod 0600/0700 assertions are conditional on os.name != nt; Windows ACL contents were not independently asserted by this case."
+        },
+        {
+          "stage": "supervisor",
+          "case": "startup SIGINT injection and Core SIGTERM death injection",
+          "reason": "POSIX signal injection cases are conditional on os.name != nt; ordinary lifecycle, actual child-tree cleanup, and partial startup failure cleanup did run."
+        },
+        {
+          "stage": "ui",
+          "case": "TUI PTY render and resize",
+          "reason": "Windows CI uses headless mode; the POSIX PTY case was not run."
+        }
+      ],
+      "report_log_export_sha256": [
+        {
+          "path": "build.log",
+          "sha256": "1c677fb3504afd8d045074cf7a26e6a221b5949ceacce2a8353d5d1221e7c1f6",
+          "bytes": 933
+        },
+        {
+          "path": "clippy.log",
+          "sha256": "5f20087ece70edc6859d109f2a6aeabc20154fbeee7f27ca88e5b9a9f75b7ddf",
+          "bytes": 16400
+        },
+        {
+          "path": "environment.json",
+          "sha256": "96e1f50ab9c48c832dd4e4fa2610eee1069ffdcce65e2f36f349bf9e20d9f076",
+          "bytes": 1398
+        },
+        {
+          "path": "fmt.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "input-languages.json",
+          "sha256": "35612f088799c5b209ff269382b2477d02913fe2c39bb382e1f0661030c09fe3",
+          "bytes": 4531
+        },
+        {
+          "path": "io.log",
+          "sha256": "af672504c9ece9d8e79d1ebc04b896f8a454d554ddc91eafee1c1d9a24abf207",
+          "bytes": 567
+        },
+        {
+          "path": "languages.log",
+          "sha256": "aba752b74c21f18594fe05b60bf0cd310d42b266da672202491091de41cdd341",
+          "bytes": 4626
+        },
+        {
+          "path": "protocol-results.json",
+          "sha256": "17e6dbb2b82dc138f24f6039d6aabeedc7ab83b5a52c2dca1d92f32398d13621",
+          "bytes": 1712
+        },
+        {
+          "path": "protocol.log",
+          "sha256": "8ab82472ca37e091384f1d5124b3e733da4b0280def7dcb66301707e5f77c355",
+          "bytes": 1107
+        },
+        {
+          "path": "reliability-review-results.json",
+          "sha256": "7408f0da0766b1d23176b0a6da004ca304d3ab1a5b7326beff5753c4a94768d7",
+          "bytes": 807
+        },
+        {
+          "path": "reliability-review.log",
+          "sha256": "9e0f1e03867f2cac6d2d54524b55cd66a4462f2c77063e04c62671133a45c09b",
+          "bytes": 583
+        },
+        {
+          "path": "results.json",
+          "sha256": "3609db55aa7ae387d22af8b154467b19c4f73661b090ce33fa5a48b17c8fd070",
+          "bytes": 7289
+        },
+        {
+          "path": "rust-tests.log",
+          "sha256": "32c8ff7a187c1c170df4dceb18cd2ed735b0ac9b1e6a0d30e432187039fe121b",
+          "bytes": 11906
+        },
+        {
+          "path": "supervisor-cli/cli-001.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-001.stdout.log",
+          "sha256": "c565898ecfa7cf0bfb4c795afbb63e5907322ac40d0e0641df16f99dfbf70bba",
+          "bytes": 378
+        },
+        {
+          "path": "supervisor-cli/cli-002.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-002.stdout.log",
+          "sha256": "101f901cf0aec1853c017adf8005ba14301e5ba40393e7a87e272523dba9828b",
+          "bytes": 3802
+        },
+        {
+          "path": "supervisor-cli/cli-003.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-003.stdout.log",
+          "sha256": "6ce592b34496ab22d6d9e79ae5120d819071f0449e1569d6bd0c493983863bc3",
+          "bytes": 19
+        },
+        {
+          "path": "supervisor-cli/cli-004.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-004.stdout.log",
+          "sha256": "95ac8d625906bf722ad6d38e269fe6cec70d5b66dbf1026d4838e342baea9400",
+          "bytes": 527
+        },
+        {
+          "path": "supervisor-cli/cli-005.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-005.stdout.log",
+          "sha256": "9f860d037eab9671376ca3594b36ff4c5b9f686025252a98a6e14325fdeea375",
+          "bytes": 624
+        },
+        {
+          "path": "supervisor-cli/cli-006.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-006.stdout.log",
+          "sha256": "2a9db0d7e1c43f1682057a8e9ade97396c63b774f4f6448ca92bbe8854535128",
+          "bytes": 527
+        },
+        {
+          "path": "supervisor-cli/cli-007.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-007.stdout.log",
+          "sha256": "13a188c7936db2513d0b1527ecb61fa018d86619e5d0bb7c8af4a3aebdd4a4a2",
+          "bytes": 160
+        },
+        {
+          "path": "supervisor-cli/cli-008.stderr.log",
+          "sha256": "3b4be70278cea7ddbb41d8d8d5260fef532e247a2efd48ee5fb0583bbf7edb85",
+          "bytes": 119
+        },
+        {
+          "path": "supervisor-cli/cli-008.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-009.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-009.stdout.log",
+          "sha256": "0198334a094f9257616471ea792cbac664745461c0fdb8796c48209fad3a1a25",
+          "bytes": 236
+        },
+        {
+          "path": "supervisor-cli/cli-010.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-010.stdout.log",
+          "sha256": "19f8aa9674a2e84e4baa48f61c4f64d0a16cd0ddab7efa0a21d2aaf47cfb688f",
+          "bytes": 1318
+        },
+        {
+          "path": "supervisor-cli/cli-011.stderr.log",
+          "sha256": "2280286423b46552616a6d47e81ab2188ac75fe62ec6a024917792cd11616387",
+          "bytes": 50
+        },
+        {
+          "path": "supervisor-cli/cli-011.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-012.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-012.stdout.log",
+          "sha256": "19f8aa9674a2e84e4baa48f61c4f64d0a16cd0ddab7efa0a21d2aaf47cfb688f",
+          "bytes": 1318
+        },
+        {
+          "path": "supervisor-cli/cli-013.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-013.stdout.log",
+          "sha256": "3b9c9d5f395005460ef74f7070f1e35ae5fb6b77ae4669067cdfb8bc564bab57",
+          "bytes": 129
+        },
+        {
+          "path": "supervisor-cli/cli-014.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-014.stdout.log",
+          "sha256": "f3d93c01ef8bee3d4e6d2cd306e82e1bd0f27675d50b873b5a8d6f1511ad1d9b",
+          "bytes": 55
+        },
+        {
+          "path": "supervisor-cli/cli-015.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-015.stdout.log",
+          "sha256": "55ff7362857c5e3a786514a3e98b1c187df9d9c53c066050d2441f5057469e4b",
+          "bytes": 237
+        },
+        {
+          "path": "supervisor-cli/cli-016.stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor-cli/cli-016.stdout.log",
+          "sha256": "a3d145e1c30a0166870c17fef3e76c2a8f63f3284593dee4b363f637abfbf8db",
+          "bytes": 38
+        },
+        {
+          "path": "supervisor-cli/cli-017.stderr.log",
+          "sha256": "6d17fd873aee7af935fdcccbceefc97e29c2ba043407b5ff3c6d468190342bdf",
+          "bytes": 508
+        },
+        {
+          "path": "supervisor-cli/cli-017.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "supervisor.log",
+          "sha256": "8a5acd2e1426b5be0a2032b54ee69e8242f3558efd7c8879000e0ed2bd902111",
+          "bytes": 2915
+        },
+        {
+          "path": "ui/config.json",
+          "sha256": "5cc4a1742f7dbd69de2e0f2d33a006dd658c03309d1516f5290e267268a5fe94",
+          "bytes": 2576
+        },
+        {
+          "path": "ui/report.json",
+          "sha256": "4c17878a523739f07ad43626dbbf1d6449dcb63021973a789c7485c8be791d70",
+          "bytes": 5112
+        },
+        {
+          "path": "ui/source.log",
+          "sha256": "df97d6c144da8d89a6bc624c8ecc1cd2e23461c3cea087bd3d549610e0a52961",
+          "bytes": 1473
+        },
+        {
+          "path": "ui/state.json.stderr.log",
+          "sha256": "483488e1bf11703eb48eb82a744973316e5a9a45aa63f856b5c8ab33fd2ae8a8",
+          "bytes": 1153
+        },
+        {
+          "path": "ui/state.json.stdout.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "bytes": 0
+        },
+        {
+          "path": "ui/tui.png",
+          "sha256": "5455fbdb54740caec95a085908d6cc22150558112b8663ceeffbdeffce678d0a",
+          "bytes": 33212
+        },
+        {
+          "path": "ui/tui.png.json",
+          "sha256": "6183597e712e14a3b5cce6a7816563d36ab4d2b8f7ce1ac164de94173762285c",
+          "bytes": 10937
+        },
+        {
+          "path": "ui/tui.svg",
+          "sha256": "569c5ee04d384663344f33e80b0a36bda9e99679dbe9d7d2f2cad4ddf10db133",
+          "bytes": 11114335
+        },
+        {
+          "path": "ui/tui.svg.json",
+          "sha256": "31578fca23ba044c30d296e54631dec1ec68318dc6f68963789cabf7a21ef3ae",
+          "bytes": 10937
+        },
+        {
+          "path": "ui/web.png",
+          "sha256": "6f2c06e39209f88e37406b1ca8c0b2becddd07d3d2966e152f07ee484cf7107a",
+          "bytes": 40239
+        },
+        {
+          "path": "ui/web.png.json",
+          "sha256": "20d2fcb1f0744daae1cad3d2b15c9910d5f2d688eff8ed302af52b3b3e2477ee",
+          "bytes": 10945
+        },
+        {
+          "path": "ui/web.svg",
+          "sha256": "90dc4fa9b333cc66ec2edecbdd74cee0478b444faf78bd80ae1215d2e44373a6",
+          "bytes": 11114996
+        },
+        {
+          "path": "ui/web.svg.json",
+          "sha256": "d249d4a11c6adc48652865650f3a91a449b49f094ec72edc3ea784ff6906fe97",
+          "bytes": 10945
+        },
+        {
+          "path": "ui.log",
+          "sha256": "d98db02c48460c5dec84f16fdf6af366291eb174a87a03cdade705f38470bfef",
+          "bytes": 930
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    "A successful stage may contain an explicitly reported skip or a platform-conditional case that was not run; these are recorded separately below.",
+    "Windows UI was headless; POSIX UI exercised a pseudo-terminal. This CI did not perform an interactive browser or visible-terminal review.",
+    "No physical serial hardware, actual power-loss test, or benchmark is inferred from this suite.",
+    "SHA256 values below hash the exact downloaded report/log/export file bytes. Paths are relative to the platform artifact root."
+  ]
+}
