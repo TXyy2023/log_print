@@ -14,6 +14,8 @@ Windows 可使用 `python tests/run.py`。协调器共执行 10 个必做阶段�
 
 所有 Python 子测试显式使用 UTF-8，避免 Windows 本地编码破坏 Rust JSON 中的中文。`ci/python-test.py` 保持测试参数和相邻模块导入，并在 Windows 将 CTRL_BREAK 转为 KeyboardInterrupt，使测试能进入 finally 清理；它不会将测试错误改为成功。无法响应中断的进程仍由协调器在有界等待后终止，日志保留失败。
 
+真实进程阶段实时显示日志，敏感字段在控制台脱敏，完整输出仍保存到 artifact。supervisor 阶段最多运行 120 秒（`--timeout` 可进一步缩短）；每次 CLI 调用记录开始/结束、耗时及单独的 stdout/stderr 文件，存于 `supervisor-cli/`。CLI 使用普通文件接收输出和有限时长的进程等待，避免 Windows 后代继承 pipe 句柄导致等待 EOF。Windows PID 存活检测通过只读进程句柄的零时长等待完成，不启动 `tasklist`，也不按 PID 终止进程。
+
 本地 Mac 优先使用同一入口的 shell 包装：
 
 ```sh
