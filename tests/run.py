@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import re
 import shlex
 import shutil
 import signal
@@ -16,6 +17,51 @@ import sys
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
+PROCESS_STEPS = {'protocol', 'supervisor', 'reliability-review', 'io', 'languages', 'ui'}
+
+
+def redact_console(text):
+    return re.sub(r'(?i)((?:["\']?)(?:token|password|secret|authorization)(?:["\']?)\s*[:=]\s*)(?:["\'][^"\']*(?:["\']|$)|[^\s,}]+)',
+                  r'\1<redacted>', text)
+
+
+def wait_with_progress(process, log_path, name, timeout):
+    """Tail a regular file while waiting, without inheritable output pipes."""
+    deadline = time.monotonic() + timeout
+    pending = b''
+    discard_long_line = False
+    with log_path.open('rb') as reader:
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise subprocess.TimeoutExpired(process.args, timeout)
+            try:
+                code = process.wait(timeout=min(.25, remaining))
+            except subprocess.TimeoutExpired:
+                code = None
+            # A descendant writing continuously cannot monopolize the deadline check.
+            for _ in range(4):
+                chunk = reader.read(65536)
+                if not chunk:
+                    break
+                if discard_long_line:
+                    if b'\n' not in chunk:
+                        continue
+                    _, chunk = chunk.split(b'\n', 1)
+                    discard_long_line = False
+                pending += chunk
+                while b'\n' in pending:
+                    line, pending = pending.split(b'\n', 1)
+                    print(f'[{name}] {redact_console(line.decode("utf-8", errors="replace"))}', flush=True)
+                if len(pending) > 65536:
+                    # Keep console buffering bounded; complete bytes remain in the artifact.
+                    print(f'[{name}] long line retained in {log_path.name}', flush=True)
+                    pending = b''
+                    discard_long_line = True
+            if code is not None:
+                if pending:
+                    print(f'[{name}] {redact_console(pending.decode("utf-8", errors="replace"))}', flush=True)
+                return code
 
 
 def command_text(command):
@@ -53,19 +99,19 @@ def execute(name, command, report_dir, timeout):
     started = datetime.now(timezone.utc).isoformat()
     before = time.monotonic()
     log_path = report_dir / f'{name}.log'
-    result = {'name': name, 'command': command, 'cwd': str(ROOT), 'started': started, 'log': log_path.name}
+    result = {'name': name, 'command': command, 'cwd': str(ROOT), 'started': started, 'log': log_path.name, 'timeout_seconds': timeout}
     print(f'RUN {name}: {command_text(command)}', flush=True)
     with log_path.open('wb') as log:
         process = None
         try:
             options = {'cwd': ROOT, 'stdout': log, 'stderr': subprocess.STDOUT,
-                       'env': dict(os.environ, PYTHONUTF8='1', PYTHONIOENCODING='utf-8')}
+                       'env': dict(os.environ, PYTHONUTF8='1', PYTHONIOENCODING='utf-8', PYTHONUNBUFFERED='1')}
             if os.name == 'nt':
                 options['creationflags'] = subprocess.CREATE_NEW_PROCESS_GROUP
             else:
                 options['start_new_session'] = True
             process = subprocess.Popen(command, **options)
-            result['returncode'] = process.wait(timeout=timeout)
+            result['returncode'] = wait_with_progress(process, log_path, name, timeout) if name in PROCESS_STEPS else process.wait(timeout=timeout)
             result['status'] = 'pass' if result['returncode'] == 0 else 'fail'
         except subprocess.TimeoutExpired:
             stop_owned(process)
@@ -81,7 +127,7 @@ def execute(name, command, report_dir, timeout):
     # Keep both a complete artifact and useful terminal output on failures.
     if result['status'] != 'pass':
         tail = log_path.read_text(encoding='utf-8', errors='replace').splitlines()[-50:]
-        print('\n'.join(tail), flush=True)
+        print(redact_console('\n'.join(tail)), flush=True)
     return result
 
 
@@ -104,7 +150,7 @@ def main():
         ('rust-tests', ['cargo', 'test', '--workspace', '--locked']),
         ('build', ['cargo', 'build', '--workspace', '--locked']),
         ('protocol', python_test('tests/protocol.py', '--report', str(report_dir / 'protocol-results.json'))),
-        ('supervisor', python_test('crates/app-log-print/tests/supervisor.py')),
+        ('supervisor', python_test('crates/app-log-print/tests/supervisor.py', '--artifacts', str(report_dir / 'supervisor-cli'))),
         ('reliability-review', python_test('crates/app-log-print/tests/reliability_review.py', '--report', str(report_dir / 'reliability-review-results.json'))),
     ]
     ui_command = python_test('plugins/outputs/output-webui/tests/verify_ui.py', '--skip-build', '--artifacts', str(report_dir / 'ui'))
@@ -144,7 +190,8 @@ def main():
             if build_failed:
                 results.append({'name': name, 'status': 'skip', 'reason': 'workspace build failed; stale binaries must not be accepted'})
                 continue
-            result = execute(name, command, report_dir, args.timeout)
+            timeout = min(args.timeout, 120) if name == 'supervisor' else args.timeout
+            result = execute(name, command, report_dir, timeout)
             results.append(result)
             (report_dir / 'results.json').write_text(json.dumps({'environment': environment, 'results': results, 'optional': optional}, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
             if name == 'build' and result['status'] != 'pass':

@@ -20,14 +20,38 @@ import time
 ROOT = Path(__file__).resolve().parents[3]
 parser = argparse.ArgumentParser()
 parser.add_argument('--binary', type=Path, default=ROOT / 'target/debug' / ('log-print.exe' if os.name == 'nt' else 'log-print'))
+parser.add_argument('--artifacts', type=Path, help='Retain per-CLI stdout/stderr files for diagnosis')
 args = parser.parse_args()
 BINARY = args.binary.resolve()
+if os.name == 'nt':
+    import ctypes
+    from ctypes import wintypes
+    kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
+    kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+    kernel32.OpenProcess.restype = wintypes.HANDLE
+    kernel32.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+    kernel32.WaitForSingleObject.restype = wintypes.DWORD
+    kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+    kernel32.CloseHandle.restype = wintypes.BOOL
 
 
 def alive(pid):
     if os.name == 'nt':
-        output = subprocess.run(['tasklist', '/FI', f'PID eq {pid}', '/FO', 'CSV', '/NH'], capture_output=True, text=True, check=True).stdout
-        return f'"{pid}"' in output
+        # A zero-time wait observes the process; it neither signals nor kills it.
+        handle = kernel32.OpenProcess(0x00100000, False, pid)  # SYNCHRONIZE only
+        if not handle:
+            if ctypes.get_last_error() == 87:  # ERROR_INVALID_PARAMETER: PID no longer exists
+                return False
+            raise ctypes.WinError(ctypes.get_last_error())
+        try:
+            result = kernel32.WaitForSingleObject(handle, 0)
+            if result == 0:  # WAIT_OBJECT_0: process exited
+                return False
+            if result == 258:  # WAIT_TIMEOUT: process still running
+                return True
+            raise ctypes.WinError(ctypes.get_last_error())
+        finally:
+            kernel32.CloseHandle(handle)
     result = subprocess.run(['ps', '-o', 'stat=', '-p', str(pid)], capture_output=True, text=True)
     return result.returncode == 0 and result.stdout.strip() and not result.stdout.lstrip().startswith('Z')
 
@@ -43,6 +67,9 @@ def wait(predicate, timeout=12):
 
 with tempfile.TemporaryDirectory(prefix='log-print-supervisor-') as tmp:
     base = Path(tmp)
+    cli_logs = args.artifacts.resolve() if args.artifacts else base / 'cli-logs'
+    cli_logs.mkdir(parents=True, exist_ok=True)
+    cli_number = 0
     state, config, source, output = [base / name for name in ('state.json', 'config.json', 'source.bin', 'output.bin')]
     source.write_bytes(b'')
     manifest = {'plugins': [
@@ -52,7 +79,33 @@ with tempfile.TemporaryDirectory(prefix='log-print-supervisor-') as tmp:
     config.write_text(json.dumps(manifest))
 
     def cli(*words, success=True):
-        result = subprocess.run([str(BINARY), '--state', str(state), *words], capture_output=True, timeout=35)
+        global cli_number
+        cli_number += 1
+        number = cli_number
+        safe_words = list(words)
+        for i, word in enumerate(safe_words[:-1]):
+            if word in ('--json', '--token'):
+                safe_words[i + 1] = '<redacted>'
+        label = json.dumps(safe_words, ensure_ascii=True)
+        before = time.monotonic()
+        stdout_path = cli_logs / f'cli-{number:03}.stdout.log'
+        stderr_path = cli_logs / f'cli-{number:03}.stderr.log'
+        print(f'CLI {number:03} begin {label}', flush=True)
+        command = [str(BINARY), '--state', str(state), *words]
+        # Regular files do not wait for EOF from a handle inherited by descendants.
+        with stdout_path.open('wb') as stdout, stderr_path.open('wb') as stderr:
+            process = subprocess.Popen(command, stdout=stdout, stderr=stderr)
+            try:
+                code = process.wait(timeout=35)
+            except (subprocess.TimeoutExpired, KeyboardInterrupt):
+                if process.poll() is None:
+                    process.kill()
+                process.wait(timeout=5)
+                print(f'CLI {number:03} interrupted/timeout after {time.monotonic()-before:.3f}s; '
+                      f'stdout={stdout_path.name} stderr={stderr_path.name}', flush=True)
+                raise
+        result = subprocess.CompletedProcess(command, code, stdout_path.read_bytes(), stderr_path.read_bytes())
+        print(f'CLI {number:03} end exit={code} seconds={time.monotonic()-before:.3f} {label}', flush=True)
         if success:
             assert result.returncode == 0, result.stderr.decode(errors='replace')
         else:
