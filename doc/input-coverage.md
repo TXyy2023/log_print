@@ -50,6 +50,18 @@ Windows 使用实际的 Python 命令（通常为 `python`）。也可通过 `--
 
 Python 和 Rust 是必需项，缺失即失败；Node.js、C、C++、Go、shell 缺失会记录 `skipped` 和原因。已找到的工具若编译或执行失败，则记录 `failed`，不会当作跳过。任何失败使脚本返回非零退出码。标准输出和可选 JSON 文件包含逐语言版本、状态、字节校验、被测二进制哈希及执行时间，便于 CI 留存。
 
+## 文件替换覆盖（独立 I/O 验收）
+
+语言 stdout/stderr 覆盖不代表所有语言的文件轮转 API 都可用。Windows 旧验收实际遇到 Python 3.12 `Path.replace` 返回 `WinError 5`：它使用的 `MoveFileExW` 不允许覆盖仍打开的目标，即使读取方已共享 DELETE。核对 `same-file 1.0.6 → winapi-util 0.1.11` 后，读取及身份句柄都保留 Rust 默认的 READ / WRITE / DELETE 共享，并非采集插件漏设共享位。[Python 官方说明](https://bugs.python.org/issue46003)、[Rust 共享模式](https://doc.rust-lang.org/std/os/windows/fs/trait.OpenOptionsExt.html#tymethod.share_mode)。
+
+| 平台与替换入口 | 本次覆盖 |
+| --- | --- |
+| macOS：Python `Path.replace` | 真实跟随进程中的完整替换字节和段变更验收 |
+| Windows：Python 3.12 `Path.replace` / 旧 `MoveFileExW` | 已实测拒绝替换打开的目标；保留为 API 限制，不计通过 |
+| Windows：临时 Rust `std::fs::rename` 程序 | 更新后的 CI 采用此入口；必须真正替换打开的目标，核对完整字节及 `reason=replaced` / segment；通过状态以最新 CI 产物为准 |
+
+Windows 夹具所用现代 Rust 会在需要时调用 `FileRenameInfoEx` 的 `REPLACE_IF_EXISTS | POSIX_SEMANTICS`；旧文件句柄保持有效，路径指向新文件。这是实际替换，不是截断、停止读取或跳过。测试临时生成源码并使用现有 `rustc` 编译，结束后清理；该 I/O 测试在 Windows 上需要 Rust 编译器。[Rust 实现](https://github.com/rust-lang/rust/blob/1.98.0/library/std/src/sys/fs/windows.rs)、[微软语义说明](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-fscc/4217551b-d2c0-42cb-9dc1-69a716cf6d0c)。
+
 ## 本次被测构建
 
 执行开始时间为 `2026-09-07T17:16:49Z`（北京时间 2026-09-08 01:16:49），使用工作区 `target/debug` 的 1.0.0 二进制。源码当时尚未提交，旧初始化提交不能代表本次被测构建；以下哈希精确标识实际执行文件。本项为功能覆盖验收，未修改或重测性能报告。
