@@ -30,7 +30,9 @@ class RPC:
         host, port = address.rsplit(":", 1)
         self.socket = socket.create_connection((host, int(port)), timeout=10)
         self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-        self.file = self.socket.makefile("rwb", buffering=0)
+        # Buffered reads avoid one socket syscall per byte in SocketIO.readline.
+        # Writes still use sendall; frame size remains bounded in receive().
+        self.file = self.socket.makefile("rb")
         self.sequence = 0
         self.send({"protocol": protocol, "plugin": plugin, "token": token, "events": events})
         self.result(self.receive())
