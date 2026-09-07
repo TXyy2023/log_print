@@ -18,3 +18,6 @@ uuid.workspace = true
 clap.workspace = true
 log-proto.workspace = true
 log-plugin-sdk.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_System_Console"] }

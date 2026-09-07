@@ -3,6 +3,7 @@
 Run after building: python3 crates/app-log-print/tests/reliability_review.py
 """
 import argparse
+from contextlib import closing
 import importlib.util
 import json
 from pathlib import Path
@@ -76,11 +77,12 @@ def test_interior_row_and_checksum_damage_are_reported():
             h = saved_fixture(Path(tmp), 3)
             try:
                 path = sorted((Path(tmp) / 'data/saved').glob('*.sqlite'))[0]
-                with sqlite3.connect(path) as db:
+                with closing(sqlite3.connect(path)) as db:
                     if kind == 'row':
                         db.execute('DELETE FROM records WHERE seq=2')
                     else:
                         db.execute("UPDATE records SET checksum='damaged' WHERE seq=2")
+                    db.commit()
                 h.start()
                 with h.client() as admin:
                     try:

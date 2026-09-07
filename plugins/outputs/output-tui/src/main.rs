@@ -1,4 +1,6 @@
-use anyhow::{bail, Context, Result};
+#[cfg(unix)]
+use anyhow::Context;
+use anyhow::{bail, Result};
 use clap::Parser;
 use crossterm::{
     cursor::{Hide, Show},
