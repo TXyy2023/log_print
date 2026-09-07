@@ -25,6 +25,6 @@ RSS为同一棵树各进程RSS之和，可能重复计算共享页，不代表�
 
 传输队列**实时占用未由接口暴露**，因此报告保留了固定容量、数值ring点数和完整行进度三种不同信息，不用推算积压冒充实际队列测量。2048点上限也意味着1000行/秒时只保留最近约2.05秒数值，即使横轴窗口设为20/60秒；这是本次选择的有界保留策略，不声称保存整个时间窗的全部点。
 
-复现入口：[sustain_ui.py](tests/sustain_ui.py)。[原始报告](../../../artifacts/ui/sustain-180s-1000lps/report.json)、[插件树样本](../../../artifacts/ui/sustain-180s-1000lps/plugin_tree.samples.json)、[浏览器树样本](../../../artifacts/ui/sustain-180s-1000lps/browser_tree.samples.json)、[结束时浏览器截图](../../../artifacts/ui/sustain-180s-1000lps/browser-final.png)。所有本次应用、生产器和独立Chrome进程已停止；state与临时Chrome profile已删除。截图已实际打开检查，显示正常双曲线、4096保留点、零非法值和零缺口。
+复现入口：[sustain_ui.py](tests/sustain_ui.py)。正式仓库包含[脱敏报告](evidence/sustained/report.json)、[插件树原始样本](evidence/sustained/plugin_tree.samples.json)、[浏览器树原始样本](evidence/sustained/browser_tree.samples.json)、[开始截图](evidence/sustained/browser-start.png)、[结束截图](evidence/sustained/browser-final.png)及[文件/源哈希清单](evidence/sustained/MANIFEST.json)。资源样本和截图保持原字节，报告仅替换本机工作区路径，全部数值保持一致；运行state、Chrome profile和真实用户数据不纳入证据包。所有本次应用、生产器和独立Chrome进程已停止。结束截图已实际打开检查，显示正常双曲线、4096保留点、零非法值和零缺口。
 
-后续针对Windows detached控制台信号注册失败加入Err→pending处理后，fmt、严格clippy及macOS六组真实进程/PTY回归再次通过；这项退出路径修复未更改绘图或数值热路径。Linux指定PTY的尺寸查询修复也已有实际六组回归证据，见 [Linux PTY报告](../../../artifacts/linux/validation/formal-linux-pty-fixed-7e9c/report.json)。平台正式全套结果由根平台报告单独记录。
+后续针对Windows detached控制台信号注册失败加入Err→pending处理后，fmt、严格clippy及macOS六组真实进程/PTY回归再次通过；这项退出路径修复未更改绘图或数值热路径。Linux指定PTY的尺寸查询修复也已有实际六组回归证据，见 [Linux PTY脱敏摘要与环境](evidence/sustained/linux-pty-summary.json)。平台正式全套结果及本地/云端产物边界见[根验收报告](../../../doc/validation.md)。

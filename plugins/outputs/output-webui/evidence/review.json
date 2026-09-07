@@ -47,11 +47,11 @@
     "instance_stopped": true
   },
   "followup_validation": {
-    "linux_pty_resize": "passed after explicit terminal-size backend adapter; artifacts/linux/validation/formal-linux-pty-fixed-7e9c/report.json",
+    "linux_pty_resize": "passed after explicit terminal-size backend adapter; plugins/outputs/output-webui/evidence/sustained/linux-pty-summary.json",
     "detached_signal_handling": "ctrl_c registration failure now waits for supervisor control; fmt, strict clippy and macOS 6-group PTY regression passed",
     "final_mac_short_artifacts": "/var/folders/nn/fq8ngf2d1zn7ff9m7g_t5xpw0000gp/T/log-print-ui-zo61d1r9",
     "sustained_report": "plugins/outputs/output-webui/SUSTAINED.md",
-    "sustained_raw": "artifacts/ui/sustain-180s-1000lps/report.json",
+    "sustained_raw": "plugins/outputs/output-webui/evidence/sustained/report.json",
     "duration_s": 180,
     "complete_lines_per_ui": 180000,
     "session_changes": 8,

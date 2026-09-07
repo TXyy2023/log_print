@@ -1,0 +1,54 @@
+{
+  "fixture": "synthetic temp/load numerical lines; 180 seconds at target 1000 lines/s",
+  "files": [
+    {
+      "file": "plugin_tree.samples.json",
+      "bytes": 1214605,
+      "sha256": "68c26478140c4e82ef90fbf18d4b00fab5932592d1d128430678883d6354da2f",
+      "source_sha256": "68c26478140c4e82ef90fbf18d4b00fab5932592d1d128430678883d6354da2f",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "browser_tree.samples.json",
+      "bytes": 1864782,
+      "sha256": "7f648f6b6581d0637f4ee4286066c9479a23b9d2b176314427c13221f8d0cacc",
+      "source_sha256": "7f648f6b6581d0637f4ee4286066c9479a23b9d2b176314427c13221f8d0cacc",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "browser-start.png",
+      "bytes": 78972,
+      "sha256": "3e03e2f20e485acd61e6f84859c67fd1abbfc52476065a19708d353f624ddf48",
+      "source_sha256": "3e03e2f20e485acd61e6f84859c67fd1abbfc52476065a19708d353f624ddf48",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "browser-final.png",
+      "bytes": 73046,
+      "sha256": "767dce24e61cfa44e823054c7de4fcf5f819ae2b8aebec8feef1bf6515a850d7",
+      "source_sha256": "767dce24e61cfa44e823054c7de4fcf5f819ae2b8aebec8feef1bf6515a850d7",
+      "transformation": "byte-identical copy"
+    },
+    {
+      "file": "report.json",
+      "bytes": 201086,
+      "sha256": "213883ec11db784e03777a338ebb4b1acf5537128162e034418ec48d2f7311e3",
+      "source_sha256": "90149794fa7841b2c3860071241ce292c476f5624e7335c1a8769b044f1219ae",
+      "transformation": "workspace path prefix redacted; numeric tree verified identical"
+    },
+    {
+      "file": "linux-pty-summary.json",
+      "bytes": 1111,
+      "sha256": "aacdce830f512cc10d4850ad265d0d27242437669e4fd04f4c7e4c350e849b8d",
+      "source_sha256": "c71f0572f450d0be12780689e9c715ac049545ae25e54ff8e87a646baf49aeb7",
+      "transformation": "selected non-sensitive verdict/check fields plus recorded environment; command paths, state location and URLs omitted"
+    }
+  ],
+  "excluded": [
+    "runtime state/config/source log",
+    "Chrome profile and browser logs",
+    "admin tokens or credentials",
+    "unrelated user process data"
+  ],
+  "report_transformation": "Only the exact workspace prefix in strings is replaced by <workspace>; all numerical values, arrays and ordering preserved."
+}

@@ -54,3 +54,5 @@ python plugins/outputs/output-webui/tests/sustain_ui.py --duration 180 --rate 10
 ```
 
 每20秒轮流修改一个UI的alpha会话，检查其他会话独立；每10秒保存完整行计数、保留/显示点数、实际浏览器Canvas状态及CLI响应。采集器记录两棵进程树的CPU/RSS原始样本。SDK队列容量与实际已测点数分列：接口没有暴露传输队列实时占用，不以推算值冒充队列测量。报告与首尾浏览器截图留存，结束会停止自己的应用实例和Chrome，并移除临时profile。该有界时长不代表最大稳定速率或数小时稳定性。
+
+本次已完成的[180秒实测报告](SUSTAINED.md)及[随仓库交付的精选证据](evidence/sustained/README.md)包含脱敏报告、原始资源样本、首尾截图和源文件哈希，新clone也可核对；浏览器RSS增长限制保持原样记录。

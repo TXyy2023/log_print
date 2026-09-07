@@ -330,15 +330,13 @@ impl Stream {
             bytes += n;
             bounded.push(r);
         }
-        let mut expected = start;
-        for r in &bounded {
+        for (expected, r) in (start..).zip(&bounded) {
             if r.seq != expected {
                 return Err(fault(
                     "history_gap",
                     format!("expected {expected}, found {}", r.seq),
                 ));
             }
-            expected += 1;
         }
         if start <= self.head && bounded.is_empty() {
             return Err(fault(

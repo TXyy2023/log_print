@@ -1,0 +1,26 @@
+{
+  "platform": "linux",
+  "checks": [
+    "same real stream reaches both plugins; number split across source writes becomes 12.5",
+    "HTTP SSE delivers increasing live snapshots",
+    "CLI revision patch changes only selected session; stale writes rejected",
+    "both plugins export PNG/SVG with frozen revision, source metadata and embedded font",
+    "PTY real ANSI chart rendered, resized and changed by session CLI",
+    "HTML and all requested UI assets served from local process"
+  ],
+  "browser_review": "not performed by this script",
+  "visible_terminal_review": false,
+  "terminal_mode": "pty",
+  "successful": true,
+  "stopped": true,
+  "environment": {
+    "os": "Debian Linux",
+    "arch": "arm64",
+    "container_runtime": "Apple container",
+    "rust": "1.92.0",
+    "python": "3.12.14",
+    "source": "root validation record / protocol_review environment"
+  },
+  "source_sha256": "c71f0572f450d0be12780689e9c715ac049545ae25e54ff8e87a646baf49aeb7",
+  "scope": "Actual independent Linux PTY process regression after configured-TTY size adapter; no Linux desktop or physical hardware claim."
+}
