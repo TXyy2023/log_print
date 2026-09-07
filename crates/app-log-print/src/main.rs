@@ -977,7 +977,44 @@ async fn run(config_path: PathBuf, state_path: PathBuf) -> Result<()> {
     result
 }
 
+#[cfg(windows)]
+fn prevent_inherited_caller_stdio() -> Result<()> {
+    use windows_sys::Win32::Foundation::{
+        GetHandleInformation, SetHandleInformation, HANDLE_FLAG_INHERIT, INVALID_HANDLE_VALUE,
+    };
+    use windows_sys::Win32::System::Console::{
+        GetStdHandle, STD_ERROR_HANDLE, STD_INPUT_HANDLE, STD_OUTPUT_HANDLE,
+    };
+    let mut seen = Vec::new();
+    for kind in [STD_INPUT_HANDLE, STD_OUTPUT_HANDLE, STD_ERROR_HANDLE] {
+        let handle = unsafe { GetStdHandle(kind) };
+        if handle == INVALID_HANDLE_VALUE {
+            return Err(std::io::Error::last_os_error()).context("get caller standard handle");
+        }
+        if handle.is_null() || seen.contains(&handle) {
+            continue;
+        }
+        seen.push(handle);
+        let mut flags = 0;
+        if unsafe { GetHandleInformation(handle, &mut flags) } == 0 {
+            return Err(std::io::Error::last_os_error()).context("inspect caller standard handle");
+        }
+        if flags & HANDLE_FLAG_INHERIT != 0
+            && unsafe { SetHandleInformation(handle, HANDLE_FLAG_INHERIT, 0) } == 0
+        {
+            return Err(std::io::Error::last_os_error())
+                .context("prevent background inheritance of caller standard handle");
+        }
+    }
+    Ok(())
+}
+
 async fn start(config: PathBuf, state: PathBuf) -> Result<()> {
+    // Windows ordinary spawn inherits all inheritable handles, not only hStd*.
+    // Keep the CLI's caller pipes out of the detached tree. Rust duplicates the
+    // explicitly selected log/NUL handles for the child's own standard streams.
+    #[cfg(windows)]
+    prevent_inherited_caller_stdio()?;
     let state = absolute(&state)?;
     if state.exists() {
         bail!(

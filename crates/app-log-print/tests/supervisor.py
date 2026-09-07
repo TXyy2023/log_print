@@ -78,7 +78,50 @@ with tempfile.TemporaryDirectory(prefix='log-print-supervisor-') as tmp:
     ]}
     config.write_text(json.dumps(manifest))
 
-    def cli(*words, success=True):
+    def pipe_result(command, stdout_path, stderr_path):
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=0)
+        captured = [bytearray(), bytearray()]
+        eof = [threading.Event(), threading.Event()]
+        read_errors = []
+        def drain(index, stream):
+            try:
+                while chunk := os.read(stream.fileno(), 65536):
+                    captured[index].extend(chunk)
+            except OSError as error:
+                read_errors.append(str(error))
+            finally:
+                stream.close()
+                eof[index].set()
+        for index, stream in enumerate((process.stdout, process.stderr)):
+            threading.Thread(target=drain, args=(index, stream), daemon=True).start()
+        deadline = time.monotonic() + 35
+        try:
+            code = process.wait(timeout=35)
+            for event in eof:
+                if not event.wait(max(0, deadline-time.monotonic())):
+                    raise subprocess.TimeoutExpired(command, 35)
+            assert not read_errors, read_errors
+            return subprocess.CompletedProcess(command, code, bytes(captured[0]), bytes(captured[1]))
+        except BaseException:
+            print(f'PIPE capture failed: cli_exit={process.poll()} stdout_eof={eof[0].is_set()} '
+                  f'stderr_eof={eof[1].is_set()}; stopping owned instance using file capture', flush=True)
+            try:
+                if state.exists():
+                    cli('stop')
+            except Exception as error:
+                print(f'PIPE failure cleanup: {error}', flush=True)
+            if process.poll() is None:
+                process.kill()
+                process.wait(timeout=5)
+            cleanup_deadline = time.monotonic() + 5
+            for event in eof:
+                event.wait(max(0, cleanup_deadline-time.monotonic()))
+            raise
+        finally:
+            stdout_path.write_bytes(bytes(captured[0]))
+            stderr_path.write_bytes(bytes(captured[1]))
+
+    def cli(*words, success=True, pipe=False):
         global cli_number
         cli_number += 1
         number = cli_number
@@ -90,37 +133,42 @@ with tempfile.TemporaryDirectory(prefix='log-print-supervisor-') as tmp:
         before = time.monotonic()
         stdout_path = cli_logs / f'cli-{number:03}.stdout.log'
         stderr_path = cli_logs / f'cli-{number:03}.stderr.log'
-        print(f'CLI {number:03} begin {label}', flush=True)
+        mode = 'PIPE' if pipe else 'file'
+        print(f'CLI {number:03} begin mode={mode} {label}', flush=True)
         command = [str(BINARY), '--state', str(state), *words]
-        # Regular files do not wait for EOF from a handle inherited by descendants.
-        with stdout_path.open('wb') as stdout, stderr_path.open('wb') as stderr:
-            process = subprocess.Popen(command, stdout=stdout, stderr=stderr)
-            try:
-                code = process.wait(timeout=35)
-            except (subprocess.TimeoutExpired, KeyboardInterrupt):
-                if process.poll() is None:
-                    process.kill()
-                process.wait(timeout=5)
-                print(f'CLI {number:03} interrupted/timeout after {time.monotonic()-before:.3f}s; '
-                      f'stdout={stdout_path.name} stderr={stderr_path.name}', flush=True)
-                raise
-        result = subprocess.CompletedProcess(command, code, stdout_path.read_bytes(), stderr_path.read_bytes())
-        print(f'CLI {number:03} end exit={code} seconds={time.monotonic()-before:.3f} {label}', flush=True)
+        if pipe:
+            result = pipe_result(command, stdout_path, stderr_path)
+        else:
+            # Regular files remain available even if descendants inherited a handle.
+            with stdout_path.open('wb') as stdout, stderr_path.open('wb') as stderr:
+                process = subprocess.Popen(command, stdout=stdout, stderr=stderr)
+                try:
+                    code = process.wait(timeout=35)
+                except (subprocess.TimeoutExpired, KeyboardInterrupt):
+                    if process.poll() is None:
+                        process.kill()
+                    process.wait(timeout=5)
+                    print(f'CLI {number:03} interrupted/timeout after {time.monotonic()-before:.3f}s; '
+                          f'stdout={stdout_path.name} stderr={stderr_path.name}', flush=True)
+                    raise
+            result = subprocess.CompletedProcess(command, code, stdout_path.read_bytes(), stderr_path.read_bytes())
+        print(f'CLI {number:03} end mode={mode} exit={result.returncode} seconds={time.monotonic()-before:.3f} {label}', flush=True)
         if success:
             assert result.returncode == 0, result.stderr.decode(errors='replace')
         else:
             assert result.returncode != 0, result.stdout
         return result
 
-    def value(*words):
-        return json.loads(cli(*words).stdout)
+    def value(*words, pipe=False):
+        return json.loads(cli(*words, pipe=pipe).stdout)
 
     owned = []
     try:
-        started = value('start', '--config', str(config))
-        status = value('status')
+        started = value('start', '--config', str(config), pipe=True)
+        status = value('status', pipe=True)
         owned = [started['pid'], started['core_pid']] + [p['pid'] for p in status['plugin_processes']]
         assert len(set(owned)) == 4, owned
+        assert all(alive(pid) for pid in owned), 'background instance must remain healthy after PIPE EOF'
         assert all(p['connected'] for p in status['plugins'])
         if os.name != 'nt':
             for pid in owned[1:]:
@@ -140,7 +188,7 @@ with tempfile.TemporaryDirectory(prefix='log-print-supervisor-') as tmp:
             stream.write(payload)
             stream.flush()
         wait(lambda: output.exists() and output.read_bytes() == payload)
-        assert cli('read', 'logs', '--raw').stdout == payload
+        assert cli('read', 'logs', '--raw', pipe=True).stdout == payload
         cursor = next(s['head'] for s in value('streams') if s['id'] == 'logs') + 1
         delayed = b'delayed\x00\xff'
         def append_delayed():
@@ -181,10 +229,11 @@ with tempfile.TemporaryDirectory(prefix='log-print-supervisor-') as tmp:
         restarted = value('plugin', 'restart', 'raw')
         owned.append(restarted['started']['pid'])
         assert restarted['stopped']['forced'] is False
-        cli('stop')
+        cli('stop', pipe=True)
         assert not state.exists()
         wait(lambda: all(not alive(pid) for pid in owned))
         assert not Path(saved['runtime_directory']).exists()
+        print('PASS PIPE capture start/status/read/stop reaches both EOFs while preserving background lifecycle')
         print('PASS real bytes, sibling PPIDs, permissions, auth, runtime config, plugin restart, graceful stop')
 
         # Failure after one plugin was created must also reap the Core and remove state.
