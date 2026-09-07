@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import select
+import shutil
 import socket
 import subprocess
 import sys
@@ -31,6 +32,32 @@ def wait(check, message, seconds=8):
 
 def content(path):
     return path.read_bytes() if path.exists() else b''
+
+
+def native_replace_fixture(directory):
+    """Rust's Windows rename supports replacing an open, DELETE-shared target.
+
+    Python 3.12 os.replace only calls MoveFileExW and rejects that target even
+    when every reader shares DELETE. Rust falls back to FileRenameInfoEx with
+    REPLACE_IF_EXISTS | POSIX_SEMANTICS. Keep the source reader open throughout;
+    this fixture performs a real replacement, not a delete/truncate workaround.
+    References: https://bugs.python.org/issue46003,
+    rust-lang/rust issue123985 and std/sys/fs/windows.rs rename implementation.
+    """
+    compiler=shutil.which('rustc')
+    assert compiler,'rustc is required for the Windows atomic replacement fixture'
+    source=directory/'replace_fixture.rs';binary=directory/('replace_fixture'+SUFFIX)
+    source.write_text('''fn main() -> std::io::Result<()> {
+    let mut args = std::env::args_os().skip(1);
+    std::fs::rename(args.next().expect("source"), args.next().expect("target"))
+}
+''')
+    result=subprocess.run([compiler,str(source),'-o',str(binary)],capture_output=True,timeout=60)
+    assert result.returncode==0,result.stderr.decode(errors='replace')
+    def replace(source,target):
+        result=subprocess.run([str(binary),str(source),str(target)],capture_output=True,timeout=8)
+        assert result.returncode==0,result.stderr.decode(errors='replace')
+    return replace
 
 
 def plugin(name, binary, config, writes=(), reads=(), parents=()):
@@ -142,6 +169,7 @@ def program(directory):
 
 def file_follow(directory):
     source,out=directory/'source.log',directory/'out';source.write_bytes(b'initial')
+    replace=native_replace_fixture(directory) if os.name=='nt' else lambda a,b:a.replace(b)
     specs=[plugin('source','input-file',{'path':str(source),'stream':'file','from_start':True,'poll_ms':10},['file']),plugin('raw','output-raw',{'streams':['file'],'path':str(out)},reads=['file'])]
     def test(r):
         r.start('raw');r.start('source')
@@ -150,8 +178,10 @@ def file_follow(directory):
         wait(lambda:content(out)==b'initial++','append file')
         source.write_bytes(b'x')
         wait(lambda:content(out)==b'initial++x','truncate file')
-        new=directory/'new';new.write_bytes(b'replacement');new.replace(source)
+        new=directory/'new';new.write_bytes(b'replacement');replace(new,source)
         wait(lambda:content(out)==b'initial++xreplacement','replace file')
+        report=next(p['report'] for p in r.rpc('status')['plugins'] if p['id']=='source')
+        assert report['reason']=='replaced' and report['segment']==2,report
         r.rpc('control',{'target':'source','method':'config.patch','args':{'poll_ms':20}})
         r.stop('source');r.stop('raw')
     return with_runtime(directory,specs,test)
