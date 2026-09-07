@@ -9,6 +9,7 @@ from pathlib import Path
 import socket
 import sqlite3
 import struct
+import sys
 import tempfile
 import time
 import traceback
