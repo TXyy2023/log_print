@@ -4,4 +4,4 @@
 
 语言接入直接配置程序可执行文件与参数。例如 Python `python3 -u script.py`、Node `node script.js`、Java `java -jar app.jar`、已编译 C/Rust 可执行文件等均使用同一个 input-program，不需要每语言插件。只有实际运行记录才计入平台/语言支持验证；参数示例不意味着环境已安装。
 
-每插件 README 列出配置、缺口/重启/硬件边界及成熟依赖官方来源。serial `--list` 只列出设备，不代替打开采集验收。不要对未知串口设备发送 TX。
+每插件 README 列出配置、缺口/重启/硬件边界及成熟依赖官方来源。串口、TUI、WebUI 暂缓，不参与 0.1.0 默认验收；归档恢复验证见 `plugins/outputs/output-file/tests/verify.py`。

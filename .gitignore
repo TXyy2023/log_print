@@ -12,3 +12,14 @@
 *.orig
 *.env
 !*.env.example
+
+# Local documentation; opt individual files in with explicit exceptions later.
+/doc/**
+# Deferred plugins remain on this machine, outside the 0.1.0 workspace.
+/plugins/inputs/input-serial/
+/plugins/outputs/output-tui/
+/plugins/outputs/output-webui/
+# Local deferred dashboard example.
+/examples/dashboard.json
+# Example archive outputs and Core history.
+/capture/

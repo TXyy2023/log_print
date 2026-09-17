@@ -1,9 +1,27 @@
 [workspace]
 resolver = "2"
-members = ["crates/*", "plugins/inputs/*", "plugins/outputs/*"]
+members = [
+    "crates/app-log-print",
+    "crates/log-core",
+    "crates/log-proto",
+    "crates/log-plugin-sdk",
+    "plugins/inputs/io-plugin-util",
+    "plugins/inputs/input-file",
+    "plugins/inputs/input-replay",
+    "plugins/inputs/input-program",
+    "plugins/outputs/output-raw",
+    "plugins/outputs/output-transform",
+    "plugins/outputs/output-file",
+]
+exclude = [
+    "crates/log-plot",
+    "plugins/inputs/input-serial",
+    "plugins/outputs/output-tui",
+    "plugins/outputs/output-webui",
+]
 
 [workspace.package]
-version = "1.0.0"
+version = "0.1.0"
 edition = "2021"
 license = "MIT"
 rust-version = "1.92"

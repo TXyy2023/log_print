@@ -17,7 +17,7 @@ import sys
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
-PROCESS_STEPS = {'protocol', 'supervisor', 'reliability-review', 'io', 'languages', 'ui'}
+PROCESS_STEPS = {'protocol', 'supervisor', 'reliability-review', 'io', 'languages', 'archive'}
 
 
 def redact_console(text):
@@ -153,13 +153,10 @@ def main():
         ('supervisor', python_test('crates/app-log-print/tests/supervisor.py', '--artifacts', str(report_dir / 'supervisor-cli'))),
         ('reliability-review', python_test('crates/app-log-print/tests/reliability_review.py', '--report', str(report_dir / 'reliability-review-results.json'))),
     ]
-    ui_command = python_test('plugins/outputs/output-webui/tests/verify_ui.py', '--skip-build', '--artifacts', str(report_dir / 'ui'))
-    if os.name == 'posix':
-        ui_command.append('--pty')
     steps.extend([
         ('io', python_test('examples/io/verify.py')),
         ('languages', python_test('examples/io/languages.py', '--json', str(report_dir / 'input-languages.json'))),
-        ('ui', ui_command),
+        ('archive', python_test('plugins/outputs/output-file/tests/verify.py', '--report', str(report_dir / 'archive-results.json'))),
     ])
     optional = []
     if args.list:
@@ -201,7 +198,7 @@ def main():
     failed = any(row['status'] in ('fail', 'interrupted') for row in results)
     complete = not failed and not args.skip_build and len(results) == len(steps) and all(row['status'] == 'pass' for row in results)
     summary = {'environment': environment, 'complete_selected_suite': complete, 'iteration_only': args.skip_build, 'results': results, 'optional': optional,
-               'boundaries': ['This host only; does not establish other-platform execution.', 'Headless/UI test success does not establish an actual desktop visual review.', 'No real-device, power-loss, or benchmark results are inferred from this suite.']}
+               'boundaries': ['This host only; does not establish other-platform execution.', 'No real-device, power-loss, or benchmark results are inferred from this suite.']}
     (report_dir / 'results.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
     lines = ['# Validation result', '', f'Platform: {environment["platform"]}', f'Python: {sys.executable}', f'Complete selected suite: {complete}', '', '| Step | Status | Exit | Seconds | Log |', '|---|---|---:|---:|---|']
     for row in results:

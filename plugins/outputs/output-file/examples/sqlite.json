@@ -1,0 +1,43 @@
+{
+  "core": {
+    "save": {
+      "enabled": true,
+      "directory": "capture/sqlite/core"
+    }
+  },
+  "plugins": [
+    {
+      "id": "replay",
+      "bin": "input-replay",
+      "streams": [
+        {
+          "id": "replay"
+        }
+      ],
+      "config": {
+        "path": "plugins/outputs/output-file/examples/source.log",
+        "stream": "replay",
+        "timestamp": "none",
+        "interval_ms": 1000
+      }
+    },
+    {
+      "id": "archive",
+      "bin": "output-file",
+      "reads": [
+        "replay"
+      ],
+      "config": {
+        "streams": [
+          "replay"
+        ],
+        "from": 1,
+        "mode": "create",
+        "fail_on_gap": true,
+        "sqlite": {
+          "path": "capture/sqlite/records.sqlite"
+        }
+      }
+    }
+  ]
+}

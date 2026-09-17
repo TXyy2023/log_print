@@ -298,7 +298,7 @@ def run_case(args,scenario):
                 instance=wait(ready,'supervisor not ready',30)
                 roots=[main.pid]
                 extra['configuration']=json.loads(json.dumps(config).replace(tmp,'<temporary>'))
-                extra['software_version']='1.0.0'
+                extra['software_version']='0.1.0'
                 extra['build_profile']='release' if bins.name=='release' else bins.name
                 extra['source_state']='uncommitted working tree; historical git HEAD is not the tested version; binary SHA256 identifies tested artifact'
                 extra['rustc_version']=subprocess.check_output(['rustc','--version'],text=True).strip()
@@ -399,14 +399,14 @@ def main():
     parser.add_argument('--bin-dir',default=str(ROOT/'target/release'))
     parser.add_argument('--tee',default='/usr/bin/tee')
     parser.add_argument('--ttyplot',default='ttyplot')
-    parser.add_argument('--output',default=str(ROOT/'doc/benchmarks/local'))
-    parser.add_argument('--scenario',choices=['log_print_raw','log_print_save','log_print_plot','tee_raw','tee_save','tee_plot','all'],default='all')
+    parser.add_argument('--output',default=str(ROOT/'artifacts/benchmarks/local'))
+    parser.add_argument('--scenario',choices=['log_print_raw','log_print_save','tee_raw','tee_save','tee_plot','all'],default='all')
     args=parser.parse_args()
     if args.source:return source(args)
     if args.extract:return extract()
     if args.sample:return sample_process(args)
     if args.duration<1 or args.rate<1 or args.plot_rate<1:parser.error('positive rates and duration>=1 required')
-    for scenario in (['tee_raw','log_print_raw','tee_save','log_print_save','tee_plot','log_print_plot']if args.scenario=='all'else[args.scenario]):run_case(args,scenario)
+    for scenario in (['tee_raw','log_print_raw','tee_save','log_print_save']if args.scenario=='all'else[args.scenario]):run_case(args,scenario)
 
 
 if __name__=='__main__':main()

@@ -24,7 +24,7 @@ use uuid::Uuid;
 #[command(
     name = "log-print",
     version,
-    about = "Local multi-stream logs, independent plugins and live views"
+    about = "Local multi-stream logs, independent plugins and archives"
 )]
 struct Cli {
     #[arg(long, global = true, default_value = ".log-print/state.json")]

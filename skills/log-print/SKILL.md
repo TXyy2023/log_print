@@ -5,7 +5,7 @@ description: 用 log-print CLI 启动本地日志采集、读取流和停止实�
 
 # log-print
 
-先在项目根目录运行命令；使用已构建的 `target/release/log-print`（Windows 加 `.exe`）。配置和命令入口见项目 `README.md`、`doc/cli.md`。
+先在项目根目录运行命令；使用已构建的 `target/release/log-print`（Windows 加 `.exe`）。配置和命令入口见项目 `README.md`、`log-print --help` 及各插件 README。
 
 最小完整流程：
 

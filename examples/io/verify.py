@@ -12,10 +12,9 @@ import tempfile
 import threading
 import time
 import uuid
-from unittest import SkipTest
 
 ROOT = Path(__file__).resolve().parents[2]
-BIN = ROOT / 'target' / 'debug'
+BIN = ROOT / 'target' / os.environ.get('LOG_PRINT_PROFILE', 'debug')
 SUFFIX = '.exe' if os.name == 'nt' else ''
 RESULTS = []
 
@@ -136,8 +135,6 @@ def run_case(name, fn):
         try:
             runtime = fn(directory)
             RESULTS.append({'case': name, 'status': 'passed'})
-        except SkipTest as e:
-            RESULTS.append({'case':name,'status':'skipped','reason':str(e)})
         except Exception:
             for path in directory.glob('*.stderr'):
                 print(path.name+': '+path.read_text(errors='replace'), file=sys.stderr)
@@ -299,29 +296,6 @@ def source_tree(directory):
     return with_runtime(directory,specs,test)
 
 
-def serial_pty(directory):
-    import tty
-    master,slave=os.openpty();tty.setraw(slave);port=os.ttyname(slave);out=directory/'out'
-    specs=[plugin('source','input-serial',{'port':port,'stream':'serial'},['serial']),plugin('raw','output-raw',{'streams':['serial'],'path':str(out)},reads=['serial'])]
-    def test(r):
-        r.start('raw');r.start('source')
-        def reading():
-            p=r.children['source']
-            if p.poll() is not None:
-                reason=(directory/'source.stderr').read_text()
-                if sys.platform=='darwin' and 'Not a typewriter' in reason:
-                    raise SkipTest('macOS PTY rejects serial driver configuration with ENOTTY; physical serial hardware not tested')
-                raise AssertionError(reason)
-            return any(p['id']=='source' and (p.get('report') or {}).get('state')=='reading' for p in r.rpc('status')['plugins'])
-        wait(reading,'serial not reading')
-        os.write(master,b'pty\x00\xff-no-newline')
-        wait(lambda:content(out)==b'pty\x00\xff-no-newline','PTY serial bytes differ')
-        r.stop('source');r.stop('raw')
-    try:return with_runtime(directory,specs,test)
-    finally:os.close(master);os.close(slave)
-
-
 if __name__=='__main__':
     for name,case in [('program_raw',program),('file_follow',file_follow),('file_tail_registration',file_tail_registration),('replay_transform',replay_transform),('multi_parent_transform',multi_parent),('source_tree_cleanup',source_tree)]:run_case(name,case)
-    if os.name=='posix':run_case('serial_pty_not_physical_hardware',serial_pty)
     print(json.dumps({'platform':sys.platform,'python':sys.version.split()[0],'cases':RESULTS,'real_hardware':'not_tested'},indent=2))

@@ -6,7 +6,9 @@
 python3 tests/run.py
 ```
 
-Windows 可使用 `python tests/run.py`。协调器共执行 10 个必做阶段：格式检查、整个 workspace 的 Clippy、Rust 测试、构建、真实 Core 协议测试、主进程/插件生命周期测试、独立可靠性回归（缺失保存段、损坏、反馈环、握手 RST 等），以及 `examples/io/verify.py`、`examples/io/languages.py`、`plugins/outputs/output-webui/tests/verify_ui.py`。POSIX UI 验证开启 PTY 渲染/缩放，Windows 使用 headless；所有指定脚本均为必做，缺失会失败。构建失败时跳过进程测试，避免误用旧二进制。
+Windows 可使用 `python tests/run.py`。协调器执行格式、workspace Clippy、Rust 测试、构建、真实 Core 协议、主进程生命周期、可靠性回归、文件/程序/回放/转换 I/O、语言输入和 output-file 归档验收。串口、TUI、WebUI 不在 0.1.0 默认验收范围。所有指定脚本缺失均视为失败；构建失败时跳过进程测试，避免误用旧二进制。
+
+归档阶段运行真实 Core 与 output-file 进程，核对文件字节、完整 Record、checkpoint、故障恢复与控制结果。测试证据区分本机、云端各平台，以及进程中断与真实断电。
 
 语言阶段运行实际程序，经 `input-program → Core → output-raw` 核验 stdout/stderr 字节及源程序退出前的无换行推送，报告为 `input-languages.json`。Python/Rust 必需；Node.js、C、C++、Go、shell 按实际可用工具运行，缺失明确记为 skipped，已安装但构建或执行失败则使阶段失败。完整套件通过不代表被跳过的语言已验证；逐平台支持范围以该 JSON 的实际版本与状态为准。
 
