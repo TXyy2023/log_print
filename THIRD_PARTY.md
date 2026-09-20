@@ -11,6 +11,6 @@ Rust 依赖的实际版本和校验值由 Cargo.lock 锁定，可通过 `cargo m
 | encoding_rs 0.8.40 | 字符编码 | (Apache-2.0 OR MIT) AND BSD-3-Clause |
 | chardetng / regex | 编码检测、文本规则 | MIT/Apache-2.0 |
 | Plotters（暂缓的 log-plot 源码） | 图表导出 | MIT |
-| Noto Sans SC（暂缓的 log-plot 源码） | 中文导出字体 | SIL Open Font License 1.1；[许可证](crates/log-plot/assets/OFL.txt)、[来源](crates/log-plot/assets/SOURCES.md) |
+| Noto Sans SC（暂缓的 log-plot 源码） | 中文导出字体 | SIL Open Font License 1.1；[许可证](project/crates/log-plot/assets/OFL.txt)、[来源](project/crates/log-plot/assets/SOURCES.md) |
 
 性能对照程序不嵌入产品，其版本/来源和构建方式由性能报告单独列出。新增分发资产时同时记录来源、固定版本、许可证和NOTICE，不仅复制压缩脚本。

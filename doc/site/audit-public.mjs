@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const root=path.dirname(new URL(import.meta.url).pathname);
+const inputs=JSON.parse(fs.readFileSync(path.join(root,'.cache/public/build-inputs.json')));
+if(inputs.some(p=>!p.startsWith('doc/public/'))) throw Error('Non-public source found');
+const walk=d=>fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(path.join(d,e.name)):[path.join(d,e.name)]);
+const files=walk(path.join(root,'dist/public'));
+const bad=files.filter(p=>/\.(?:html|js|json|css)$/.test(p)).filter(p=>/todolist|implementation-contract|log-print-agent-tools|doc\/local|\/Users\/a1234|local\/archive|local\/design/.test(fs.readFileSync(p,'utf8')));
+if(bad.length) throw Error(`Private content marker found: ${bad.join(', ')}`);
+console.log(`Public isolation PASS: ${inputs.length} allowlisted inputs, ${files.length} output files inspected.`);

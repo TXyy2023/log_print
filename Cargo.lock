@@ -69,7 +69,7 @@ checksum = "330a5ed07fa54e4702c9d6c4174f74427fc0ef6e214bbd677ae50a5099946470"
 
 [[package]]
 name = "app-log-print"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "clap",
@@ -454,7 +454,7 @@ dependencies = [
 
 [[package]]
 name = "input-file"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "io-plugin-util",
@@ -469,7 +469,7 @@ dependencies = [
 
 [[package]]
 name = "input-program"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "io-plugin-util",
@@ -484,7 +484,7 @@ dependencies = [
 
 [[package]]
 name = "input-replay"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "chrono",
@@ -499,7 +499,7 @@ dependencies = [
 
 [[package]]
 name = "io-plugin-util"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "log-plugin-sdk",
@@ -561,7 +561,7 @@ dependencies = [
 
 [[package]]
 name = "log-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "fs2",
@@ -576,7 +576,7 @@ dependencies = [
 
 [[package]]
 name = "log-plugin-sdk"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "log-proto",
@@ -588,7 +588,7 @@ dependencies = [
 
 [[package]]
 name = "log-proto"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "serde",
@@ -676,7 +676,7 @@ checksum = "384b8ab6d37215f3c5301a95a4accb5d64aa607f1fcb26a11b5303878451b4fe"
 
 [[package]]
 name = "output-file"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "fs2",
@@ -694,7 +694,7 @@ dependencies = [
 
 [[package]]
 name = "output-raw"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "io-plugin-util",
@@ -708,7 +708,7 @@ dependencies = [
 
 [[package]]
 name = "output-transform"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "chardetng",

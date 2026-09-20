@@ -1,8 +1,8 @@
 # 参与开发
 
-安装 Rust 1.92+ 与 Python 3.12+，运行 `cargo build --workspace --locked`，再运行 `python3 tests/run.py`。不要将历史 MVP 的通过结果算作正式版本验收。
+安装 Rust 1.92+ 与 Python 3.12+，运行 `cargo build --workspace --locked`，再运行 `python3 quality/run.py`。不要将历史 MVP 的通过结果算作正式版本验收。
 
-具体插件与传输无关的业务逻辑留在插件；0.1.0 暂缓串口、TUI 与 WebUI。第三方可使用Rust SDK或按协议接入，无需修改Core。
+具体插件与传输无关的业务逻辑留在插件；当前版本暂缓串口、TUI 与 WebUI。第三方可使用Rust SDK或按协议接入，无需修改Core。
 
 每个改动说明触发条件、改变后的可见行为、对应测试和未覆盖边界。协议/存储/身份改动应覆盖旧游标、幂等、断连、缺口或取消等受影响路径；纯文档小改不增加形式化的文字匹配测试。
 

@@ -1,0 +1,22 @@
+[
+  "index.md",
+  "installation.md",
+  "quickstart.md",
+  "concepts.md",
+  "guides/program.md",
+  "guides/file.md",
+  "guides/replay.md",
+  "guides/read.md",
+  "guides/transform.md",
+  "guides/archive.md",
+  "guides/recovery.md",
+  "troubleshooting.md",
+  "reference/cli.md",
+  "reference/configuration.md",
+  "plugins/input-file.md",
+  "plugins/input-program.md",
+  "plugins/input-replay.md",
+  "plugins/output-raw.md",
+  "plugins/output-transform.md",
+  "plugins/output-file.md"
+]

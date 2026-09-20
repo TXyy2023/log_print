@@ -1,11 +1,11 @@
 /target/
 **/target/
-/local-archive/
-/test/
+/project/.local/archive/
+/quality/archive/legacy-test/
 /dist/
 /.log-print/
 /example.log
-/artifacts/
+/quality/artifacts/
 **/__pycache__/
 *.pyc
 .DS_Store
@@ -14,12 +14,24 @@
 !*.env.example
 
 # Local documentation; opt individual files in with explicit exceptions later.
-/doc/**
+/doc/*
+!/doc/README.md
+!/doc/public/
+!/doc/site/
 # Deferred plugins remain on this machine, outside the 0.1.0 workspace.
-/plugins/inputs/input-serial/
-/plugins/outputs/output-tui/
-/plugins/outputs/output-webui/
+/project/plugins/inputs/input-serial/
+/project/plugins/outputs/output-tui/
+/project/plugins/outputs/output-webui/
 # Local deferred dashboard example.
-/examples/dashboard.json
+/project/examples/dashboard.json
 # Example archive outputs and Core history.
 /capture/
+
+# Documentation build dependencies and generated sites.
+/doc/site/node_modules/
+/doc/site/.cache/
+/doc/site/dist/
+
+# Local-only deferred UI tests and browser tool scratch output.
+/quality/tests/output-webui/
+/.playwright-mcp/

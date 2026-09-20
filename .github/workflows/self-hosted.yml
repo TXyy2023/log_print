@@ -21,7 +21,7 @@ jobs:
           persist-credentials: false
       - name: Run installed local toolchain without login shell
         shell: bash
-        run: bash ci/self-hosted/run-macos.sh
+        run: bash quality/ci/self-hosted/run-macos.sh
         env:
           LOG_PRINT_SELF_HOSTED_ENABLED: 'true'
           CARGO_TERM_COLOR: never
@@ -34,8 +34,8 @@ jobs:
         with:
           name: validation-self-hosted-macos
           path: |
-            artifacts/validation/
-            !artifacts/validation/**/state.json
-            !artifacts/validation/**/.log-print-runtime-*/**
+            quality/artifacts/validation/
+            !quality/artifacts/validation/**/state.json
+            !quality/artifacts/validation/**/.log-print-runtime-*/**
           if-no-files-found: warn
           retention-days: 14

@@ -1,0 +1,5 @@
+:root { --vp-c-brand-1: #28716b; --vp-c-brand-2: #34877e; --vp-c-brand-3: #409e92; }
+.vp-doc .mermaid-diagram { overflow-x: auto; background: #fff; border-radius: 8px; padding: 12px; margin: 18px 0; }
+.vp-doc .mermaid-diagram svg { min-width: 480px; max-width: 100%; height: auto; }
+.vp-doc img { background: white; border-radius: 6px; }
+.VPDoc.has-aside .content-container { max-width: 860px !important; }

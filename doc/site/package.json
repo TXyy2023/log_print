@@ -1,0 +1,19 @@
+{
+  "name": "log-print-docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev:local": "node dev.mjs",
+    "build:local": "node prepare.mjs local && vitepress build .cache/local",
+    "preview:local": "vitepress preview .cache/local --host 127.0.0.1 --port 5173",
+    "build:public": "node prepare.mjs public && vitepress build .cache/public && node audit-public.mjs",
+    "preview:public": "vitepress preview .cache/public --host 127.0.0.1 --port 5174",
+    "start": "node service.mjs start",
+    "stop": "node service.mjs stop",
+    "status": "node service.mjs status"
+  },
+  "devDependencies": {
+    "vitepress": "1.6.4",
+    "mermaid": "11.17.2"
+  }
+}

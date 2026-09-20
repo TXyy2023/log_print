@@ -31,7 +31,7 @@ jobs:
         with:
           components: rustfmt, clippy
       - name: Validate actual workspace and child processes
-        run: python tests/run.py
+        run: python quality/run.py
         env:
           CARGO_TERM_COLOR: never
           PYTHONUNBUFFERED: '1'
@@ -43,8 +43,8 @@ jobs:
         with:
           name: validation-${{ matrix.os }}
           path: |
-            artifacts/validation/
-            !artifacts/validation/**/state.json
-            !artifacts/validation/**/.log-print-runtime-*/**
+            quality/artifacts/validation/
+            !quality/artifacts/validation/**/state.json
+            !quality/artifacts/validation/**/.log-print-runtime-*/**
           if-no-files-found: warn
           retention-days: 14
