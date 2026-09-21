@@ -1,40 +1,32 @@
-# output-transform：日志转换
+# output-transform：加工与派生流
 
-先完成任务教程：[使用步骤](../guides/transform.md)。本页用于查询参数和行为边界。
-
-消费父流，转换后发布到同一个 Core 的独立派生流。
-
-下列 JSON 是插件声明中的 `config`，不是完整启动配置。发布流须列入 `streams`，读取流须列入 `reads`；公共结构见 [配置参考](../reference/configuration.md)。
-
-插件接受 `shutdown`、`config.get`。标为动态的字段可通过 CLI `config set` 修改，只影响当前进程；其他字段需更新配置并重启实例加载。
-
-## 配置
+订阅原流，以 Output 身份向另一条单写入者派生流发布加工结果。原流 payload 与记录保持不变。使用教程见[转换日志](../guides/transform.md)。
 
 ```json
-{"streams":["program.out"],"output_stream":"clean","input_encoding":"utf-8","output_encoding":"utf-8","split_lines":true,"keep_newline":true,"prefix":"","suffix":"","delete":["DEBUG: "],"replace":[{"pattern":"temp=","with":"temperature="}]}
+{"streams":["source"],"output_stream":"derived","number":true,"timestamp":true,"reorder":true,"max_records":128,"max_bytes":4194304,"max_delay_ms":100,"max_channels":128}
 ```
 
-插件声明须同时包括 `reads:["program.out"]` 与 `streams:[{"id":"clean","parents":["program.out"]}]`。多父场景 streams 与 parents 集合必须一致；逐父保持解码/分行状态。发布携带全部父的最近已消费 seq，尚未见齐父流时有界暂存；超限报错，禁止伪造父进度。父 gap/epoch 变化停止，避免拼接跨缺口的字符或行。重启生成新 run key，会重新派生请求范围，不宣称跨重启 exactly-once。
+主配置须声明 `role:"output"`、授权 `reads` 和独立派生 `streams`。实际绑定 reads 优先于 config.streams。派生流不能是原流，也不能借知道 UUID 取得其它流的写入资格。
 
-| 字段 | 默认/范围 | 生效 |
-|---|---|---|
-| streams / output_stream / from | 非空 / derived / 1 | 重启 |
-| input_encoding | auto；也可 raw 或 encoding_rs 标签 | 重启 |
-| output_encoding | utf-8；raw 或显式编码标签 | 重启 |
-| radix | none / hex_encode,hex_decode,bin_encode,bin_decode,dec_encode,dec_decode | 重启 |
-| split_lines / keep_newline / flush_partial | false / true / true | 重启 |
-| max_pending_bytes | 65536，4..1048576；单行及首次等父流限制 | 重启 |
-| prefix / suffix | 空 | 动态 |
-| delete / replace | 空数组；最多 64 规则，pattern ≤4096 字节 | 动态 |
+| 字段 | 默认及行为 |
+| --- | --- |
+| streams / output_stream | 可省略；使用注册时授权的读取流和派生流 UUID |
+| number | false；在记录前加 `[n=1] `，本次插件运行从 1 递增 |
+| timestamp | false；加 `[ts_ns=...] `，来源纳秒时间优先，否则 Core 观察时间 |
+| reorder | false；true 按来源序号有限等待重排 |
+| max_records | 128；缓冲总条数 1–4096 |
+| max_bytes | 4 MiB；缓冲序列化总大小，64 KiB–64 MiB |
+| max_delay_ms | 100；缺号最多等待 1–60000 ms 后触发发布 |
+| max_channels | 128；最多 1–4096 个来源状态，超出明确失败 |
 
-## 行为与限制
+默认不启用加工时 payload 原样派生。开启编号/时间戳后仍是每条输入一条输出；结果超过协议 payload 上限明确失败，需减小输入块。不会隐式拆成多条或执行任意用户代码。
 
-处理顺序：进制 decode → 字符解码 → 跨块按 LF 分行 → delete/replace → prefix/suffix → 目标编码 → 进制 encode。进制是字节的数值表示，和字符编码不同。数值 token 用空白分隔，支持十六进制 0x、二进制 0b 前缀；跨块 token 保留到空白或 shutdown，不把一字节拆包当 token 结束。encode 使用小写 hex、8 位 binary 或十进制并加空格，三组可往返任意字节。数值用途推荐 input_encoding=raw（此时忽略字符目标编码）。
+## 重排、重复与缺号
 
-手动编码使用 [encoding_rs 流式 Decoder](https://docs.rs/encoding_rs/latest/encoding_rs/)，支持跨块多字节字符，非法字节或不可表示目标直接报错；UTF-16 输出显式处理，UTF-32/UTF-7 不在支持范围。auto 验证 UTF-8 并用 [chardetng 0.1.17](https://docs.rs/chardetng/0.1.17/chardetng/struct.EncodingDetector.html) 报告最可能的旧编码。检测器 assess 布尔值不是置信概率，所以不凭它自动转写旧编码；不确定字节保留原样并跳过文本编辑，用户通过明确 input_encoding 转换。按字节分行的 auto/raw 不用于可靠解析 UTF-16，应手动指定编码。
+重排键为 `(stream,epoch,channel)`，每组期望 `source_seq` 从 1 开始。程序 stdout/stderr 各有独立来源序号，不假定两者原本存在共同顺序。没有 `source_seq` 的记录按到达顺序直接发布并计数。
 
-删除/替换采用 [Rust regex](https://docs.rs/regex/latest/regex/)，替换支持 `$1` 等捕获。规则动态更新会用于下一次完成的单位，包括已缓存部分行。单次编辑输出上限为 max_pending_bytes 的 4 倍，再分成 ≤65536 字节发布；数值格式展开也有固定倍数上限。正常 shutdown 会尝试 flush 尾字符/末行，2 秒超时则报告未确认；Core 没有源 EOF 事件，因此无换行的最后部分行可等待 shutdown 才输出。任何失败均保留 Core 原始父流不变。
+重复来源号保留第一条；已发布位置之前的迟到号丢弃。缺号时有限等待；超过窗口或缓冲预算将满时，发布相应组当前最小号和之后连续的记录，统计跳过的来源号。正常停止先结束接受，再排空已接受事件和待重排记录。此策略不能恢复未到达或被 Core 覆盖的数据。
 
-选型：encoding_rs/chardetng/regex 使用成熟 Rust 实现，减少自写编码表和回溯正则风险；许可证分别为 encoding_rs `(Apache-2.0 OR MIT) AND BSD-3-Clause`、chardetng `Apache-2.0 OR MIT`、regex `MIT OR Apache-2.0`。版本以 Cargo.lock 为准。自动旧编码保守保留是实施默认，不能宣称任意二进制均可自动准确识别。
+每条派生记录的 `upstream` 只指向它实际来自的原流/Core 序号，不捏造其他流进度。派生记录保留 channel，并在每个输出 channel 内生成从 1 递增的 source_seq。编号前缀则是整个转换实例的发布编号。
 
-`from:0` 表示连接订阅时仅接收新记录，`from:1` 请求历史起点；默认 1。`config.get` 返回填齐默认后的有效值、每字段来源及动态字段。
+首次从当前缓冲最早保留记录订阅，读到末尾后持续等待。Input EOF 不是自动停止指令。配置只在主进程重启后更新；本版没有旧版编码、正则替换或动态配置能力。

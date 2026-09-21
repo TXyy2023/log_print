@@ -91,7 +91,8 @@ mod tests {
             observed_ts_ns: u64::MAX,
             upstream: BTreeMap::from([("origin".into(), u64::MAX)]),
             upstream_epochs: BTreeMap::from([("origin".into(), "other epoch".into())]),
-            durability: "saved".into(),
+            channel: Some("stdout".into()),
+            source_seq: Some(u64::MAX),
         }
     }
     fn resume(mut config: Config) -> Config {
@@ -155,7 +156,7 @@ mod tests {
             drop(archive);
             let mut archive = Archive::open(&resume(config), BTreeMap::new()).unwrap();
             let mut conflicting = record(1, b"");
-            conflicting.durability = "buffered".into();
+            conflicting.channel = Some("stderr".into());
             assert!(archive
                 .accept(&conflicting)
                 .unwrap_err()
@@ -314,7 +315,7 @@ mod tests {
         drop(archive);
         let value: serde_json::Value =
             serde_json::from_slice(&fs::read(temp.0.join("s.raw")).unwrap()).unwrap();
-        assert_eq!(value["format_version"], 1);
+        assert_eq!(value["format_version"], 2);
         assert_eq!(
             serde_json::from_value::<Record>(value["record"].clone()).unwrap(),
             record

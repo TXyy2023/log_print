@@ -1,8 +1,8 @@
-//! Bounded plugin transport. An owned writer completes frames after caller cancellation.
-use anyhow::{anyhow, bail, Context, Result};
+//! Plugin operations and a small, static-configuration lifecycle above log-proto transport.
+use anyhow::{anyhow, bail, Context as _, Result};
 use log_proto::{
-    read_json, write_json, Fault, Hello, Record, Request, ServerMessage, EVENT_QUEUE, MAX_WIRE,
-    PROTOCOL,
+    ClientConnection, ClientReader, ClientWriter, Fault, Hello, Record, Request, ServerMessage,
+    TransportKind, EVENT_QUEUE, PROTOCOL,
 };
 use serde_json::{json, Value};
 use std::{
@@ -14,14 +14,12 @@ use std::{
     time::Duration,
 };
 use tokio::{
-    io::{AsyncBufRead, AsyncWrite, AsyncWriteExt, BufReader},
-    net::{tcp::OwnedWriteHalf, TcpStream},
     sync::{mpsc, oneshot, watch, Mutex, Semaphore},
     task::AbortHandle,
 };
-
-const RPC_TIMEOUT: Duration = Duration::from_secs(30);
-const OUTBOUND_CAPACITY: usize = 32;
+mod lifecycle;
+pub use lifecycle::{bounded, connect, finish, stopped, termination, Context};
+const TIMEOUT: Duration = Duration::from_secs(30);
 #[derive(Clone, Debug)]
 pub enum Event {
     Record(Record),
@@ -43,6 +41,12 @@ pub struct Control {
     pub method: String,
     pub args: Value,
 }
+/// TCP admission and UDP local transmission are deliberately distinct outcomes.
+#[derive(Clone, Debug)]
+pub enum PublishOutcome {
+    Accepted(Box<Record>),
+    LocalSent,
+}
 type Pending = Arc<std::sync::Mutex<BTreeMap<u64, oneshot::Sender<Result<Value, Fault>>>>>;
 struct PendingGuard {
     id: u64,
@@ -53,65 +57,51 @@ impl Drop for PendingGuard {
         self.pending.lock().unwrap().remove(&self.id);
     }
 }
-struct Transport {
-    pending: Pending,
-    failure: std::sync::Mutex<Option<Fault>>,
-    shutdown: watch::Sender<bool>,
-    events: mpsc::Sender<Event>,
+struct ConnectionWriter(ClientWriter);
+impl std::ops::Deref for ConnectionWriter {
+    type Target = ClientWriter;
+    fn deref(&self) -> &ClientWriter {
+        &self.0
+    }
 }
-impl Transport {
-    fn error(&self) -> Option<Fault> {
-        self.failure.lock().unwrap().clone()
+impl std::ops::DerefMut for ConnectionWriter {
+    fn deref_mut(&mut self) -> &mut ClientWriter {
+        &mut self.0
     }
-    fn fail(&self, reason: impl ToString) {
-        let fault = Fault {
-            code: "connection_lost".into(),
-            message: format!(
-                "{}; unacknowledged operation outcomes may be unknown",
-                reason.to_string()
-            ),
-        };
-        {
-            let mut failure = self.failure.lock().unwrap();
-            if failure.is_some() {
-                return;
-            }
-            *failure = Some(fault.clone());
-        }
-        self.shutdown.send_replace(true);
-        for (_, reply) in std::mem::take(&mut *self.pending.lock().unwrap()) {
-            let _ = reply.send(Err(fault.clone()));
-        }
-        // Never make failure notification block the RPC reader. Pending requests and
-        // the closed control channel also expose failure when the event queue is full.
-        let _ = self.events.try_send(Event::Disconnected {
-            stream: "*".into(),
-            reason: fault.message,
-        });
+}
+impl Drop for ConnectionWriter {
+    fn drop(&mut self) {
+        self.0.disconnect();
     }
+}
+struct Outbound {
+    request: Request,
+    sent: oneshot::Sender<Result<(), String>>,
 }
 struct Inner {
     address: String,
     plugin: String,
     token: String,
     config: Value,
-    outbound: mpsc::Sender<Vec<u8>>,
-    priority: mpsc::Sender<Vec<u8>>,
-    transport: Arc<Transport>,
+    kind: TransportKind,
+    own_stream: Option<String>,
+    read_streams: Vec<String>,
     sequence: AtomicU64,
+    outbound: mpsc::Sender<Outbound>,
+    priority: mpsc::Sender<Outbound>,
     slots: Semaphore,
     control_slots: Semaphore,
+    pending: Pending,
     events: mpsc::Sender<Event>,
+    aliases: Mutex<BTreeMap<String, String>>,
     subscriptions: Mutex<BTreeMap<String, AbortHandle>>,
-    rpc_reader: AbortHandle,
-    rpc_writer: AbortHandle,
-    timeout: Duration,
+    reader: AbortHandle,
+    writer: AbortHandle,
 }
 impl Drop for Inner {
     fn drop(&mut self) {
-        self.transport.fail("SDK client closed");
-        self.rpc_reader.abort();
-        self.rpc_writer.abort();
+        self.reader.abort();
+        self.writer.abort();
         for handle in self.subscriptions.get_mut().values() {
             handle.abort();
         }
@@ -121,33 +111,17 @@ impl Drop for Inner {
 pub struct Client {
     inner: Arc<Inner>,
 }
-fn frame(request: &Request) -> Result<Vec<u8>> {
-    let mut bytes = serde_json::to_vec(request)?;
-    if bytes.len() + 1 > MAX_WIRE {
-        bail!("frame_too_large")
-    }
-    bytes.push(b'\n');
-    Ok(bytes)
-}
 async fn socket(
     address: &str,
+    kind: TransportKind,
     plugin: &str,
     token: &str,
     events: bool,
-) -> Result<(BufReader<tokio::net::tcp::OwnedReadHalf>, OwnedWriteHalf)> {
+) -> Result<(ClientReader, ConnectionWriter, Value)> {
     tokio::time::timeout(Duration::from_secs(10), async {
-        let address: std::net::SocketAddr = address
-            .parse()
-            .context("Core address must be a loopback socket address")?;
-        if !address.ip().is_loopback() {
-            bail!("Core address must be loopback")
-        }
-        let stream = TcpStream::connect(address).await?;
-        stream.set_nodelay(true)?;
-        let (r, mut w) = stream.into_split();
-        let mut r = BufReader::new(r);
-        write_json(
-            &mut w,
+        let (mut reader, writer) = ClientConnection::connect(
+            address,
+            kind,
             &Hello {
                 protocol: PROTOCOL.into(),
                 plugin: plugin.into(),
@@ -156,122 +130,20 @@ async fn socket(
             },
         )
         .await?;
-        match read_json::<_, ServerMessage>(&mut r).await? {
+        match reader.receive().await? {
             Some(ServerMessage::Response {
                 id: 0,
-                error: None,
                 result,
-            }) if result["protocol"] == PROTOCOL => (),
-            Some(ServerMessage::Response { error: Some(e), .. }) => return Err(e.into()),
+                error: None,
+            }) if result["protocol"] == PROTOCOL => Ok((reader, ConnectionWriter(writer), result)),
+            Some(ServerMessage::Response {
+                error: Some(error), ..
+            }) => Err(error.into()),
             _ => bail!("invalid Core welcome"),
         }
-        Ok((r, w))
     })
     .await
-    .context("Core connection/handshake timed out")?
-}
-async fn writer_worker<W: AsyncWrite + Unpin>(
-    mut writer: W,
-    mut ordinary: mpsc::Receiver<Vec<u8>>,
-    mut priority: mpsc::Receiver<Vec<u8>>,
-    transport: Arc<Transport>,
-    timeout: Duration,
-) {
-    let mut stop = transport.shutdown.subscribe();
-    loop {
-        if *stop.borrow() {
-            return;
-        }
-        let bytes = tokio::select! {
-            biased;
-            _=stop.changed()=>return,
-            Some(bytes)=priority.recv()=>bytes,
-            Some(bytes)=ordinary.recv()=>bytes,
-            else=>return,
-        };
-        // This worker owns the full frame. Cancellation of the requesting future
-        // cannot cancel write_all. A transport timeout closes BOTH socket halves.
-        let result = tokio::select! {
-            _=stop.changed()=>return,
-            result=tokio::time::timeout(timeout,async {writer.write_all(&bytes).await?;writer.flush().await})=>result,
-        };
-        match result {
-            Ok(Ok(())) => (),
-            Ok(Err(e)) => {
-                transport.fail(format!("RPC write failed: {e}"));
-                return;
-            }
-            Err(_) => {
-                transport.fail("RPC write deadline exceeded");
-                return;
-            }
-        }
-    }
-}
-async fn reader_worker<R: AsyncBufRead + Unpin>(
-    mut reader: R,
-    controls: mpsc::Sender<Control>,
-    priority: mpsc::Sender<Vec<u8>>,
-    transport: Arc<Transport>,
-) {
-    let mut stop = transport.shutdown.subscribe();
-    loop {
-        if *stop.borrow() {
-            return;
-        }
-        let message = tokio::select! {_=stop.changed()=>return,message=read_json::<_,ServerMessage>(&mut reader)=>message};
-        match message {
-            Ok(Some(ServerMessage::Response { id, result, error })) => {
-                if let Some(reply) = transport.pending.lock().unwrap().remove(&id) {
-                    let _ = reply.send(match error {
-                        Some(e) => Err(e),
-                        None => Ok(result),
-                    });
-                }
-            }
-            Ok(Some(ServerMessage::Control {
-                call_id,
-                method,
-                args,
-            })) => {
-                if controls
-                    .try_send(Control {
-                        call_id,
-                        method,
-                        args,
-                    })
-                    .is_err()
-                {
-                    let reply = Request {
-                        id: 0,
-                        op: "reply".into(),
-                        args: json!({"call_id":call_id,"result":null,"error":{"code":"control_busy","message":"Plugin control queue is full or closed"}}),
-                    };
-                    // A full reserved queue means this connection cannot safely
-                    // service control. Fail it rather than block reading replies.
-                    let enqueued = frame(&reply)
-                        .ok()
-                        .is_some_and(|bytes| priority.try_send(bytes).is_ok());
-                    if !enqueued {
-                        transport.fail("control reply queue exhausted");
-                        return;
-                    }
-                }
-            }
-            Ok(Some(_)) => {
-                transport.fail("unexpected data on RPC connection");
-                return;
-            }
-            Ok(None) => {
-                transport.fail("Core RPC disconnected");
-                return;
-            }
-            Err(e) => {
-                transport.fail(format!("Core RPC framing error: {e}"));
-                return;
-            }
-        }
-    }
+    .context("Core registration timed out")?
 }
 pub async fn connect_env() -> Result<(Client, mpsc::Receiver<Event>, mpsc::Receiver<Control>)> {
     let address = std::env::var("LOG_PRINT_CORE")
@@ -280,7 +152,12 @@ pub async fn connect_env() -> Result<(Client, mpsc::Receiver<Event>, mpsc::Recei
     let token = std::env::var("LOG_PRINT_TOKEN")?;
     let config =
         serde_json::from_str(&std::env::var("LOG_PRINT_CONFIG").unwrap_or_else(|_| "{}".into()))?;
-    Client::connect_with_config(&address, &plugin, &token, config).await
+    let kind = match std::env::var("LOG_PRINT_TRANSPORT").as_deref() {
+        Ok("udp") => TransportKind::Udp,
+        Ok("tcp") | Err(_) => TransportKind::Tcp,
+        Ok(other) => bail!("unknown transport {other}"),
+    };
+    Client::connect_with_transport(&address, &plugin, &token, config, kind).await
 }
 impl Client {
     pub async fn connect(
@@ -296,135 +173,227 @@ impl Client {
         token: &str,
         config: Value,
     ) -> Result<(Self, mpsc::Receiver<Event>, mpsc::Receiver<Control>)> {
-        let (reader, writer) = socket(address, plugin, token, false).await?;
-        Ok(Self::from_parts(
-            address,
-            plugin,
-            token,
-            config,
-            reader,
-            writer,
-            RPC_TIMEOUT,
-        ))
+        Self::connect_with_transport(address, plugin, token, config, TransportKind::Tcp).await
     }
-    fn from_parts<R, W>(
+    pub async fn connect_with_transport(
         address: &str,
         plugin: &str,
         token: &str,
         config: Value,
-        reader: R,
-        writer: W,
-        timeout: Duration,
-    ) -> (Self, mpsc::Receiver<Event>, mpsc::Receiver<Control>)
-    where
-        R: AsyncBufRead + Unpin + Send + 'static,
-        W: AsyncWrite + Unpin + Send + 'static,
-    {
-        let (outbound, ordinary_rx) = mpsc::channel(OUTBOUND_CAPACITY);
-        let (priority, priority_rx) = mpsc::channel(OUTBOUND_CAPACITY);
-        let (events, rx) = mpsc::channel(EVENT_QUEUE);
-        let (controls, crx) = mpsc::channel(32);
-        let (shutdown, _) = watch::channel(false);
-        let transport = Arc::new(Transport {
-            pending: Arc::new(std::sync::Mutex::new(BTreeMap::new())),
-            failure: std::sync::Mutex::new(None),
-            shutdown,
-            events: events.clone(),
+        kind: TransportKind,
+    ) -> Result<(Self, mpsc::Receiver<Event>, mpsc::Receiver<Control>)> {
+        let (mut reader, mut writer, welcome) = socket(address, kind, plugin, token, false).await?;
+        let (outbound, mut outgoing) = mpsc::channel::<Outbound>(32);
+        let (priority, mut priority_rx) = mpsc::channel::<Outbound>(8);
+        let (events, event_rx) = mpsc::channel(EVENT_QUEUE);
+        let (controls, control_rx) = mpsc::channel(32);
+        let pending: Pending = Arc::default();
+        let (closed, mut close_rx) = watch::channel(false);
+        let writer_closed = closed.clone();
+        let writer_task = tokio::spawn(async move {
+            loop {
+                let item = tokio::select! { biased; _=close_rx.changed()=>break,Some(item)=priority_rx.recv()=>item,Some(item)=outgoing.recv()=>item,else=>break };
+                // This task owns a complete request. Cancelling its caller cannot truncate a TCP frame.
+                let result = tokio::time::timeout(TIMEOUT, writer.send(&item.request)).await;
+                let outcome = match result {
+                    Ok(Ok(())) => Ok(()),
+                    Ok(Err(e)) => Err(e.to_string()),
+                    Err(_) => Err("transmission timed out; outcome unknown".into()),
+                };
+                let failed = outcome.is_err();
+                let _ = item.sent.send(outcome);
+                if failed {
+                    writer_closed.send_replace(true);
+                    break;
+                }
+            }
         });
-        let rpc_writer = tokio::spawn(writer_worker(
-            writer,
-            ordinary_rx,
-            priority_rx,
-            transport.clone(),
-            timeout,
-        ));
-        let rpc_reader = tokio::spawn(reader_worker(
-            reader,
-            controls,
-            priority.clone(),
-            transport.clone(),
-        ));
-        (
+        let reader_pending = pending.clone();
+        let reader_events = events.clone();
+        let mut reader_closed = closed.subscribe();
+        let reader_task = tokio::spawn(async move {
+            let reason = loop {
+                let next = tokio::select! {_=reader_closed.changed()=>break "Core writer closed".to_string(),next=reader.receive()=>next};
+                match next {
+                    Ok(Some(ServerMessage::Response { id, result, error })) => {
+                        if let Some(sender) = reader_pending.lock().unwrap().remove(&id) {
+                            let _ = sender.send(match error {
+                                Some(e) => Err(e),
+                                None => Ok(result),
+                            });
+                        }
+                    }
+                    Ok(Some(ServerMessage::Control {
+                        call_id,
+                        method,
+                        args,
+                    })) => {
+                        if controls
+                            .try_send(Control {
+                                call_id,
+                                method,
+                                args,
+                            })
+                            .is_err()
+                        {
+                            break "plugin control queue exhausted".into();
+                        }
+                    }
+                    Ok(Some(_)) => break "unexpected event on operation connection".into(),
+                    Ok(None) => break "Core connection closed".into(),
+                    Err(e) => break e.to_string(),
+                }
+            };
+            closed.send_replace(true);
+            for (_, sender) in std::mem::take(&mut *reader_pending.lock().unwrap()) {
+                let _ = sender.send(Err(Fault {
+                    code: "connection_lost".into(),
+                    message: format!("{reason}; unconfirmed outcomes unknown"),
+                }));
+            }
+            let _ = reader_events.try_send(Event::Disconnected {
+                stream: "*".into(),
+                reason,
+            });
+        });
+        let own_stream = welcome["stream"]["id"].as_str().map(str::to_owned);
+        let read_streams = serde_json::from_value(welcome["reads"].clone()).unwrap_or_default();
+        let mut aliases = BTreeMap::new();
+        if let Some(id) = &own_stream {
+            aliases.insert(id.clone(), id.clone());
+            if let Some(alias) = welcome["stream"]["alias"].as_str() {
+                aliases.insert(alias.into(), id.clone());
+            }
+        }
+        Ok((
             Self {
                 inner: Arc::new(Inner {
                     address: address.into(),
                     plugin: plugin.into(),
                     token: token.into(),
                     config,
+                    kind,
+                    own_stream,
+                    read_streams,
+                    sequence: AtomicU64::new(1),
                     outbound,
                     priority,
-                    transport,
-                    sequence: AtomicU64::new(1),
                     slots: Semaphore::new(32),
-                    control_slots: Semaphore::new(32),
+                    control_slots: Semaphore::new(8),
+                    pending,
                     events,
+                    aliases: Mutex::new(aliases),
                     subscriptions: Mutex::new(BTreeMap::new()),
-                    rpc_reader: rpc_reader.abort_handle(),
-                    rpc_writer: rpc_writer.abort_handle(),
-                    timeout,
+                    reader: reader_task.abort_handle(),
+                    writer: writer_task.abort_handle(),
                 }),
             },
-            rx,
-            crx,
-        )
+            event_rx,
+            control_rx,
+        ))
     }
     pub fn config(&self) -> &Value {
         &self.inner.config
     }
+    pub fn stream_id(&self) -> Option<&str> {
+        self.inner.own_stream.as_deref()
+    }
+    pub fn input_stream(&self) -> Option<&str> {
+        self.stream_id()
+    }
+    pub fn own_stream(&self) -> Option<&str> {
+        self.stream_id()
+    }
+    pub fn read_streams(&self) -> &[String] {
+        &self.inner.read_streams
+    }
+    pub fn transport(&self) -> TransportKind {
+        self.inner.kind
+    }
+    async fn send(&self, request: Request) -> Result<()> {
+        let (sent, done) = oneshot::channel();
+        let queue = if request.op == "reply" {
+            &self.inner.priority
+        } else {
+            &self.inner.outbound
+        };
+        queue
+            .send(Outbound { request, sent })
+            .await
+            .map_err(|_| anyhow!("Core transport closed"))?;
+        done.await
+            .context("Core writer closed; outcome unknown")?
+            .map_err(anyhow::Error::msg)
+    }
     pub async fn request(&self, op: &str, args: Value) -> Result<Value> {
-        let mut stop = self.inner.transport.shutdown.subscribe();
-        let operation = async {
-            if let Some(error) = self.inner.transport.error() {
-                return Err(error.into());
-            }
-            let priority = op == "reply";
-            let slots = if priority {
+        tokio::time::timeout(TIMEOUT, async {
+            let slots = if op == "reply" {
                 &self.inner.control_slots
             } else {
                 &self.inner.slots
             };
             let _permit = slots.acquire().await?;
-            if let Some(error) = self.inner.transport.error() {
-                return Err(error.into());
-            }
             let id = self.inner.sequence.fetch_add(1, Ordering::Relaxed);
-            let bytes = frame(&Request {
+            let (sender, answer) = oneshot::channel();
+            self.inner.pending.lock().unwrap().insert(id, sender);
+            let _guard = PendingGuard {
+                id,
+                pending: self.inner.pending.clone(),
+            };
+            self.send(Request {
                 id,
                 op: op.into(),
                 args,
-            })?;
-            let (reply, answer) = oneshot::channel();
-            self.inner
-                .transport
-                .pending
-                .lock()
-                .unwrap()
-                .insert(id, reply);
-            let _pending = PendingGuard {
-                id,
-                pending: self.inner.transport.pending.clone(),
-            };
-            let send = if priority {
-                &self.inner.priority
-            } else {
-                &self.inner.outbound
-            };
-            send.send(bytes)
-                .await
-                .map_err(|_| anyhow!("RPC writer closed; operation outcome unknown"))?;
+            })
+            .await?;
             answer
                 .await
-                .context("RPC reply channel closed; operation outcome unknown")?
+                .context("Core reply closed; outcome unknown")?
                 .map_err(Into::into)
-        };
-        tokio::select! {
-            biased;
-            result=tokio::time::timeout(self.inner.timeout,operation)=>match result {
-                Ok(result)=>result,
-                Err(_)=>Err(anyhow!(Fault{code:"timeout_unknown".into(),message:"RPC deadline includes queueing, transmission and response. An operation may still complete; do not automatically retry controls.".into()})),
-            },
-            _=stop.changed()=>Err(self.inner.transport.error().unwrap_or(Fault{code:"connection_lost".into(),message:"Core transport closed".into()}).into()),
+        })
+        .await
+        .map_err(|_| {
+            anyhow!(Fault {
+                code: "timeout_unknown".into(),
+                message: "request timed out; outcome unknown, no automatic retry".into()
+            })
+        })?
+    }
+    pub async fn streams(&self) -> Result<Value> {
+        self.request("streams", json!({})).await
+    }
+    pub async fn stream(&self, id: &str) -> Result<Value> {
+        self.request("stream.get", json!({"stream":id})).await
+    }
+    pub async fn create_stream(&self, description: &str, parents: &[String]) -> Result<Value> {
+        self.request(
+            "stream.create",
+            json!({"description":description,"parents":parents}),
+        )
+        .await
+    }
+    pub async fn resolve_stream(&self, stream: &str) -> Result<String> {
+        if let Some(id) = self.inner.aliases.lock().await.get(stream).cloned() {
+            return Ok(id);
         }
+        let value = self.streams().await?;
+        let list = value
+            .as_array()
+            .or_else(|| value["streams"].as_array())
+            .context("Core omitted streams")?;
+        let mut aliases = self.inner.aliases.lock().await;
+        for entry in list {
+            if let Some(id) = entry["id"].as_str() {
+                aliases.insert(id.into(), id.into());
+                if let Some(alias) = entry["alias"].as_str() {
+                    aliases.insert(alias.into(), id.into());
+                }
+            }
+        }
+        aliases
+            .get(stream)
+            .cloned()
+            .ok_or_else(|| anyhow!("unknown stream {stream}"))
     }
     pub async fn publish(
         &self,
@@ -433,110 +402,101 @@ impl Client {
         payload: Vec<u8>,
         source_ts_ns: Option<u64>,
         upstream: BTreeMap<String, u64>,
-    ) -> Result<Record> {
-        Ok(serde_json::from_value(self.request("publish",json!({"stream":stream,"key":key,"payload":payload,"source_ts_ns":source_ts_ns,"upstream":upstream})).await?)?)
+    ) -> Result<PublishOutcome> {
+        self.publish_tagged(stream, key, payload, source_ts_ns, upstream, None, None)
+            .await
     }
-    /// Retains exactly one publication while its stream awaits explicit admin resume.
-    pub async fn publish_retained(
+    pub async fn publish_with_source_seq(
         &self,
         stream: &str,
         key: &str,
         payload: Vec<u8>,
         source_ts_ns: Option<u64>,
         upstream: BTreeMap<String, u64>,
-    ) -> Result<Record> {
-        let mut reported = false;
-        loop {
-            match self
-                .publish(stream, key, payload.clone(), source_ts_ns, upstream.clone())
-                .await
-            {
-                Ok(record) => return Ok(record),
-                Err(e)
-                    if e.downcast_ref::<Fault>().is_some_and(|f| {
-                        matches!(f.code.as_str(), "storage_blocked" | "commit_unknown")
-                    }) =>
-                {
-                    if !reported {
-                        eprintln!(
-                            "{stream}: {e}; retaining current chunk, waiting for manual resume"
-                        );
-                        reported = true;
-                    }
-                    tokio::time::sleep(std::time::Duration::from_millis(500)).await;
-                }
-                Err(e) => return Err(e),
-            }
-        }
-    }
-    pub async fn subscribe(&self, stream: &str, from: u64) -> Result<()> {
-        self.subscribe_epoch(stream, from, None).await
-    }
-    pub async fn subscribe_epoch(
-        &self,
-        stream: &str,
-        from: u64,
-        epoch: Option<&str>,
-    ) -> Result<()> {
-        tokio::time::timeout(
-            self.inner.timeout,
-            self.subscribe_epoch_inner(stream, from, epoch),
+        source_seq: Option<u64>,
+    ) -> Result<PublishOutcome> {
+        self.publish_tagged(
+            stream,
+            key,
+            payload,
+            source_ts_ns,
+            upstream,
+            None,
+            source_seq,
         )
         .await
-        .context("subscription setup deadline exceeded")?
     }
-    async fn subscribe_epoch_inner(
+    #[allow(clippy::too_many_arguments)]
+    pub async fn publish_tagged(
         &self,
         stream: &str,
-        from: u64,
-        epoch: Option<&str>,
-    ) -> Result<()> {
-        if let Some(error) = self.inner.transport.error() {
-            return Err(error.into());
+        key: &str,
+        payload: Vec<u8>,
+        source_ts_ns: Option<u64>,
+        upstream: BTreeMap<String, u64>,
+        channel: Option<String>,
+        source_seq: Option<u64>,
+    ) -> Result<PublishOutcome> {
+        if payload.len() > log_proto::MAX_PAYLOAD {
+            bail!("payload exceeds protocol maximum");
         }
+        let stream = self.resolve_stream(stream).await?;
+        let args = json!({"stream":stream,"key":key,"payload":payload,"source_ts_ns":source_ts_ns,"upstream":upstream,"channel":channel,"source_seq":source_seq});
+        if self.inner.kind == TransportKind::Udp {
+            tokio::time::timeout(
+                TIMEOUT,
+                self.send(Request {
+                    id: 0,
+                    op: "publish".into(),
+                    args,
+                }),
+            )
+            .await
+            .context("UDP local send timed out")??;
+            Ok(PublishOutcome::LocalSent)
+        } else {
+            Ok(PublishOutcome::Accepted(serde_json::from_value(
+                self.request("publish", args).await?,
+            )?))
+        }
+    }
+    /// Starts at Core's oldest retained record and waits indefinitely at the tail.
+    pub async fn subscribe(&self, stream: &str) -> Result<Value> {
+        let stream = self.resolve_stream(stream).await?;
         let mut subscriptions = self.inner.subscriptions.lock().await;
-        if subscriptions.contains_key(stream) {
-            bail!("already subscribed to {stream}")
+        if subscriptions.contains_key(&stream) {
+            bail!("already subscribed to {stream}");
         }
-        let (mut reader, mut writer) = socket(
+        let (mut reader, mut writer, _) = socket(
             &self.inner.address,
+            self.inner.kind,
             &self.inner.plugin,
             &self.inner.token,
             true,
         )
         .await?;
-        write_json(
-            &mut writer,
-            &Request {
+        writer
+            .send(&Request {
                 id: 1,
                 op: "subscribe".into(),
-                args: json!({"stream":stream,"from":from,"epoch":epoch}),
-            },
-        )
-        .await?;
-        match read_json::<_, ServerMessage>(&mut reader).await? {
-            Some(ServerMessage::Response { error: None, .. }) => {}
+                args: json!({"stream":stream}),
+            })
+            .await?;
+        let result = match tokio::time::timeout(TIMEOUT, reader.receive()).await?? {
+            Some(ServerMessage::Response {
+                result,
+                error: None,
+                ..
+            }) => result,
             Some(ServerMessage::Response { error: Some(e), .. }) => return Err(e.into()),
             _ => bail!("invalid subscription response"),
-        }
-        let tx = self.inner.events.clone();
-        let name = stream.to_owned();
-        let transport = self.inner.transport.clone();
-        let mut stop = transport.shutdown.subscribe();
+        };
+        let events = self.inner.events.clone();
+        let name = stream.clone();
         let task = tokio::spawn(async move {
             let _writer = writer;
             let reason = loop {
-                if *stop.borrow() {
-                    break transport
-                        .error()
-                        .map(|e| e.message)
-                        .unwrap_or_else(|| "RPC transport closed".into());
-                }
-                let message = tokio::select! {
-                    _=stop.changed()=>break transport.error().map(|e|e.message).unwrap_or_else(||"RPC transport closed".into()),
-                    message=read_json::<_,ServerMessage>(&mut reader)=>message,
-                };
-                let event = match message {
+                let event = match reader.receive().await {
                     Ok(Some(ServerMessage::Record { record })) => Event::Record(record),
                     Ok(Some(ServerMessage::Gap {
                         stream,
@@ -552,37 +512,30 @@ impl Client {
                         reason,
                     },
                     Ok(Some(ServerMessage::Response { error: Some(e), .. })) => {
-                        break e.to_string();
+                        break e.to_string()
                     }
-                    Ok(None) => {
-                        break "Core event connection closed; missing count is unknown".to_string();
-                    }
-                    Err(e) => {
-                        break e.to_string();
-                    }
-                    _ => continue,
+                    Ok(Some(_)) => continue,
+                    Ok(None) => break "Core subscription disconnected".into(),
+                    Err(e) => break e.to_string(),
                 };
-                tokio::select! {
-                    _=stop.changed()=>break transport.error().map(|e|e.message).unwrap_or_else(||"RPC transport closed".into()),
-                    sent=tx.send(event)=>if sent.is_err(){return},
+                if events.send(event).await.is_err() {
+                    return;
                 }
             };
-            drop(_writer);
-            drop(reader);
-            eprintln!("subscription {name}: {reason}");
-            let _ = tx
+            let _ = events
                 .send(Event::Disconnected {
                     stream: name,
                     reason,
                 })
                 .await;
         });
-        subscriptions.insert(stream.into(), task.abort_handle());
-        Ok(())
+        subscriptions.insert(stream, task.abort_handle());
+        Ok(result)
     }
     pub async fn unsubscribe(&self, stream: &str) -> Result<()> {
-        if let Some(handle) = self.inner.subscriptions.lock().await.remove(stream) {
-            handle.abort();
+        let id = self.resolve_stream(stream).await?;
+        if let Some(task) = self.inner.subscriptions.lock().await.remove(&id) {
+            task.abort();
         }
         Ok(())
     }
@@ -602,194 +555,4 @@ impl Client {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use tokio::io::{AsyncReadExt, DuplexStream};
-
-    fn bounded_client(
-        timeout: Duration,
-    ) -> (
-        Client,
-        DuplexStream,
-        mpsc::Receiver<Event>,
-        mpsc::Receiver<Control>,
-    ) {
-        let (client_socket, server) = tokio::io::duplex(64);
-        let (reader, writer) = tokio::io::split(client_socket);
-        let (client, events, controls) = Client::from_parts(
-            "127.0.0.1:1",
-            "test",
-            "token",
-            json!({}),
-            BufReader::new(reader),
-            writer,
-            timeout,
-        );
-        (client, server, events, controls)
-    }
-    async fn answer<W: AsyncWrite + Unpin>(writer: &mut W, id: u64) -> Result<()> {
-        write_json(
-            writer,
-            &ServerMessage::Response {
-                id,
-                result: json!({"ok":true}),
-                error: None,
-            },
-        )
-        .await
-    }
-
-    #[tokio::test]
-    async fn cancelled_request_cannot_leave_a_partial_frame() -> Result<()> {
-        let (client, server, _events, _controls) = bounded_client(Duration::from_secs(2));
-        let (mut server_read, mut server_write) = tokio::io::split(server);
-        let requester = client.clone();
-        let cancelled = tokio::spawn(async move {
-            requester
-                .request("large", json!({"body":"x".repeat(8000)}))
-                .await
-        });
-        // The 64-byte socket is now inside a frame, with most bytes still pending.
-        let first = server_read.read_u8().await?;
-        assert_eq!(first, b'{');
-        cancelled.abort();
-        let _ = cancelled.await;
-        let server = tokio::spawn(async move {
-            let reader = std::io::Cursor::new(vec![first]).chain(server_read);
-            let mut reader = BufReader::new(reader);
-            let complete: Request = read_json(&mut reader)
-                .await?
-                .context("cancelled frame vanished")?;
-            assert_eq!(complete.op, "large");
-            assert_eq!(complete.args["body"].as_str().unwrap().len(), 8000);
-            let next: Request = read_json(&mut reader)
-                .await?
-                .context("next frame vanished")?;
-            assert_eq!(next.op, "after");
-            answer(&mut server_write, next.id).await?;
-            Ok::<(), anyhow::Error>(())
-        });
-        assert_eq!(
-            client.request("after", json!({})).await?,
-            json!({"ok":true})
-        );
-        server.await??;
-        assert!(client.inner.transport.pending.lock().unwrap().is_empty());
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn rpc_deadline_covers_slot_wait_and_blocked_write() -> Result<()> {
-        let (client, _server, _events, _controls) = bounded_client(Duration::from_millis(80));
-        let permits = client.inner.slots.acquire_many(32).await?;
-        let before = tokio::time::Instant::now();
-        let error = client.request("status", json!({})).await.unwrap_err();
-        assert_eq!(
-            error.downcast_ref::<Fault>().unwrap().code,
-            "timeout_unknown"
-        );
-        assert!(before.elapsed() < Duration::from_millis(500));
-        drop(permits);
-        let before = tokio::time::Instant::now();
-        let error = client
-            .request("large", json!({"body":"x".repeat(8000)}))
-            .await
-            .unwrap_err();
-        assert!(matches!(
-            error.downcast_ref::<Fault>().map(|e| e.code.as_str()),
-            Some("timeout_unknown" | "connection_lost")
-        ));
-        assert!(before.elapsed() < Duration::from_millis(500));
-        tokio::time::sleep(Duration::from_millis(100)).await;
-        assert!(client.inner.transport.pending.lock().unwrap().is_empty());
-        let before = tokio::time::Instant::now();
-        assert!(client.request("status", json!({})).await.is_err());
-        assert!(before.elapsed() < Duration::from_millis(40));
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn full_control_queue_does_not_block_rpc_response_reader() -> Result<()> {
-        let (client, server, _events, _controls) = bounded_client(Duration::from_secs(2));
-        let (_server_read, mut server_write) = tokio::io::split(server);
-        let requester = client.clone();
-        let request = tokio::spawn(async move { requester.request("probe", json!({})).await });
-        while client.inner.transport.pending.lock().unwrap().is_empty() {
-            tokio::task::yield_now().await;
-        }
-        // Never consume client->server bytes. Busy replies therefore block the
-        // writer, while the independent reader must continue receiving responses.
-        for call_id in 0..40 {
-            write_json(
-                &mut server_write,
-                &ServerMessage::Control {
-                    call_id,
-                    method: "ignored".into(),
-                    args: json!({}),
-                },
-            )
-            .await?;
-        }
-        answer(&mut server_write, 1).await?;
-        let result = tokio::time::timeout(Duration::from_millis(500), request).await???;
-        assert_eq!(result, json!({"ok":true}));
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn exhausted_control_reply_reserve_closes_transport_and_pending() -> Result<()> {
-        let (client, server, mut events, mut controls) = bounded_client(Duration::from_secs(2));
-        let (_server_read, mut server_write) = tokio::io::split(server);
-        let requester = client.clone();
-        let request = tokio::spawn(async move {
-            requester
-                .request("large", json!({"body":"x".repeat(8000)}))
-                .await
-        });
-        while client.inner.transport.pending.lock().unwrap().is_empty() {
-            tokio::task::yield_now().await;
-        }
-        for call_id in 0..100 {
-            if write_json(
-                &mut server_write,
-                &ServerMessage::Control {
-                    call_id,
-                    method: "ignored".into(),
-                    args: json!({}),
-                },
-            )
-            .await
-            .is_err()
-            {
-                break;
-            }
-        }
-        let error = tokio::time::timeout(Duration::from_millis(500), request)
-            .await??
-            .unwrap_err();
-        assert_eq!(
-            error.downcast_ref::<Fault>().unwrap().code,
-            "connection_lost"
-        );
-        assert!(client.inner.transport.pending.lock().unwrap().is_empty());
-        let event = tokio::time::timeout(Duration::from_millis(500), events.recv())
-            .await?
-            .unwrap();
-        assert!(matches!(event, Event::Disconnected { .. }));
-        while controls.recv().await.is_some() {}
-        assert!(client.request("after", json!({})).await.is_err());
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn client_drop_closes_both_halves_without_a_task_cycle() -> Result<()> {
-        let (client, mut server, _events, _controls) = bounded_client(Duration::from_secs(2));
-        drop(client);
-        let mut byte = [0];
-        assert_eq!(
-            tokio::time::timeout(Duration::from_millis(500), server.read(&mut byte)).await??,
-            0
-        );
-        Ok(())
-    }
-}
+mod tests;

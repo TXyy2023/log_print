@@ -17,7 +17,7 @@ import sys
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
-PROCESS_STEPS = {'protocol', 'supervisor', 'reliability-review', 'io', 'languages', 'archive'}
+PROCESS_STEPS = {'protocol-v2', 'supervisor-v2', 'supervisor-failures-v2', 'inputs-v2', 'outputs-v2'}
 
 
 def redact_console(text):
@@ -149,15 +149,12 @@ def main():
         ('clippy', ['cargo', 'clippy', '--workspace', '--all-targets', '--locked', '--', '-D', 'warnings']),
         ('rust-tests', ['cargo', 'test', '--workspace', '--locked']),
         ('build', ['cargo', 'build', '--workspace', '--locked']),
-        ('protocol', python_test('quality/tests/protocol.py', '--report', str(report_dir / 'protocol-results.json'))),
-        ('supervisor', python_test('quality/tests/app/supervisor.py', '--artifacts', str(report_dir / 'supervisor-cli'))),
-        ('reliability-review', python_test('quality/tests/app/reliability_review.py', '--report', str(report_dir / 'reliability-review-results.json'))),
+        ('protocol-v2', python_test('quality/tests/v2/protocol.py')),
+        ('supervisor-v2', python_test('quality/tests/v2/supervisor.py')),
+        ('supervisor-failures-v2', python_test('quality/tests/v2/supervisor_failures.py')),
+        ('inputs-v2', python_test('quality/tests/v2/inputs.py')),
+        ('outputs-v2', python_test('quality/tests/v2/outputs.py')),
     ]
-    steps.extend([
-        ('io', python_test('quality/tests/io/verify.py')),
-        ('languages', python_test('quality/tests/io/languages.py', '--json', str(report_dir / 'input-languages.json'))),
-        ('archive', python_test('quality/tests/output-file/verify.py', '--report', str(report_dir / 'archive-results.json'))),
-    ])
     optional = []
     if args.list:
         for name, command in steps:
@@ -187,7 +184,7 @@ def main():
             if build_failed:
                 results.append({'name': name, 'status': 'skip', 'reason': 'workspace build failed; stale binaries must not be accepted'})
                 continue
-            timeout = min(args.timeout, 120) if name == 'supervisor' else args.timeout
+            timeout = min(args.timeout, 120) if name == 'supervisor-v2' else args.timeout
             result = execute(name, command, report_dir, timeout)
             results.append(result)
             (report_dir / 'results.json').write_text(json.dumps({'environment': environment, 'results': results, 'optional': optional}, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')

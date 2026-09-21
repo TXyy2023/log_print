@@ -1,9 +1,7 @@
-# output-raw
+# output-raw 0.1.2
 
-原始字节输出插件，随 log_print 0.1.0 发布。由主程序加载配置并启动。
-
-- [使用教程](../../../../doc/public/guides/archive.md)
-- [参数与行为参考](../../../../doc/public/plugins/output-raw.md)
-- [公共配置结构](../../../../doc/public/reference/configuration.md)
-
-完整正文只维护在 `doc/public/`。
+终端展示插件，配置 `{"streams":["source"],"annotate":false}`。
+默认把订阅记录 payload 原字节写到 stdout；多流按本插件收到记录的顺序交错，不声明全局时间排序。
+`annotate:true` 在每条记录前显示流 ID、Core 接收序号和来源通道。
+路径、文件保存、历史起点和动态配置不属于本插件；交给 output-file 保存。
+订阅从 Core 当前仍保留的最早记录开始，读到末尾后持续等待，手动停止退出。

@@ -15,7 +15,7 @@
         "page": "quickstart.md"
       },
       {
-        "text": "理解流与保存",
+        "text": "流与保存边界",
         "page": "concepts.md"
       }
     ]
@@ -32,7 +32,7 @@
         "page": "guides/file.md"
       },
       {
-        "text": "回放已有日志",
+        "text": "静态文件导入",
         "page": "guides/replay.md"
       },
       {
@@ -48,7 +48,7 @@
         "page": "guides/archive.md"
       },
       {
-        "text": "恢复与完整性",
+        "text": "完整性与迁移",
         "page": "guides/recovery.md"
       },
       {
@@ -82,11 +82,7 @@
         "page": "plugins/input-program.md"
       },
       {
-        "text": "input-replay：回放输入",
-        "page": "plugins/input-replay.md"
-      },
-      {
-        "text": "output-raw：原始字节输出",
+        "text": "output-raw：终端显示",
         "page": "plugins/output-raw.md"
       },
       {

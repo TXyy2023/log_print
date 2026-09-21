@@ -186,5 +186,6 @@
   "local/evidence/validation-evidence/0.1.0/input-languages.json": "local/performance/validation-evidence/0.1.0/input-languages.json",
   "local/evidence/validation-evidence/0.1.0/environment.json": "local/performance/validation-evidence/0.1.0/environment.json",
   "local/archive/achieved/todolist-260906.md": "local/plans/todolist-260906.md",
-  "local/archive/achieved/todolist-260909.md": "local/plans/todolist-260909.md"
+  "local/archive/achieved/todolist-260909.md": "local/plans/todolist-260909.md",
+  "../project/crates/log-plot/README.md": "local/archive/core-boundaries-2026-09-21/log-plot.md"
 }

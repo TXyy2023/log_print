@@ -1,30 +1,28 @@
-# 测试与 CI
+# 0.1.2 测试与 CI
 
-从仓库根目录运行统一验收：
+从仓库根目录运行：
 
 ```sh
 python3 quality/run.py
-# 只查看检查命令，不执行测试
 python3 quality/run.py --list
 ```
 
-完整验收包含格式、Clippy、Rust 单元测试、构建，以及协议、主进程、可靠性、I/O、语言输入和 output-file 归档检查。参数及平台说明见 [CI 说明](ci/README.md)。
+需要 Python 3.12+、Rust stable（rustfmt / Clippy）。入口执行格式、Clippy、全部 Rust 测试、构建，以及真实进程协议、CLI 生命周期、输入和输出验收。测试生成的数据均为明确标注的 fixture，不冒充真实软件日志。
 
-| 目录 | 内容 |
+| 位置 | 验收范围 |
 | --- | --- |
-| `tests/protocol.py` | Core 协议验收及共享协议测试工具 |
-| `tests/app/` | 主程序生命周期与可靠性测试 |
-| `tests/io/` | 输入输出集成与语言接入测试 |
-| `tests/output-file/` | 文件和 SQLite 归档验收 |
-| `tests/docs/` | 文档站生成链接与附件检查 |
-| `benchmarks/` | 单独运行的性能测试，不算作默认验收 |
-| `ci/` | 跨平台子测试包装器、自托管 CI 入口 |
-| `artifacts/` | 新旧验收报告、日志、备份和截图，本地忽略 |
-| `archive/legacy-test/` | 历史测试资料，保留原貌且不自动执行 |
+| 各 crate 的 Rust 测试 | 协议限额、权限/缓冲、SDK、输入配置、输出文件/SQLite事务及转换窗口 |
+| `tests/v2/protocol.py` | TCP/UDP、独立多流/多订阅、覆盖、慢消费者、非法身份和Core重启 |
+| `tests/v2/supervisor.py` | CLI真实管道、配置快照、后启动/重启、UUID绑定、拒绝旧配置及清理 |
+| `tests/v2/inputs.py` | 静态文件、跟随/截断/替换、双通道程序、异常退出、进程树、隔离tmux |
+| `tests/v2/outputs.py` | 显示与保存读回、转换派生流、停止与错误 |
+| `tests/docs/verify_links.py` | 文档站链接与附件 |
+| `archive/v1/` | 旧组件/旧协议验收，保留溯源、不作为本版通过证据 |
+| `artifacts/` | 本地忽略的报告、完整日志及备份 |
 
-本地暂缓的 WebUI 测试位于 `tests/output-webui/`，继续被 Git 忽略，不参与当前版本默认验收。GitHub 工作流必须保留在根目录 `.github/workflows/`；实际检查由本目录入口执行。
+`quality/ci/README.md` 说明报告与跨平台边界。tmux 仅 Unix 环境且已安装时运行，缺失必须记录 skip；本机实测结果单独记录。构建失败不能接受旧二进制，`--skip-build` 仅迭代，不能替代完整检查。
 
-文档构建与验收：
+文档：
 
 ```sh
 npm run build:local --prefix doc/site
@@ -33,4 +31,4 @@ python3 quality/tests/docs/verify_links.py doc/site/dist/local
 python3 quality/tests/docs/verify_links.py doc/site/dist/public
 ```
 
-历史报告中的命令和路径是当时记录，不改写为新执行证据。源码和脚本的新位置记录在 `doc/site/repository-paths.json`，文档站通过映射解析旧链接。
+[0.1.2 实施与验收记录](release-0.1.2.md)

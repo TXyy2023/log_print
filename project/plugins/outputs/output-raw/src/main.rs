@@ -1,129 +1,102 @@
 use anyhow::{bail, Result};
-use io_plugin_util::stopped;
-use log_plugin_sdk::Event;
+use log_plugin_sdk::{stopped, Event};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use std::{collections::BTreeMap, path::PathBuf};
-use tokio::io::{AsyncWrite, AsyncWriteExt};
+use std::collections::BTreeSet;
+use tokio::io::AsyncWriteExt;
 #[derive(Deserialize, Serialize)]
-#[serde(default, deny_unknown_fields)]
+#[serde(deny_unknown_fields)]
 struct Config {
+    #[serde(default)]
     streams: Vec<String>,
-    path: Option<PathBuf>,
-    paths: BTreeMap<String, PathBuf>,
-    from: u64,
-    append: bool,
-    overwrite: bool,
-    fail_on_gap: bool,
+    /// A metadata line before each record. Payload bytes remain unchanged.
+    #[serde(default)]
+    annotate: bool,
 }
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            streams: vec![],
-            path: None,
-            paths: BTreeMap::new(),
-            from: 1,
-            append: false,
-            overwrite: false,
-            fail_on_gap: true,
-        }
-    }
-}
-fn config(v: &Value) -> Result<Config> {
-    let c: Config = serde_json::from_value(v.clone())?;
-    if c.streams.is_empty() {
-        bail!("nonempty streams required")
-    };
-    if c.path.is_some() && !c.paths.is_empty() {
-        bail!("path and paths are mutually exclusive")
-    };
-    if !c.paths.is_empty() && c.streams.iter().any(|s| !c.paths.contains_key(s)) {
-        bail!("paths must contain every subscribed stream")
-    };
-    if c.paths
-        .values()
-        .collect::<std::collections::BTreeSet<_>>()
-        .len()
-        != c.paths.len()
+fn config(value: &Value) -> Result<Config> {
+    let c: Config = serde_json::from_value(value.clone())?;
+    if c.streams.iter().any(|s| s.is_empty())
+        || c.streams.iter().collect::<BTreeSet<_>>().len() != c.streams.len()
     {
-        bail!("per-stream output paths must be distinct")
-    };
+        bail!("streams must be nonempty, unique names or IDs");
+    }
     Ok(c)
 }
-fn validate(v: &Value) -> Result<Value> {
-    Ok(serde_json::to_value(config(v)?)?)
+fn validate(value: &Value) -> Result<Value> {
+    Ok(serde_json::to_value(config(value)?)?)
 }
-async fn writer(path: Option<&PathBuf>, c: &Config) -> Result<Box<dyn AsyncWrite + Unpin + Send>> {
-    if let Some(path) = path {
-        let mut o = tokio::fs::OpenOptions::new();
-        o.write(true);
-        if c.append {
-            o.create(true).append(true);
-        } else if c.overwrite {
-            o.create(true).truncate(true);
-        } else {
-            o.create_new(true);
-        }
-        Ok(Box::new(o.open(path).await?))
+fn display(record: &log_proto::Record, annotate: bool) -> Vec<u8> {
+    let mut bytes = if annotate {
+        format!(
+            "\n[{} #{} channel={}]\n",
+            record.stream,
+            record.seq,
+            record.channel.as_deref().unwrap_or("default")
+        )
+        .into_bytes()
     } else {
-        Ok(Box::new(tokio::io::stdout()))
-    }
+        Vec::new()
+    };
+    bytes.extend_from_slice(&record.payload);
+    bytes
 }
 #[tokio::main]
 async fn main() -> Result<()> {
-    let mut cx = io_plugin_util::connect(validate, &[]).await?;
-    let client = cx.client.clone();
-    let r = run(&mut cx).await;
-    io_plugin_util::finish(&client, &r).await;
-    r
+    let mut cx = log_plugin_sdk::connect(validate).await?;
+    let result = run(&mut cx).await.and_then(|_| cx.shutdown_result());
+    log_plugin_sdk::finish(&cx.client, &result).await;
+    result
 }
-async fn run(cx: &mut io_plugin_util::Context) -> Result<()> {
-    let c = config(&cx.config.borrow())?;
-    let mut outputs = BTreeMap::new();
-    if c.paths.is_empty() {
-        outputs.insert(String::new(), writer(c.path.as_ref(), &c).await?);
-    } else {
-        for (s, path) in &c.paths {
-            outputs.insert(s.clone(), writer(Some(path), &c).await?);
-        }
+async fn run(cx: &mut log_plugin_sdk::Context) -> Result<()> {
+    let mut c = config(&cx.config)?;
+    if !cx.client.read_streams().is_empty() {
+        c.streams = cx.client.read_streams().to_vec();
+    }
+    if c.streams.is_empty() {
+        bail!("configure or attach at least one source stream");
     }
     for stream in &c.streams {
-        cx.client.subscribe(stream, c.from).await?;
+        cx.client.subscribe(stream).await?;
     }
-    cx.client.request("report",json!({"state":"outputting","streams":c.streams,"destination":c.path,"byte_preserving":true,"multi_stream_order":"arrival_order_no_global_order"})).await?;
+    cx.client.request("report",json!({"state":"displaying","streams":c.streams,"destination":"stdout","annotate":c.annotate})).await?;
+    let mut output = tokio::io::stdout();
     loop {
-        let event = tokio::select! {_=stopped(&mut cx.shutdown)=>{for out in outputs.values_mut(){out.flush().await?;}return Ok(())},event=cx.events.recv()=>event.ok_or_else(||anyhow::anyhow!("event connection closed"))?};
+        let event = tokio::select! {_=stopped(&mut cx.shutdown)=>break,event=cx.events.recv()=>event.ok_or_else(||anyhow::anyhow!("event channel closed"))?};
         match event {
-            Event::Record(r) => {
-                let key = if c.paths.is_empty() {
-                    ""
-                } else {
-                    r.stream.as_str()
-                };
-                let output = outputs
-                    .get_mut(key)
-                    .ok_or_else(|| anyhow::anyhow!("unexpected stream {}", r.stream))?;
-                tokio::select! {
-                    _=stopped(&mut cx.shutdown)=>{eprintln!("shutdown during raw write; current record may be partially written");return Ok(())},
-                    result=async {output.write_all(&r.payload).await?;output.flush().await}=>result?,
-                }
+            Event::Record(record) => {
+                output.write_all(&display(&record, c.annotate)).await?;
+                output.flush().await?;
             }
             Event::Disconnected { stream, reason } => {
-                bail!("event connection lost for {stream}: {reason}; output completeness unknown")
+                bail!("display disconnected for {stream}: {reason}")
             }
             Event::Gap {
-                stream,
-                epoch,
-                from,
-                to,
-                reason,
-            } => {
-                eprintln!("gap {stream}/{epoch} from={from} through={to}: {reason}");
-                cx.client.request("report",json!({"state":"gap","stream":stream,"epoch":epoch,"from":from,"to":to,"reason":reason})).await?;
-                if c.fail_on_gap {
-                    bail!("raw output stopped on gap; output prefix may be incomplete")
-                }
-            }
+                stream, from, to, ..
+            } => eprintln!("display missing records {stream} {from}..={to}"),
         }
+    }
+    output.flush().await?;
+    Ok(())
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn rejects_file_output_and_invalid_streams() {
+        for value in [
+            json!({"streams":["s"],"path":"data"}),
+            json!({"streams":[""]}),
+            json!({"streams":["s","s"]}),
+        ] {
+            assert!(config(&value).is_err());
+        }
+    }
+    #[test]
+    fn default_display_preserves_binary_and_empty_records() {
+        let mut r:log_proto::Record=serde_json::from_value(json!({"stream":"s","epoch":"e","seq":2,"key":"k","payload":[0,255,10],"observed_ts_ns":1,"upstream":{},"upstream_epochs":{}})).unwrap();
+        assert_eq!(display(&r, false), vec![0, 255, 10]);
+        assert!(display(&r, true).ends_with(&r.payload));
+        r.payload.clear();
+        assert_eq!(display(&r, false), Vec::<u8>::new());
     }
 }

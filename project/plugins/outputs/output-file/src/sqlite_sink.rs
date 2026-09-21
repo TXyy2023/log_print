@@ -79,7 +79,7 @@ impl SqliteSink {
         if config.mode == Mode::Create {
             connection.execute_batch("BEGIN IMMEDIATE;
 CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL);
-CREATE TABLE records(stream TEXT NOT NULL,epoch TEXT NOT NULL,seq TEXT NOT NULL,key TEXT NOT NULL,payload BLOB NOT NULL,source_ts_ns TEXT,observed_ts_ns TEXT NOT NULL,upstream TEXT NOT NULL,upstream_epochs TEXT NOT NULL,durability TEXT NOT NULL,record_sha256 TEXT NOT NULL,PRIMARY KEY(stream,epoch,seq));
+CREATE TABLE records(stream TEXT NOT NULL,epoch TEXT NOT NULL,seq TEXT NOT NULL,key TEXT NOT NULL,payload BLOB NOT NULL,source_ts_ns TEXT,observed_ts_ns TEXT NOT NULL,upstream TEXT NOT NULL,upstream_epochs TEXT NOT NULL,channel TEXT,source_seq TEXT,record_sha256 TEXT NOT NULL,PRIMARY KEY(stream,epoch,seq));
 CREATE TABLE checkpoints(stream TEXT PRIMARY KEY,epoch TEXT NOT NULL,next TEXT NOT NULL);
 CREATE TABLE gaps(id INTEGER PRIMARY KEY,stream TEXT NOT NULL,epoch TEXT NOT NULL,first TEXT NOT NULL,last TEXT NOT NULL,reason TEXT NOT NULL,advances INTEGER NOT NULL,coverage_first TEXT NOT NULL);")?;
             for (key, value) in [
@@ -165,8 +165,8 @@ CREATE TABLE gaps(id INTEGER PRIMARY KEY,stream TEXT NOT NULL,epoch TEXT NOT NUL
             bail!("epoch changed for {}", record.stream);
         }
         if record.seq < cursor.next {
-            let existing = self.connection.query_row("SELECT key,payload,source_ts_ns,observed_ts_ns,upstream,upstream_epochs,durability FROM records WHERE stream=?1 AND epoch=?2 AND seq=?3",params![record.stream,record.epoch,record.seq.to_string()],|row| {
-                Ok((row.get::<_,String>(0)?,row.get::<_,Vec<u8>>(1)?,row.get::<_,Option<String>>(2)?,row.get::<_,String>(3)?,row.get::<_,String>(4)?,row.get::<_,String>(5)?,row.get::<_,String>(6)?))
+            let existing = self.connection.query_row("SELECT key,payload,source_ts_ns,observed_ts_ns,upstream,upstream_epochs,channel,source_seq FROM records WHERE stream=?1 AND epoch=?2 AND seq=?3",params![record.stream,record.epoch,record.seq.to_string()],|row| {
+                Ok((row.get::<_,String>(0)?,row.get::<_,Vec<u8>>(1)?,row.get::<_,Option<String>>(2)?,row.get::<_,String>(3)?,row.get::<_,String>(4)?,row.get::<_,String>(5)?,row.get::<_,Option<String>>(6)?,row.get::<_,Option<String>>(7)?))
             }).optional()?.context("duplicate identity absent from SQLite archive")?;
             let restored = Record {
                 stream: record.stream.clone(),
@@ -178,7 +178,8 @@ CREATE TABLE gaps(id INTEGER PRIMARY KEY,stream TEXT NOT NULL,epoch TEXT NOT NUL
                 observed_ts_ns: unsigned(existing.3)?,
                 upstream: serde_json::from_str(&existing.4)?,
                 upstream_epochs: serde_json::from_str(&existing.5)?,
-                durability: existing.6,
+                channel: existing.6,
+                source_seq: existing.7.map(unsigned).transpose()?,
             };
             if restored != *record {
                 bail!(
@@ -198,7 +199,7 @@ CREATE TABLE gaps(id INTEGER PRIMARY KEY,stream TEXT NOT NULL,epoch TEXT NOT NUL
             .context("record sequence exhausted u64 cursor space")?;
         self.begin()?;
         self.connection.execute(
-            "INSERT INTO records VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)",
+            "INSERT INTO records VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12)",
             params![
                 record.stream,
                 record.epoch,
@@ -209,7 +210,8 @@ CREATE TABLE gaps(id INTEGER PRIMARY KEY,stream TEXT NOT NULL,epoch TEXT NOT NUL
                 record.observed_ts_ns.to_string(),
                 serde_json::to_string(&record.upstream)?,
                 serde_json::to_string(&record.upstream_epochs)?,
-                record.durability,
+                record.channel,
+                record.source_seq.map(|value| value.to_string()),
                 hex_hash(&serde_json::to_vec(record)?)
             ],
         )?;
@@ -290,9 +292,9 @@ fn validate_history(
 ) -> Result<()> {
     let mut expected = initial.clone();
     let mut statement = connection.prepare("SELECT * FROM (
-SELECT stream,epoch,seq AS first,seq AS last,0 AS kind,key,payload,source_ts_ns,observed_ts_ns,upstream,upstream_epochs,durability,record_sha256 FROM records
+SELECT stream,epoch,seq AS first,seq AS last,0 AS kind,key,payload,source_ts_ns,observed_ts_ns,upstream,upstream_epochs,channel,source_seq,record_sha256 FROM records
 UNION ALL
-SELECT stream,epoch,coverage_first,last,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL FROM gaps WHERE advances=1
+SELECT stream,epoch,coverage_first,last,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL FROM gaps WHERE advances=1
 ) ORDER BY stream,length(first),first,kind")?;
     let mut rows = statement.query([])?;
     while let Some(row) = rows.next()? {
@@ -318,9 +320,13 @@ SELECT stream,epoch,coverage_first,last,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NUL
                 observed_ts_ns: unsigned(row.get(8)?)?,
                 upstream: serde_json::from_str(&row.get::<_, String>(9)?)?,
                 upstream_epochs: serde_json::from_str(&row.get::<_, String>(10)?)?,
-                durability: row.get(11)?,
+                channel: row.get(11)?,
+                source_seq: row
+                    .get::<_, Option<String>>(12)?
+                    .map(unsigned)
+                    .transpose()?,
             };
-            let expected_hash: String = row.get(12)?;
+            let expected_hash: String = row.get(13)?;
             if hex_hash(&serde_json::to_vec(&record)?) != expected_hash {
                 bail!("SQLite Record content changed for {stream}/{first}");
             }

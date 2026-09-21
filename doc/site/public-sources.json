@@ -1,7 +1,6 @@
 {
   "plugins/input-program.md": "project/plugins/inputs/input-program/README.md",
   "plugins/input-file.md": "project/plugins/inputs/input-file/README.md",
-  "plugins/input-replay.md": "project/plugins/inputs/input-replay/README.md",
   "plugins/output-raw.md": "project/plugins/outputs/output-raw/README.md",
   "plugins/output-transform.md": "project/plugins/outputs/output-transform/README.md",
   "plugins/output-file.md": "project/plugins/outputs/output-file/README.md",

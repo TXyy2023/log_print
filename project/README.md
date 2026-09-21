@@ -1,20 +1,14 @@
 # 项目代码
 
-所有构建和示例命令均从仓库根目录运行。
+所有构建命令均从仓库根目录运行。
 
 | 目录 | 内容 |
 | --- | --- |
-| `crates/` | CLI、Core、协议、Rust SDK，以及暂缓的 log-plot |
-| `plugins/inputs/` | 输入插件及共享输入工具 |
-| `plugins/outputs/` | 输出插件 |
-| `examples/` | 使用示例；插件专用示例保留在对应插件内 |
-| `skills/` | 随项目提供的 Agent 技能 |
-| `workloads/` | 外部真实软件日志工作负载候选与约束，不自动加入 CI |
-| `.local/archive/` | 本地历史源码归档，不参与构建和提交 |
+| `crates/` | app-log-print、log-core、log-proto、log-plugin-sdk 四个核心 |
+| `plugins/inputs/` | input-file、input-program 两个输入 |
+| `plugins/outputs/` | output-raw、output-file、output-transform 三个输出 |
+| `examples/` | 使用示例 |
+| `skills/` | 项目 Agent 使用指南 |
+| `workloads/` | 外部真实软件日志工作负载，区别于测试生成输入 |
 
-```sh
-cargo build --workspace --locked
-python3 quality/run.py
-```
-
-workspace 的成员和暂缓组件以根目录 [Cargo.toml](../Cargo.toml) 为准。独立验收脚本统一位于 [quality/](../quality/README.md)，Rust 源码内单元测试保留原位。
+`input-serial`、TUI、WebUI 暂缓且不参与 workspace。已取消的组件和旧协议测试在 `quality/archive/v1/` 保留历史，当前验收从 [quality](../quality/README.md) 运行。

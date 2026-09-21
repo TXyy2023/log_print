@@ -198,6 +198,7 @@ fn archive_worker(
     } else {
         0
     };
+    let mut expected = archive.cursors();
     let mut count = 0usize;
     let mut bytes = 0usize;
     let mut started: Option<Instant> = None;
@@ -227,6 +228,41 @@ fn archive_worker(
         };
         match &work.pending.item {
             Item::Record(record) => {
+                let cursor = expected
+                    .get_mut(&record.stream)
+                    .context("unexpected stream")?;
+                if record.epoch != cursor.epoch {
+                    bail!("stream identity changed while archiving");
+                }
+                if record.seq > cursor.next {
+                    commit(&mut archive, &view)?;
+                    let gap = Gap {
+                        stream: record.stream.clone(),
+                        epoch: record.epoch.clone(),
+                        from: cursor.next,
+                        to: record.seq - 1,
+                        reason: "records unavailable before archive consumption".into(),
+                    };
+                    archive.gap(&gap)?;
+                    commit(&mut archive, &view)?;
+                    if config.fail_on_gap {
+                        bail!(
+                            "archive stopped on observed sequence gap {} {}..={}",
+                            gap.stream,
+                            gap.from,
+                            gap.to
+                        );
+                    }
+                    count = 0;
+                    bytes = 0;
+                    started = None;
+                }
+                cursor.next = cursor.next.max(
+                    record
+                        .seq
+                        .checked_add(1)
+                        .context("record sequence overflow")?,
+                );
                 if count > 0 && bytes.saturating_add(work.pending.bytes) > config.commit.max_bytes {
                     commit(&mut archive, &view)?;
                     count = 0;
@@ -305,7 +341,7 @@ async fn controls_loop(
         })
         .collect();
     let mut shutdown_calls = Vec::new();
-    let termination = io_plugin_util::termination();
+    let termination = log_plugin_sdk::termination();
     tokio::pin!(termination);
     let mut signaled = false;
     loop {
@@ -361,48 +397,50 @@ async fn freeze(
 ) -> Result<()> {
     // Receiver::close is the acceptance boundary. Drain everything already
     // enqueued in the SDK, plus the pending event held by this process. A socket
-    // frame not yet enqueued by the SDK remains unaccepted and is read on resume.
+    // frame not yet enqueued by the SDK remains unaccepted; no Core recovery is promised.
     events.close();
     for stream in streams {
         client.unsubscribe(stream).await?;
     }
     Ok(())
 }
+async fn resolve_config(client: &Client, mut config: Config) -> Result<Config> {
+    if config.mode != Mode::Create {
+        bail!("live resume is not supported: Core only retains rolling memory; use a new archive path");
+    }
+    let mut streams = Vec::new();
+    let mut paths = BTreeMap::new();
+    for alias in &config.streams {
+        let id = client.resolve_stream(alias).await?;
+        if let Some(file) = &config.file {
+            paths.insert(id.clone(), file.paths[alias].clone());
+        }
+        streams.push(id);
+    }
+    config.streams = streams;
+    if let Some(file) = &mut config.file {
+        file.paths = paths;
+    }
+    Ok(config)
+}
 async fn initialize(client: &Client, config: &Config) -> Result<Archive> {
-    let status = client.request("status", json!({})).await?;
-    let plugin_id = std::env::var("LOG_PRINT_PLUGIN")?;
-    let spec = status["config"]["plugins"]
-        .as_array()
-        .and_then(|p| p.iter().find(|p| p["id"] == plugin_id))
-        .context("Core status omitted current plugin declaration")?;
-    let reads: Vec<String> = serde_json::from_value(spec["reads"].clone())?;
-    config.validate_reads(&reads)?;
     let c = config.clone();
     let prepared = tokio::task::spawn_blocking(move || Archive::prepare(&c)).await??;
     let mut initial = BTreeMap::new();
-    if matches!(config.mode, Mode::Create) {
-        for stream in &config.streams {
-            let read = client
-                .request(
-                    "read",
-                    json!({"stream":stream,"from":config.from,"limit":1}),
-                )
-                .await?;
-            let epoch = read["epoch"]
-                .as_str()
-                .context("read omitted stream epoch")?
-                .to_owned();
-            let next = read["from"]
-                .as_u64()
-                .context("read omitted resolved start cursor")?;
-            if next == 0 {
-                bail!("Core did not resolve a nonzero initial cursor");
-            }
-            initial.insert(stream.clone(), Cursor { epoch, next });
-        }
+    for stream in &config.streams {
+        let subscription = client.subscribe(stream).await?;
+        let epoch = subscription["epoch"]
+            .as_str()
+            .context("subscription omitted epoch")?
+            .to_owned();
+        let next = subscription["from"]
+            .as_u64()
+            .context("subscription omitted start cursor")?;
+        initial.insert(stream.clone(), Cursor { epoch, next });
     }
     tokio::task::spawn_blocking(move || prepared.initialize(initial)).await?
 }
+
 async fn run(
     client: &Client,
     config: &Config,
@@ -412,23 +450,13 @@ async fn run(
     view: Arc<Mutex<Value>>,
 ) -> Result<Value> {
     let archive = initialize(client, config).await?;
-    let cursors = archive.cursors();
     update_view(&archive, &view);
-    for (stream, cursor) in &cursors {
-        if stop.borrow().is_some() {
-            break;
-        }
-        // Read checks the stored epoch even when no records are available.
-        client
-            .request(
-                "read",
-                json!({"stream":stream,"from":cursor.next,"epoch":cursor.epoch,"limit":1}),
-            )
-            .await?;
-        client
-            .subscribe_epoch(stream, cursor.next, Some(&cursor.epoch))
-            .await?;
-    }
+    client
+        .request(
+            "report",
+            json!({"state":"archiving","streams":config.streams}),
+        )
+        .await?;
     let (sender, receiver) = blocking::channel();
     let worker_config = config.clone();
     let worker_view = view.clone();
@@ -517,14 +545,37 @@ async fn run(
 #[tokio::main]
 async fn main() -> Result<()> {
     let (client, mut events, controls) = log_plugin_sdk::connect_env().await?;
-    let config = match Config::parse(client.config().clone()) {
+    let mut snapshot = client.config().clone();
+    if !client.read_streams().is_empty() {
+        if let Some(paths) = snapshot
+            .pointer("/file/paths")
+            .and_then(Value::as_object)
+            .cloned()
+        {
+            let mut resolved = serde_json::Map::new();
+            if client.read_streams().len() == 1 && paths.len() == 1 {
+                resolved.insert(
+                    client.read_streams()[0].clone(),
+                    paths.values().next().unwrap().clone(),
+                );
+            } else {
+                for (alias, path) in paths {
+                    resolved.insert(client.resolve_stream(&alias).await?, path);
+                }
+            }
+            snapshot["file"]["paths"] = Value::Object(resolved);
+        }
+        snapshot["streams"] = json!(client.read_streams());
+    }
+    let config = match Config::parse(snapshot) {
         Ok(config) => config,
         Err(error) => {
-            io_plugin_util::finish(&client, &Err(anyhow!("{error:#}"))).await;
+            log_plugin_sdk::finish(&client, &Err(anyhow!("{error:#}"))).await;
             return Err(error);
         }
     };
     let effective = serde_json::to_value(&config)?;
+    let config = resolve_config(&client, config).await?;
     let counters = Arc::new(Counters::new(&config));
     let view = Arc::new(Mutex::new(json!({"state":"initializing"})));
     let (stop_tx, mut stop) = watch::channel(None);
@@ -558,6 +609,9 @@ async fn main() -> Result<()> {
             } else {
                 "initializing"
             };
+            if state == "initializing" {
+                continue;
+            }
             let report = bounded_report(report_counters.decorate(value, state));
             let _ = tokio::time::timeout(
                 Duration::from_secs(2),

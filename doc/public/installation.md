@@ -1,6 +1,6 @@
 # 安装与构建
 
-本手册使用源码构建方式，构建结果包括主程序、Core 和六个官方插件。
+本手册使用源码构建方式，构建结果包括主程序、Core 和五个官方插件。
 
 ## 准备环境
 
@@ -17,19 +17,19 @@ Windows 下 Python 命令通常为 `python`。Python 只用于本手册中的输
 ## 获取并构建
 
 ```sh
-git clone --branch ver-0.1.1 https://github.com/TXyy2023/log_print.git
+git clone --branch ver-0.1.2 https://github.com/TXyy2023/log_print.git
 cd log_print
 cargo build --release --locked --workspace
 ./target/release/log-print --version
 ```
 
-本手册对应版本的版本号应为 `0.1.1`。`--locked` 要求按仓库锁文件解析依赖；首次构建需要获取依赖，本文不将其作为离线安装流程。
+本手册对应版本的版本号应为 `0.1.2`。`--locked` 要求按仓库锁文件解析依赖；首次构建需要获取依赖，本文不将其作为离线安装流程。
 
 构建结果位于 `target/release/`：
 
 - `log-print`：启动、管理和读取实例。
 - `log-print-core`：由主程序启动的 Core。
-- `input-program`、`input-file`、`input-replay`：输入插件。
+- `input-program`、`input-file`：输入插件。
 - `output-raw`、`output-transform`、`output-file`：输出和转换插件。
 
 主程序会查找配置声明的插件。按照本手册在仓库根目录运行，并保留上述可执行文件在构建目录中，不要只拷贝主程序后假定其余组件已安装。

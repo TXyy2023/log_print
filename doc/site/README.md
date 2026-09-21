@@ -20,13 +20,13 @@ npm run stop --prefix doc/site
 
 | 本机入口 | 编辑位置 | 页面范围 |
 |---|---|---|
-| 公开文档 | `doc/public/` | 入门、任务指南、CLI/配置及六个插件参考 |
+| 公开文档 | `doc/public/` | 入门、任务指南、CLI/配置及五个插件参考 |
 | 内部开发文档 | `doc/local/`（归档子目录以外） | 参考、设计、计划、研究、验收和图表 |
 | 归档文档 | `doc/local/archive/` | 旧计划、历史发布和交付记录 |
 
-公开手册正文统一维护在 `doc/public/`，两站均读取此处。根 README 和六个插件 README 仅保留仓库入口与链接，不再复制正式手册正文。`public-sources.json` 仅用于本机旧源码链接的路由映射，不是内容同步清单。`public-navigation.json` 显式维护侧栏顺序，`public-pages.json` 维护公开构建白名单；新增页面同步更新二者。
+公开手册正文统一维护在 `doc/public/`，两站均读取此处。根 README 和五个插件 README 仅保留仓库入口与链接，不再复制正式手册正文。`public-sources.json` 仅用于本机旧源码链接的路由映射，不是内容同步清单。`public-navigation.json` 显式维护侧栏顺序，`public-pages.json` 维护公开构建白名单；新增页面同步更新二者。
 
-本机 URL 使用 `/published/`（避免与 VitePress 的保留静态资源目录 `public` 混淆）、`/local/`、`/local/archive/`。内部混合资料保留原分类并提示版本边界，不因存在未来设计就整体移入归档。旧 1.0.0 叙述不表示当前 0.1.1 能力。
+本机 URL 使用 `/published/`（避免与 VitePress 的保留静态资源目录 `public` 混淆）、`/local/`、`/local/archive/`。内部混合资料保留原分类并提示版本边界，不因存在未来设计就整体移入归档。旧 1.0.0 叙述不表示当前 0.1.2 能力。
 
 ## 构建与隔离
 

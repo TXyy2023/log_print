@@ -1,29 +1,37 @@
-# input-program：程序输入
+# input-program：启动程序与 tmux 接入
 
-先完成任务教程：[使用步骤](../guides/program.md)。本页用于查询参数和行为边界。
+[使用步骤](../guides/program.md) · [公共配置结构](../reference/configuration.md)
 
-通用程序 stdout/stderr 字节采集，支持任何能启动并输出到标准管道的语言运行时。
+每个实例写入一条 Core 分配的流。两种模式的所有配置均为启动快照；更新主配置后需重启主程序，重启单个插件不重读配置。
 
-下列 JSON 是插件声明中的 `config`，不是完整启动配置。发布流须列入 `streams`，读取流须列入 `reads`；公共结构见 [配置参考](../reference/configuration.md)。
-
-插件接受 `shutdown`、`config.get`。标为动态的字段可通过 CLI `config set` 修改，只影响当前进程；其他字段需更新配置并重启实例加载。
-
-## 配置
+## 启动模式
 
 ```json
-{"command":"python3","args":["-u","project/examples/io/source.py"],"stdout_stream":"program.out","stderr_stream":"program.err","chunk_bytes":4096,"shutdown_ms":2000}
+{"mode":"spawn","command":"python3","args":["-u","app.py"],"chunk_bytes":4096,"shutdown_ms":2000}
 ```
 
-| 字段 | 默认/范围 | 生效 |
-|---|---|---|
-| command / args | 可执行文件必填，参数数组默认空；不隐式调用 shell | 重启 |
-| cwd / env | 继承工作目录/环境，可覆盖 | 重启 |
-| stdout_stream / stderr_stream | stdout / stderr，必须不同 | 重启 |
-| chunk_bytes | 4096，1..65536 | 重启 |
-| shutdown_ms | 2000，10..10000 | 重启 |
+| 字段 | 默认与范围 |
+|---|---|
+| `mode` | `spawn`；另一取值为 `tmux` |
+| `command` / `args` | 启动模式必填可执行文件；参数数组默认空，不隐式调用 shell |
+| `cwd` / `env` | 默认继承工作目录和环境；可设置目录和环境覆盖项 |
+| `chunk_bytes` | 4096，1–65536；UDP 编码后还受包大小限制 |
+| `shutdown_ms` | 2000，10–10000；终止后等待源进程回收的毫秒数 |
 
-## 行为与限制
+使用 stdout/stderr 管道，不分配 PTY，stdin 关闭。记录保留原始字节，不等待换行；`channel` 区分 `stdout` 与 `stderr`。每个通道有独立递增 `source_seq`，Core 的 `seq` 只代表实际接收顺序，不能还原跨管道的来源先后。源程序的缓冲由其自身 flush/无缓冲选项控制。
 
-两条管道分别发布，保持各自字节顺序，不承诺跨管道时序。采集不会等待换行；源语言自身的缓冲仍需由源程序 flush 或类似 Python `-u` 控制。Input 不为源程序提供 stdin。IPC 令牌等环境变量会从源程序环境移除。
+目标不继承插件连接使用的 `LOG_PRINT_*` 环境项。非零源退出或 Core 连接丢失报告失败。手动停止会终止本插件创建的 Unix 进程组或 Windows Job，并尝试回收后代；主动脱离 Unix 进程组的守护进程不在回收范围内。若后代继续持有输出管道，采集会等待管道关闭或手动停止。
 
-复用 [process-wrap](https://docs.rs/process-wrap/10.0.0/process_wrap/) 的 Unix 进程组和 Windows Job Object（挂起创建、入 Job 后恢复）；关闭时仅清理自己创建的组/Job。非零源退出是失败。源主动脱离 Unix 进程组的守护进程不在组回收承诺内；Windows 与 Linux 的实际回收须按平台验证。停机时尚未确认的管道数据会明确提示，未知余量不虚构为零。
+## tmux 模式
+
+```json
+{"mode":"tmux","tmux_target":"%3","chunk_bytes":4096}
+```
+
+要求 Unix 与可用的 tmux；`tmux_target` 必填，建议使用明确的窗格 ID。可选 `tmux_socket` 为服务器 socket 路径，对应 `tmux -S`；不指定则使用当前 tmux 环境或默认服务。此模式拒绝 `command/args/cwd/env`，目标程序不会为了接入而重启。
+
+只采集接入后的新输出，不导入历史屏幕。记录为终端字节，可能含控制码；`channel` 为 `terminal`，无法还原 stdout/stderr 区分。已有 `pipe-pane` 时拒绝，通过 tmux 同步条件命令处理检查与安装，避免竞争期间关闭他人的管道。
+
+专属辅助进程通过私有 Unix socket 传输；停止只断开自己的连接，辅助进程退出，目标继续运行。后来由别人替换管道时，清理也不会关闭新管道。本模式不提供任意 PID、普通 TTY 附着或全历史恢复。
+
+两种模式的 EOF 都不代表下游完成。有限滚动缓冲可能覆盖记录，UDP 本地发送不代表 Core 接收，均不承诺完整无损。旧 `stdout_stream/stderr_stream` 双流配置已移除。

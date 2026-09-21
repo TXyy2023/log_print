@@ -1,25 +1,29 @@
 {
-  "core": {
-    "buffer_bytes": 4194304,
-    "buffer_records": 4096
-  },
   "plugins": [
     {
-      "id": "file",
+      "id": "source",
+      "role": "input",
       "bin": "input-file",
-      "streams": [{"id": "logs"}],
+      "streams": [
+        {
+          "id": "logs",
+          "description": "example.log 新增内容"
+        }
+      ],
       "config": {
         "path": "example.log",
-        "stream": "logs",
-        "from_start": false,
-        "poll_ms": 50
+        "mode": "follow"
       }
     },
     {
-      "id": "raw",
+      "id": "screen",
+      "role": "output",
       "bin": "output-raw",
-      "reads": ["logs"],
-      "config": {"streams": ["logs"], "from": 1}
+      "autostart": false,
+      "reads": [
+        "logs"
+      ],
+      "config": {}
     }
   ]
 }

@@ -87,11 +87,11 @@ for(let i=0;i<queue.length;i++) {
  // Vue must not interpret generic type placeholders in prose; code fences remain untouched.
  if(mode==='local' && rel.startsWith('local/') && !rel.endsWith('/index.md')) {
   const historical = /(?:archive\/|reference\/|design\/|evidence\/)/.test(rel) && !rel.includes('/0.1.0/') && rel !== 'local/design/architecture.md' && !rel.startsWith('local/design/modules/');
-  if(historical) text='::: warning 历史资料与版本边界\n正文按原记录保留，可能包含旧 1.0.0、串口、TUI 或 WebUI 范围。当前公开版本为 0.1.1；请勿将这里的计划、设计或历史验收当成当前能力。\n:::\n\n'+text;
+  if(historical) text='::: warning 历史资料与版本边界\n正文按原记录保留，可能包含旧 1.0.0、串口、TUI 或 WebUI 范围。当前公开版本为 0.1.2；请勿将这里的计划、设计或历史验收当成当前能力。\n:::\n\n'+text;
  }
  write(rel,text);
 }
-if(mode==='local') write('index.md',`# log_print 文档库\n\n在本机查阅公开使用说明、内部研发资料及历史归档。\n\n| 入口 | 内容 |\n|---|---|\n| [GitHub 文档](/published/index.md) | 面向使用者的 0.1.1 说明，作为独立公开站的唯一内容来源 |\n| [本地文档站](/local/index.md) | 按实际目录层级与相对路径浏览内部开发资料 |\n| [归档文档](/local/archive/index.md) | 历史计划与交付记录，完整保留 |\n\n搜索支持中文；顶部导航切换范围。历史文档的版本提示优先于正文中的“当前”等措辞。\n`);
+if(mode==='local') write('index.md',`# log_print 文档库\n\n在本机查阅公开使用说明、内部研发资料及历史归档。\n\n| 入口 | 内容 |\n|---|---|\n| [GitHub 文档](/published/index.md) | 面向使用者的 0.1.2 说明，作为独立公开站的唯一内容来源 |\n| [本地文档站](/local/index.md) | 按实际目录层级与相对路径浏览内部开发资料 |\n| [归档文档](/local/archive/index.md) | 历史计划与交付记录，完整保留 |\n\n搜索支持中文；顶部导航切换范围。历史文档的版本提示优先于正文中的“当前”等措辞。\n`);
 fs.mkdirSync(path.join(out,'.vitepress/theme'),{recursive:true});
 write('.vitepress/theme/index.js',fs.readFileSync(path.join(home,'theme.js')));
 write('.vitepress/theme/Mermaid.vue',fs.readFileSync(path.join(home,'Mermaid.vue')));

@@ -1,127 +1,132 @@
 mod transform;
 use anyhow::{bail, Result};
-use io_plugin_util::stopped;
-use log_plugin_sdk::Event;
+use log_plugin_sdk::{stopped, Event};
 use log_proto::Record;
 use serde_json::{json, Value};
-use std::collections::{BTreeMap, VecDeque};
+use std::{
+    collections::BTreeMap,
+    time::{Duration, Instant},
+};
 use transform::{Config, Processor};
-fn config(v: &Value) -> Result<Config> {
+fn validate(v: &Value) -> Result<Value> {
     let c: Config = serde_json::from_value(v.clone())?;
     c.validate()?;
-    Ok(c)
-}
-fn validate(v: &Value) -> Result<Value> {
-    Ok(serde_json::to_value(config(v)?)?)
-}
-struct Parent {
-    processor: Processor,
-    last: Record,
+    Ok(serde_json::to_value(c)?)
 }
 #[tokio::main]
 async fn main() -> Result<()> {
-    let mut cx =
-        io_plugin_util::connect(validate, &["prefix", "suffix", "delete", "replace"]).await?;
-    let client = cx.client.clone();
-    let r = run(&mut cx).await;
-    io_plugin_util::finish(&client, &r).await;
-    r
+    let mut cx = log_plugin_sdk::connect(validate).await?;
+    let result = run(&mut cx).await.and_then(|_| cx.shutdown_result());
+    log_plugin_sdk::finish(&cx.client, &result).await;
+    result
 }
 async fn emit(
     client: &log_plugin_sdk::Client,
-    c: &Config,
-    parent: &Record,
-    out: transform::Output,
-    index: &mut u64,
-    run: uuid::Uuid,
-    upstream: &BTreeMap<String, u64>,
+    output: &str,
+    processor: &mut Processor,
+    records: Vec<Record>,
+    number: &mut u64,
+    run: &str,
 ) -> Result<()> {
-    for warning in out.warnings {
-        eprintln!("{warning}");
-        client.request("report",json!({"state":"transform_warning","stream":parent.stream,"seq":parent.seq,"warning":warning})).await?;
-    }
-    for bytes in out.bytes {
-        for chunk in bytes.chunks(log_proto::MAX_PAYLOAD) {
-            let key = format!("{run}:{}:{}:{index}", parent.stream, parent.seq);
-            client
-                .publish_retained(
-                    &c.output_stream,
-                    &key,
-                    chunk.to_vec(),
-                    parent.source_ts_ns,
-                    upstream.clone(),
-                )
-                .await?;
-            *index += 1;
-        }
+    for record in records {
+        let bytes = processor.decorate(&record)?;
+        *number = number
+            .checked_add(1)
+            .ok_or_else(|| anyhow::anyhow!("derived source sequence exhausted"))?;
+        let upstream = BTreeMap::from([(record.stream.clone(), record.seq)]);
+        let source_seq = processor.next_source_sequence(record.channel.clone())?;
+        client
+            .publish_tagged(
+                output,
+                &format!("{run}:{number}"),
+                bytes,
+                record.source_ts_ns,
+                upstream,
+                record.channel,
+                Some(source_seq),
+            )
+            .await?;
     }
     Ok(())
 }
-async fn run(cx: &mut io_plugin_util::Context) -> Result<()> {
-    let c = config(&cx.config.borrow())?;
-    for stream in &c.streams {
-        cx.client.subscribe(stream, c.from).await?;
+async fn run(cx: &mut log_plugin_sdk::Context) -> Result<()> {
+    let mut c: Config = serde_json::from_value(cx.config.clone())?;
+    if !cx.client.read_streams().is_empty() {
+        c.streams = cx.client.read_streams().to_vec();
     }
-    let run = uuid::Uuid::new_v4();
-    let mut parents: BTreeMap<String, Parent> = BTreeMap::new();
-    let mut index = 0;
-    let mut upstream = BTreeMap::new();
-    let mut pending = VecDeque::new();
-    let mut pending_bytes = 0usize;
-    cx.client.request("report",json!({"state":"transforming","streams":c.streams,"output_stream":c.output_stream,"run":run,"original_bytes":"unchanged in parent stream"})).await?;
-    loop {
-        let event = tokio::select! {_=stopped(&mut cx.shutdown)=>break,event=cx.events.recv()=>event.ok_or_else(||anyhow::anyhow!("event connection closed"))?};
-        let c = config(&cx.config.borrow())?;
-        match event {
-            Event::Record(r) => {
-                let state = parents.entry(r.stream.clone()).or_insert_with(|| Parent {
-                    processor: Processor::new(&c),
-                    last: r.clone(),
-                });
-                if state.last.epoch != r.epoch {
-                    bail!("parent epoch changed; manual restart required to avoid joining distinct runs")
-                }
-                let out = state.processor.feed(&r.payload, false, &c)?;
-                state.last = r;
-                upstream.insert(state.last.stream.clone(), state.last.seq);
-                pending_bytes += out.bytes.iter().map(Vec::len).sum::<usize>();
-                if !out.bytes.is_empty() || !out.warnings.is_empty() {
-                    pending.push_back((state.last.clone(), out));
-                }
-                if upstream.len() < c.streams.len() {
-                    if pending_bytes > c.max_pending_bytes || pending.len() > 64 {
-                        bail!("waiting for all parents exceeded bounded pending output; missing parent has not published")
-                    }
-                } else {
-                    while let Some((parent, out)) = pending.pop_front() {
-                        tokio::select! {_=stopped(&mut cx.shutdown)=>{eprintln!("shutdown interrupted derived publish; current parent outcome may be unknown");return Ok(())},r=emit(&cx.client,&c,&parent,out,&mut index,run,&upstream)=>r?}
-                    }
-                    pending_bytes = 0;
-                }
-            }
-            Event::Disconnected { stream, reason } => {
-                bail!("parent event connection lost for {stream}: {reason}")
-            }
-            Event::Gap {
-                stream,
-                epoch,
-                from,
-                to,
-                reason,
-            } => {
-                cx.client.request("report",json!({"state":"parent_gap","stream":stream,"epoch":epoch,"from":from,"to":to,"reason":reason})).await?;
-                bail!("parent gap; stopped rather than joining unrelated partial records")
-            }
+    if c.streams.is_empty() {
+        bail!("configure or attach a source stream");
+    }
+    let output = if let Some(id) = cx.client.stream_id() {
+        id.to_owned()
+    } else {
+        cx.client.resolve_stream(&c.output_stream).await?
+    };
+    for stream in &mut c.streams {
+        *stream = cx.client.resolve_stream(stream).await?;
+        if *stream == output {
+            bail!("derived output must differ from every original stream");
         }
     }
-    let c = config(&cx.config.borrow())?;
-    if !pending.is_empty() {
-        bail!("shutdown before all parents arrived; pending derived output not published")
+    for stream in &c.streams {
+        cx.client.subscribe(stream).await?;
     }
-    for state in parents.values_mut() {
-        let pending = state.processor.pending();
-        let out = state.processor.feed(b"", true, &c)?;
-        match tokio::time::timeout(std::time::Duration::from_secs(2),emit(&cx.client,&c,&state.last,out,&mut index,run,&upstream)).await{Ok(r)=>r?,Err(_)=>bail!("shutdown flush timed out; at least {pending} buffered bytes have unconfirmed derived publication")}
+    let mut processor = Processor::new(&c);
+    let mut number = 0;
+    let run = uuid::Uuid::new_v4().to_string();
+    cx.client.request("report",json!({"state":"transforming","streams":c.streams,"output_stream":output,"number":c.number,"timestamp":c.timestamp,"reorder":c.reorder})).await?;
+    let mut ticker = tokio::time::interval(Duration::from_millis(c.max_delay_ms));
+    ticker.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
+    loop {
+        let records = tokio::select! {
+            _=stopped(&mut cx.shutdown)=>break,
+            _=ticker.tick()=>processor.expire(Instant::now()),
+            event=cx.events.recv()=>match event {
+                Some(Event::Record(record))=>processor.feed(record,Instant::now())?,
+                Some(Event::Disconnected{stream,reason})=>bail!("source disconnected for {stream}: {reason}"),
+                Some(Event::Gap{stream,from,to,..})=>{eprintln!("source missing {stream} {from}..={to}");Vec::new()},
+                None=>bail!("source event channel closed"),
+            },
+        };
+        emit(
+            &cx.client,
+            &output,
+            &mut processor,
+            records,
+            &mut number,
+            &run,
+        )
+        .await?;
     }
+    // Stop acceptance first, then drain accepted SDK events and reorder state.
+    cx.events.close();
+    for stream in &c.streams {
+        cx.client.unsubscribe(stream).await?;
+    }
+    while let Some(event) = cx.events.recv().await {
+        if let Event::Record(record) = event {
+            let records = processor.feed(record, Instant::now())?;
+            emit(
+                &cx.client,
+                &output,
+                &mut processor,
+                records,
+                &mut number,
+                &run,
+            )
+            .await?;
+        }
+    }
+    let records = processor.flush();
+    emit(
+        &cx.client,
+        &output,
+        &mut processor,
+        records,
+        &mut number,
+        &run,
+    )
+    .await?;
+    cx.client.request("report",json!({"state":"stopped","published":number,"duplicates":processor.stats.duplicates,"skipped_source_sequences":processor.stats.skipped,"records_without_source_sequence":processor.stats.missing_source_seq,"pending":processor.pending().0})).await?;
     Ok(())
 }

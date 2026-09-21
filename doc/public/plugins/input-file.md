@@ -1,32 +1,33 @@
-# input-file：文件输入
+# input-file：跟随与静态读取
 
-先完成任务教程：[使用步骤](../guides/file.md)。本页用于查询参数和行为边界。
+[使用步骤](../guides/file.md) · [公共配置结构](../reference/configuration.md)
 
-跟随普通日志文件的新增字节。
-
-下列 JSON 是插件声明中的 `config`，不是完整启动配置。发布流须列入 `streams`，读取流须列入 `reads`；公共结构见 [配置参考](../reference/configuration.md)。
-
-插件接受 `shutdown`、`config.get`。标为动态的字段可通过 CLI `config set` 修改，只影响当前进程；其他字段需更新配置并重启实例加载。
-
-## 配置
+每个实例写入 Core 分配的一条流。`streams[0].id` 是配置别名，实际流 ID 由 Core 返回；流说明放在 `streams[0].description`。以下仅为插件 `config`：
 
 ```json
-{"path":"/tmp/source.log","stream":"file","from_start":false,"chunk_bytes":4096,"poll_ms":50}
+{"path":"/absolute/path/source.log","mode":"follow","from_start":false,"chunk_bytes":4096,"poll_ms":50}
 ```
 
-| 字段 | 默认/范围 | 生效 |
+| 字段 | 默认值与范围 | 行为 |
 |---|---|---|
-| path / stream | path 必填；stream=file | 重启 |
-| from_start | false：从启动时末尾；true：从头 | 重启 |
-| chunk_bytes | 4096，1..65536 | 重启 |
-| poll_ms | 50，1..60000 | 动态 |
+| `path` | 必填 | 必须为存在的普通文件 |
+| `mode` | `follow` | `follow` 持续跟随；`static` 从头快速读取 |
+| `from_start` | `false` | 仅跟随模式使用；`true` 包含启动前已有内容 |
+| `chunk_bytes` | 4096，1–65536 | 每块字节上限；UDP 编码后还受包大小限制 |
+| `poll_ms` | 50，1–60000 | 跟随模式的轮询间隔（毫秒） |
 
-## 行为与限制
+配置在主程序启动时读取一次。改文件或重启单个插件不会重读主配置，需重启主程序才生效；不提供动态参数修改。插件接受 `shutdown`、`config.get`；Core 连接丢失按失败退出，不作为正常手动停止。
 
-轮询只负责检测文件新增，Output 订阅仍为实时推送。使用 [same-file](https://docs.rs/same-file/latest/same_file/) 的文件身份检测替换；文件长度回退检测截断，已读位置前最多 64 字节的锚点检测快速截断后重新增长。每次检测到截断/替换开新 segment，从新内容开头读取；发布 key 包含本次 run、segment 与字节 offset，status 报告边界。
+## 文件边界
 
-路径短暂消失时等待恢复并报告。轮转时未读完的旧文件尾部、检测间隔内发生多次替换、重写且锚点完全一致，可能无法恢复或检测，缺失量标为未知，不宣称文件监控绝对无损。普通文件在运行中变为设备/FIFO 会拒绝。
+`follow` 默认在打开文件时确定末尾位置，再向 Core 注册。检测追加后读取新增字节；检测文件身份替换、长度缩短，或已读位置前最多 64 字节的锚点变化后，建立新 segment 并从开头读取。路径消失时报告并等待重现。记录 `key` 包含运行 ID、段号与段内偏移，`source_seq` 按本实例的发布块从 1 递增，`channel` 为空。
 
-Windows 的读取句柄使用 Rust 默认的 `FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE`，身份查询没有取消删除共享。不过 Python 3.12 的 `Path.replace` / `os.replace` 调用旧 `MoveFileExW`，该接口仍拒绝覆盖已打开的目标，不能据此声称任意日志写入程序的轮转 API 都可用。[Rust 共享说明](https://doc.rust-lang.org/std/os/windows/fs/trait.OpenOptionsExt.html#tymethod.share_mode)、[Python 官方问题说明](https://bugs.python.org/issue46003)。
+轮转时不排空旧文件尾部；轮询间隔内的多次替换、截断后恢复相同锚点内容可能无法检测或补回。文件轮转能否成功还取决于写入程序与操作系统使用的文件 API。停止时尚未发布的字节不保证送达。
 
-`quality/tests/io/verify.py` 的 Windows 替换验收使用临时编译的 Rust `std::fs::rename` 程序。现代 Rust 在必要时使用 `FileRenameInfoEx` 的 `REPLACE_IF_EXISTS | POSIX_SEMANTICS`，可在共享删除的旧目标仍打开时进行真正替换；测试持续保持采集运行，检查完整替换字节及 `reason=replaced`、新 segment。Rust 编译器是该测试的依赖，临时源码和程序测试后清理；不通过关闭采集、截断或跳过来代替替换。[Rust 实现](https://github.com/rust-lang/rust/blob/1.98.0/library/std/src/sys/fs/windows.rs)、[Windows 替换语义](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-fscc/4217551b-d2c0-42cb-9dc1-69a716cf6d0c)。对应平台通过情况以最新 CI 产物为准。
+## 静态完成含义
+
+`static` 总从头读取，尽快发出原始字节，遇首次 EOF 后报告 `source_eof` 并退出。本模式合并了旧 input-replay 的静态快读用途，不继承节奏、速度倍率、时间解析或 SQLite 回放。
+
+`bytes_sent` / `chunks_sent` 统计完成传输侧发布调用的字节与块；TCP 返回 Core 接受结果，UDP 只确认本地发送。`downstream_complete` 始终为 `false`：源读完不代表 Output 已处理。Core 的流和仍在缓冲中的内容继续存在，但缓冲有界、满后覆盖，Input 不等待 Output，**静态快速读取不承诺全量无损导入**。
+
+旧 `config.stream` 字段已移除。容量和 UDP 限制见[配置参考](../reference/configuration.md)。

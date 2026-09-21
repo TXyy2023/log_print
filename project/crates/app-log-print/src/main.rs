@@ -24,7 +24,7 @@ use uuid::Uuid;
 #[command(
     name = "log-print",
     version,
-    about = "Local multi-stream logs, independent plugins and archives"
+    about = "Memory log streams and independent input/output plugins"
 )]
 struct Cli {
     #[arg(long, global = true, default_value = ".log-print/state.json")]
@@ -46,14 +46,14 @@ enum Action {
     },
     Status,
     Streams,
+    /// Inspect a stream using its Core-assigned UUID.
+    Stream {
+        id: String,
+    },
     Read {
         stream: String,
-        #[arg(long, default_value_t = 1)]
-        from: u64,
         #[arg(long, default_value_t = 64)]
         limit: usize,
-        #[arg(long)]
-        epoch: Option<String>,
         /// Wait for a nonempty page or gap, up to this many milliseconds (0 = snapshot).
         #[arg(long, default_value_t = 0, value_parser = clap::value_parser!(u64).range(0..=60_000))]
         wait_ms: u64,
@@ -64,16 +64,10 @@ enum Action {
     Config {
         #[arg(long)]
         plugin: Option<String>,
-        #[command(subcommand)]
-        command: Option<ConfigAction>,
     },
     Plugin {
         #[command(subcommand)]
         command: PluginAction,
-    },
-    Session {
-        #[command(subcommand)]
-        command: SessionAction,
     },
     /// Call any Core RPC with a JSON argument object.
     Call {
@@ -85,18 +79,12 @@ enum Action {
     Stop,
 }
 #[derive(Subcommand)]
-enum ConfigAction {
-    /// Ask a running plugin to apply supported runtime configuration fields.
-    Set {
-        plugin: String,
-        #[arg(long)]
-        json: String,
-    },
-}
-#[derive(Subcommand)]
 enum PluginAction {
     Start {
         id: String,
+        /// Associate an offline Output with a Core-assigned stream UUID.
+        #[arg(long)]
+        stream: Option<String>,
     },
     Stop {
         id: String,
@@ -111,50 +99,6 @@ enum PluginAction {
         json: String,
     },
 }
-#[derive(Subcommand)]
-enum SessionAction {
-    List {
-        plugin: String,
-    },
-    Create {
-        plugin: String,
-        #[arg(long)]
-        json: String,
-    },
-    Get {
-        plugin: String,
-        id: String,
-    },
-    Select {
-        plugin: String,
-        id: String,
-    },
-    Set {
-        plugin: String,
-        id: String,
-        #[arg(long)]
-        revision: u64,
-        #[arg(long)]
-        json: String,
-    },
-    Export {
-        plugin: String,
-        id: String,
-        #[arg(long)]
-        path: PathBuf,
-        #[arg(long, default_value = "png", value_parser = ["png", "svg"])]
-        format: String,
-        #[arg(long)]
-        revision: Option<u64>,
-        #[arg(long)]
-        width: Option<u32>,
-        #[arg(long)]
-        height: Option<u32>,
-        #[arg(long)]
-        overwrite: bool,
-    },
-}
-
 #[derive(Clone, Serialize, Deserialize)]
 struct State {
     protocol: String,
@@ -163,6 +107,7 @@ struct State {
     pid: u32,
     core_pid: u32,
     core_address: String,
+    transport: log_proto::TransportKind,
     config: String,
     runtime_directory: String,
 }
@@ -366,6 +311,26 @@ async fn rpc(address: &str, identity: &str, token: &str, op: &str, args: Value) 
     .context("RPC timed out; operation result may be unknown; not retried")?
 }
 
+/// Only plugin/Core traffic uses the selected protocol transport; the local
+/// CLI management endpoint stays separate and never forwards log payloads.
+async fn core_request(
+    address: &str,
+    token: &str,
+    transport: log_proto::TransportKind,
+    op: &str,
+    args: Value,
+) -> Result<Value> {
+    let (client, _events, _controls) = log_plugin_sdk::Client::connect_with_transport(
+        address,
+        "__admin__",
+        token,
+        json!({}),
+        transport,
+    )
+    .await?;
+    client.request(op, args).await
+}
+
 struct Files {
     state: PathBuf,
     directory: PathBuf,
@@ -396,10 +361,10 @@ struct Supervisor {
 }
 impl Supervisor {
     async fn core_rpc(&self, op: &str, args: Value) -> Result<Value> {
-        rpc(
+        core_request(
             &self.state.core_address,
-            "__admin__",
             &self.state.token,
+            self.state.transport,
             op,
             args,
         )
@@ -423,7 +388,7 @@ impl Supervisor {
     fn process_status(&self) -> Vec<Value> {
         self.plugins.iter().map(|(id, p)| json!({"id":id,"pid":p.child.as_ref().and_then(Child::id),"state":if p.child.is_some(){"running"}else{"stopped"},"last_exit":p.last_exit,"autostart":p.spec.autostart})).collect()
     }
-    fn start_plugin(&mut self, id: &str) -> Result<Value> {
+    async fn start_plugin(&mut self, id: &str) -> Result<Value> {
         self.refresh()?;
         let managed = self
             .plugins
@@ -433,9 +398,23 @@ impl Supervisor {
             bail!("plugin {id} is already running")
         }
         let binary = resolve_binary(&managed.spec.bin, &self.config_dir)?;
+        core_request(
+            &self.state.core_address,
+            &self.state.token,
+            self.state.transport,
+            "plugin.prepare",
+            json!({"plugin":id}),
+        )
+        .await?;
         let child = Command::new(binary)
             .args(&managed.spec.args)
             .env("LOG_PRINT_CORE", &self.state.core_address)
+            .env(
+                "LOG_PRINT_TRANSPORT",
+                serde_json::to_value(self.state.transport)?
+                    .as_str()
+                    .context("transport name")?,
+            )
             .env("LOG_PRINT_PLUGIN", id)
             .env("LOG_PRINT_TOKEN", &self.tokens[id])
             .env(
@@ -473,12 +452,15 @@ impl Supervisor {
                 if report == Some("failed") {
                     bail!("plugin {id} initialization failed: {}", plugin["report"])
                 }
-                if plugin["connected"] == true {
+                if plugin["connected"] == true && report.is_some() {
                     continue;
                 }
                 if self.plugins[id].child.is_none() {
                     if self.plugins[id].last_success == Some(true)
-                        && matches!(report, Some("stopped" | "completed"))
+                        && matches!(
+                            report,
+                            Some("stopped" | "completed" | "source_eof" | "source_exited")
+                        )
                     {
                         continue;
                     }
@@ -505,13 +487,16 @@ impl Supervisor {
             .get_mut(id)
             .with_context(|| format!("unknown plugin: {id}"))?;
         let Some(child) = managed.child.take() else {
-            return Ok(json!({"id":id,"state":"stopped","already_stopped":true}));
+            return Ok(
+                json!({"id":id,"state":"stopped","already_stopped":true,"success":managed.last_success.unwrap_or(true),"forced":false,"exit":managed.last_exit}),
+            );
         };
         let result = finish_plugin(
             id.to_owned(),
             child,
             self.state.core_address.clone(),
             self.state.token.clone(),
+            self.state.transport,
             core_alive,
         )
         .await;
@@ -535,6 +520,17 @@ impl Supervisor {
             }
         }
         Ok(result)
+    }
+    async fn plugin_streams(&self, id: &str) -> Result<Value> {
+        let status = self.core_rpc("status", json!({})).await?;
+        let streams = status["streams"]
+            .as_array()
+            .context("Core status missing streams")?;
+        Ok(json!(streams
+            .iter()
+            .filter(|s| s["owner"] == id)
+            .cloned()
+            .collect::<Vec<_>>()))
     }
     async fn handle(&mut self, op: &str, args: Value) -> Result<Value> {
         self.refresh()?;
@@ -565,29 +561,40 @@ impl Supervisor {
                     Ok(answer)
                 } else {
                     Ok(
-                        json!({"config":self.config,"source":self.state.config,"runtime_overrides":"not persisted; query status for live plugin reports"}),
+                        json!({"config":self.config,"source":self.state.config,"configuration":"startup snapshot; restart supervisor to apply file changes"}),
                     )
                 }
             }
             "plugin.start" => {
                 let id = plugin_id()?;
-                let result = self.start_plugin(&id)?;
+                if let Some(stream) = args["stream"].as_str() {
+                    self.core_rpc("plugin.attach", json!({"plugin":id,"stream":stream}))
+                        .await?;
+                }
+                let result = self.start_plugin(&id).await?;
                 if let Err(error) = self.wait_plugins(std::slice::from_ref(&id)).await {
                     let _ = self.stop_plugin(&id, true).await;
                     return Err(error);
                 }
+                let mut result = result;
+                result["streams"] = self.plugin_streams(&id).await?;
                 Ok(result)
             }
             "plugin.stop" => self.stop_plugin(&plugin_id()?, true).await,
             "plugin.restart" => {
                 let id = plugin_id()?;
                 let stopped = self.stop_plugin(&id, true).await?;
-                let started = self.start_plugin(&id)?;
+                if stopped["success"] != true || stopped["forced"] == true {
+                    bail!("plugin stop failed; restart was not attempted: {stopped}");
+                }
+                let started = self.start_plugin(&id).await?;
                 if let Err(error) = self.wait_plugins(std::slice::from_ref(&id)).await {
                     let _ = self.stop_plugin(&id, true).await;
                     return Err(error);
                 }
-                Ok(json!({"stopped":stopped,"started":started}))
+                Ok(
+                    json!({"stopped":stopped,"started":started,"streams":self.plugin_streams(&id).await?}),
+                )
             }
             "stop" => {
                 self.stopping = true;
@@ -600,8 +607,10 @@ impl Supervisor {
             _ => bail!("unknown management operation: {op}"),
         }
     }
-    async fn cleanup(&mut self, core_alive: bool) {
+    async fn cleanup(&mut self, core_alive: bool) -> Value {
+        let _ = self.refresh();
         let mut pending = JoinSet::new();
+        let mut results = Vec::new();
         for (id, managed) in &mut self.plugins {
             if let Some(child) = managed.child.take() {
                 pending.spawn(finish_plugin(
@@ -609,25 +618,39 @@ impl Supervisor {
                     child,
                     self.state.core_address.clone(),
                     self.state.token.clone(),
+                    self.state.transport,
                     core_alive,
                 ));
+            } else if managed.last_success == Some(false) {
+                results.push(json!({"id":id,"success":false,"exit":managed.last_exit,"state":"stopped","forced":false}));
             }
         }
         while let Some(result) = pending.join_next().await {
-            match result {
-                Ok(value) => eprintln!("[supervisor] shutdown {value}"),
-                Err(e) => eprintln!("[supervisor] cleanup error: {e}"),
-            }
+            let value = match result {
+                Ok(value) => value,
+                Err(e) => json!({"success":false,"error":e.to_string(),"state":"cleanup_failed"}),
+            };
+            eprintln!("[supervisor] shutdown {value}");
+            results.push(value);
         }
         drop(self.core_stdin.take());
-        match tokio::time::timeout(Duration::from_secs(4), self.core.wait()).await {
-            Ok(Ok(status)) => eprintln!("[supervisor] Core reaped: {status}"),
+        let core_result = match tokio::time::timeout(Duration::from_secs(4), self.core.wait()).await
+        {
+            Ok(Ok(status)) => {
+                json!({"success":status.success(),"exit":status.to_string(),"forced":false})
+            }
             other => {
                 eprintln!("[supervisor] Core graceful shutdown incomplete: {other:?}; terminating owned child");
                 let _ = self.core.start_kill();
-                let _ = self.core.wait().await;
+                let status = self.core.wait().await;
+                json!({"success":false,"exit":format!("{status:?}"),"forced":true})
             }
-        }
+        };
+        let success = core_result["success"] == true
+            && results
+                .iter()
+                .all(|v| v["success"] == true && v["forced"] != true);
+        json!({"stopped":true,"success":success,"core":core_result,"plugins":results})
     }
 }
 async fn finish_plugin(
@@ -635,17 +658,17 @@ async fn finish_plugin(
     mut child: Child,
     address: String,
     token: String,
+    transport: log_proto::TransportKind,
     core_alive: bool,
 ) -> Value {
     let mut control_error = None;
-    let mut forced = !core_alive;
     if core_alive {
         match tokio::time::timeout(
             Duration::from_secs(3),
-            rpc(
+            core_request(
                 &address,
-                "__admin__",
                 &token,
+                transport,
                 "control",
                 json!({"target":id,"method":"shutdown","args":{}}),
             ),
@@ -659,11 +682,21 @@ async fn finish_plugin(
                     Some("shutdown control timed out; unfinished data may remain".to_owned())
             }
         }
-        match tokio::time::timeout(Duration::from_secs(2), child.wait()).await {
-            Ok(Ok(status)) => {
-                return json!({"id":id,"state":"stopped","exit":status.to_string(),"success":status.success(),"forced":false,"control_error":control_error})
-            }
-            _ => forced = true,
+    }
+    // If Core crashed, the SDK needs time to deliver connection failure so the
+    // plugin can stop its owned source process group/job before it is reaped.
+    if let Ok(Ok(status)) = tokio::time::timeout(Duration::from_secs(2), child.wait()).await {
+        return json!({"id":id,"state":"stopped","exit":status.to_string(),"success":status.success(),"forced":false,"control_error":control_error});
+    }
+    #[cfg(unix)]
+    if let Some(pid) = child.id() {
+        // This PID still belongs to our unreaped Child. SIGTERM gives cooperative
+        // cleanup one more chance; never target an unrelated name or process group.
+        unsafe {
+            libc::kill(pid as libc::pid_t, libc::SIGTERM);
+        }
+        if let Ok(Ok(status)) = tokio::time::timeout(Duration::from_secs(2), child.wait()).await {
+            return json!({"id":id,"state":"stopped","exit":status.to_string(),"success":status.success(),"forced":false,"termination_signal":true,"control_error":control_error});
         }
     }
     let _ = child.start_kill();
@@ -671,7 +704,7 @@ async fn finish_plugin(
         Ok(Ok(status)) => status.to_string(),
         other => format!("reap incomplete: {other:?}"),
     };
-    json!({"id":id,"state":"stopped","exit":exit,"forced":forced,"control_error":control_error,"unfinished_data":if forced {"unknown; forced termination"} else {"reported by plugin"}})
+    json!({"id":id,"state":"stopped","exit":exit,"success":false,"forced":true,"control_error":control_error,"unfinished_data":"unknown; forced termination and source cleanup not confirmed"})
 }
 
 type ManagementCall = (Request, oneshot::Sender<Result<Value>>);
@@ -884,6 +917,7 @@ async fn run(config_path: PathBuf, state_path: PathBuf) -> Result<()> {
         pid: std::process::id(),
         core_pid: ready.pid,
         core_address: ready.address,
+        transport: config.core.transport,
         config: config_path.display().to_string(),
         runtime_directory: directory.display().to_string(),
     };
@@ -920,7 +954,7 @@ async fn run(config_path: PathBuf, state_path: PathBuf) -> Result<()> {
         .map(|(id, _)| id.clone())
         .collect();
     for id in &autostart {
-        if let Err(error) = supervisor.start_plugin(id) {
+        if let Err(error) = supervisor.start_plugin(id).await {
             supervisor.cleanup(true).await;
             return Err(error);
         }
@@ -948,7 +982,9 @@ async fn run(config_path: PathBuf, state_path: PathBuf) -> Result<()> {
     );
     let (send, mut receive) = mpsc::channel::<ManagementCall>(32);
     let mut connections = JoinSet::new();
-    let result: Result<()> = loop {
+    let mut cleaned = false;
+    let mut cleanup_failed = false;
+    let mut result: Result<()> = loop {
         tokio::select! {
             signal = &mut stop => { break signal; }
             exited = supervisor.core.wait() => { break Err(anyhow::anyhow!("Core exited unexpectedly: {:?}; stopping affected plugins", exited)); }
@@ -960,14 +996,28 @@ async fn run(config_path: PathBuf, state_path: PathBuf) -> Result<()> {
             }
             _ = connections.join_next(), if !connections.is_empty() => (),
             Some((request, reply)) = receive.recv() => {
-                let result = supervisor.handle(&request.op, request.args).await;
+                let mut result = supervisor.handle(&request.op, request.args).await;
+                if supervisor.stopping {
+                    let alive = supervisor.core.try_wait().ok().flatten().is_none();
+                    let completion = supervisor.cleanup(alive).await;
+                    cleanup_failed = completion["success"] != true;
+                    result = Ok(completion);
+                    cleaned = true;
+                }
                 let _ = reply.send(result);
-                if supervisor.stopping { break Ok(()) }
+                if supervisor.stopping { break if cleanup_failed { Err(anyhow::anyhow!("shutdown completed with plugin or Core failures")) } else { Ok(()) } }
             }
         }
     };
     let alive = supervisor.core.try_wait().ok().flatten().is_none();
-    supervisor.cleanup(alive).await;
+    if !cleaned {
+        let completion = supervisor.cleanup(alive).await;
+        if result.is_ok() && completion["success"] != true {
+            result = Err(anyhow::anyhow!(
+                "shutdown completed with failures: {completion}"
+            ));
+        }
+    }
     // Allow the stop response to flush before dropping remaining authenticated sockets.
     let _ = tokio::time::timeout(Duration::from_millis(150), async {
         while connections.join_next().await.is_some() {}
@@ -1055,7 +1105,7 @@ async fn start(config: PathBuf, state: PathBuf) -> Result<()> {
                 println!(
                     "{}",
                     serde_json::to_string_pretty(
-                        &json!({"started":true,"pid":saved.pid,"core_pid":saved.core_pid,"state":state,"stdout":stdout_path,"stderr":stderr_path})
+                        &json!({"started":true,"pid":saved.pid,"core_pid":saved.core_pid,"state":state,"stdout":stdout_path,"stderr":stderr_path,"streams":manager(&saved,"streams",json!({})).await?})
                     )?
                 );
                 return Ok(());
@@ -1086,8 +1136,14 @@ fn read_has_gap(page: &Value) -> bool {
             .is_some_and(|v| !v.is_empty())
 }
 async fn read_page(state: &State, args: Value, wait_ms: u64) -> Result<Value> {
-    let (client, _events, _controls) =
-        log_plugin_sdk::Client::connect(&state.core_address, "__admin__", &state.token).await?;
+    let (client, _events, _controls) = log_plugin_sdk::Client::connect_with_transport(
+        &state.core_address,
+        "__admin__",
+        &state.token,
+        json!({}),
+        state.transport,
+    )
+    .await?;
     let mut page = client.request("read", args.clone()).await?;
     let deadline = tokio::time::Instant::now() + Duration::from_millis(wait_ms);
     loop {
@@ -1142,76 +1198,28 @@ async fn main() -> Result<()> {
     let (op, args) = match cli.command {
         Action::Status => ("status".into(), json!({})),
         Action::Streams => ("streams".into(), json!({})),
+        Action::Stream { id } => (
+            "core.call".into(),
+            json!({"op":"stream.get","args":{"stream":id}}),
+        ),
         Action::Read {
             stream,
-            from,
             limit,
-            epoch,
             wait_ms,
             raw: bytes,
         } => {
             raw = bytes;
             read_wait = Some(wait_ms);
-            (
-                "read".into(),
-                json!({"stream":stream,"from":from,"limit":limit,"epoch":epoch}),
-            )
+            ("read".into(), json!({"stream":stream,"limit":limit}))
         }
-        Action::Config {
-            plugin,
-            command: None,
-        } => ("config".into(), json!({"plugin":plugin})),
-        Action::Config {
-            command: Some(ConfigAction::Set { plugin, json }),
-            ..
-        } => control(plugin, "config.patch", parse_args(&json)?),
+        Action::Config { plugin } => ("config".into(), json!({"plugin":plugin})),
         Action::Plugin { command } => match command {
-            PluginAction::Start { id } => ("plugin.start".into(), json!({"id":id})),
+            PluginAction::Start { id, stream } => {
+                ("plugin.start".into(), json!({"id":id,"stream":stream}))
+            }
             PluginAction::Stop { id } => ("plugin.stop".into(), json!({"id":id})),
             PluginAction::Restart { id } => ("plugin.restart".into(), json!({"id":id})),
             PluginAction::Call { id, method, json } => control(id, &method, parse_args(&json)?),
-        },
-        Action::Session { command } => match command {
-            SessionAction::List { plugin } => control(plugin, "sessions", json!({})),
-            SessionAction::Create { plugin, json } => {
-                control(plugin, "session.create", parse_args(&json)?)
-            }
-            SessionAction::Get { plugin, id } => control(plugin, "session.get", json!({"id":id})),
-            SessionAction::Select { plugin, id } => {
-                control(plugin, "session.select", json!({"id":id}))
-            }
-            SessionAction::Set {
-                plugin,
-                id,
-                revision,
-                json,
-            } => control(
-                plugin,
-                "session.patch",
-                json!({"id":id,"revision":revision,"patch":parse_args(&json)?}),
-            ),
-            SessionAction::Export {
-                plugin,
-                id,
-                path,
-                format,
-                revision,
-                width,
-                height,
-                overwrite,
-            } => {
-                let mut args = json!({"id":id,"path":absolute(&path)?.display().to_string(),"format":format,"overwrite":overwrite});
-                if let Some(revision) = revision {
-                    args["revision"] = json!(revision);
-                }
-                if let Some(width) = width {
-                    args["width"] = json!(width);
-                }
-                if let Some(height) = height {
-                    args["height"] = json!(height);
-                }
-                control(plugin, "session.export", args)
-            }
         },
         Action::Call { op, json } => (
             "core.call".into(),
@@ -1252,6 +1260,9 @@ async fn main() -> Result<()> {
             }
             tokio::time::sleep(Duration::from_millis(40)).await;
         }
+    }
+    if (is_stop || op == "plugin.stop") && (result["success"] != true || result["forced"] == true) {
+        bail!("stop completed with failures; inspect the returned result");
     }
     Ok(())
 }

@@ -5,23 +5,20 @@ members = [
     "project/crates/log-core",
     "project/crates/log-proto",
     "project/crates/log-plugin-sdk",
-    "project/plugins/inputs/io-plugin-util",
     "project/plugins/inputs/input-file",
-    "project/plugins/inputs/input-replay",
     "project/plugins/inputs/input-program",
     "project/plugins/outputs/output-raw",
     "project/plugins/outputs/output-transform",
     "project/plugins/outputs/output-file",
 ]
 exclude = [
-    "project/crates/log-plot",
     "project/plugins/inputs/input-serial",
     "project/plugins/outputs/output-tui",
     "project/plugins/outputs/output-webui",
 ]
 
 [workspace.package]
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 license = "MIT"
 rust-version = "1.92"

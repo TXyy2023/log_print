@@ -1,36 +1,26 @@
 # log_print
 
-为开发者和 AI Agent 采集、读取、转换与归档日志的本地工具。当前版本 **0.1.1**。
+为开发者和 AI Agent 采集、读取、转换和保存日志的本地工具。当前版本 **0.1.2**，通信契约 **log-print/2**。
 
-输入支持程序 stdout/stderr、普通日志文件和文件回放；输出支持原始字节、派生转换，以及文件、JSONL、SQLite 和双目标归档。串口、TUI、WebUI 暂缓，不参与默认构建。
+四个核心部件负责 CLI 运行组织、内存转发、协议通信和插件接入。两个输入插件采集文件或程序/tmux 输出；三个输出插件负责终端显示、保存以及转换后发布派生流。Core 不保存日志，默认 TCP，可选 UDP。
 
 ## 开始使用
-
-需要 Rust 1.92 或更新的兼容稳定工具链：
 
 ```sh
 cargo build --release --locked --workspace
 ./target/release/log-print --help
 ```
 
-完整步骤见 [安装与构建](doc/public/installation.md) 和 [快速开始](doc/public/quickstart.md)。[使用手册](doc/public/index.md) 按采集、读取、转换、归档等任务组织，参数见配置与插件参考。
+需要 Rust 1.92 或更新的兼容稳定工具链。阅读 [安装与构建](doc/public/installation.md)、[快速开始](doc/public/quickstart.md) 和 [使用手册](doc/public/index.md)。
 
-Core 保存与输出归档是独立状态。需要恢复归档时，应保留源历史和所有归档状态，详见 [恢复与完整性](doc/public/guides/recovery.md)。
+内存缓冲有界，满时覆盖最早数据。Input 发布不等待 Output 消费；发布成功不代表下游已处理或保存。Core 重启会失去全部缓冲，旧 `log-print/1` 配置和客户端需要迁移。
 
-## 参与开发
-
-[贡献指南](CONTRIBUTING.md) · [CI 说明](quality/ci/README.md) · [Rust SDK](project/crates/log-plugin-sdk) · [MIT 许可证](LICENSE)
+## 开发与验证
 
 ```sh
 python3 quality/run.py
 ```
 
-文档正文统一维护在 `doc/public/`；README 只提供仓库入口。本地文档站运行方法见 [文档站](doc/site/README.md)。
+[实施与验收清单](quality/release-0.1.2.md) · [贡献指南](CONTRIBUTING.md) · [测试说明](quality/README.md) · [MIT 许可证](LICENSE)
 
-## 仓库目录
-
-- [project/](project/README.md)：主程序、公共库、插件、使用示例和外部真实软件工作负载。
-- [doc/](doc/README.md)：公开文档、内部资料和文档站工具。
-- [quality/](quality/README.md)：独立测试、性能测试、CI 和本地验收产物。
-
-Cargo 配置和 GitHub 工作流入口保留在仓库根目录及 `.github/workflows/`；构建命令仍在仓库根目录运行。
+仓库分为 [project](project/README.md)、[doc](doc/README.md) 和 [quality](quality/README.md)。公开说明位于 `doc/public/`；本地文档站入口见 [文档站](doc/site/README.md)。

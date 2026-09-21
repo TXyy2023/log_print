@@ -30,6 +30,18 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
+      - name: Install tmux for actual pane capture acceptance
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          if command -v tmux >/dev/null 2>&1; then
+            tmux -V
+          elif [ "$RUNNER_OS" = "Linux" ]; then
+            sudo apt-get update
+            sudo apt-get install -y tmux
+          else
+            HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1 brew install tmux
+          fi
       - name: Validate actual workspace and child processes
         run: python quality/run.py
         env:

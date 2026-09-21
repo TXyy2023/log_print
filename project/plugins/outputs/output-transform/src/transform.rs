@@ -1,418 +1,383 @@
-use anyhow::{bail, Result};
-use encoding_rs::{Decoder, Encoding};
-use regex::bytes::Regex;
+use anyhow::{bail, Context, Result};
+use log_proto::Record;
 use serde::{Deserialize, Serialize};
-
-#[derive(Clone, Deserialize, Serialize)]
+use std::{
+    collections::BTreeMap,
+    time::{Duration, Instant},
+};
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct Config {
     pub streams: Vec<String>,
     pub output_stream: String,
-    pub from: u64,
-    pub input_encoding: String,
-    pub output_encoding: String,
-    pub radix: String,
-    pub split_lines: bool,
-    pub keep_newline: bool,
-    pub flush_partial: bool,
-    pub prefix: String,
-    pub suffix: String,
-    pub delete: Vec<String>,
-    pub replace: Vec<Replacement>,
-    pub max_pending_bytes: usize,
-}
-#[derive(Clone, Deserialize, Serialize)]
-#[serde(deny_unknown_fields)]
-pub struct Replacement {
-    pub pattern: String,
-    pub with: String,
+    pub number: bool,
+    pub timestamp: bool,
+    pub reorder: bool,
+    pub max_records: usize,
+    pub max_bytes: usize,
+    pub max_delay_ms: u64,
+    pub max_channels: usize,
 }
 impl Default for Config {
     fn default() -> Self {
         Self {
             streams: vec![],
-            output_stream: "derived".into(),
-            from: 1,
-            input_encoding: "auto".into(),
-            output_encoding: "utf-8".into(),
-            radix: "none".into(),
-            split_lines: false,
-            keep_newline: true,
-            flush_partial: true,
-            prefix: String::new(),
-            suffix: String::new(),
-            delete: vec![],
-            replace: vec![],
-            max_pending_bytes: 65536,
+            output_stream: String::new(),
+            number: false,
+            timestamp: false,
+            reorder: false,
+            max_records: 128,
+            max_bytes: 4 * 1024 * 1024,
+            max_delay_ms: 100,
+            max_channels: 128,
         }
     }
 }
 impl Config {
     pub fn validate(&self) -> Result<()> {
-        if self.streams.is_empty()
-            || self.output_stream.is_empty()
-            || self.streams.contains(&self.output_stream)
+        if self.streams.iter().any(|s| s.is_empty()) {
+            bail!("stream names must not be empty");
+        }
+        if !(1..=4096).contains(&self.max_records)
+            || !(log_proto::MAX_PAYLOAD..=64 * 1024 * 1024).contains(&self.max_bytes)
+            || !(1..=60000).contains(&self.max_delay_ms)
+            || !(1..=4096).contains(&self.max_channels)
         {
-            bail!("nonempty parent streams, separate output_stream required")
-        }
-        io_plugin_util::bounded("max_pending_bytes", self.max_pending_bytes, 4, 1024 * 1024)?;
-        for label in [&self.input_encoding, &self.output_encoding] {
-            if !["auto", "raw"].contains(&label.as_str())
-                && Encoding::for_label(label.as_bytes()).is_none()
-            {
-                bail!("unsupported encoding {label}")
-            }
-        }
-        if self.output_encoding == "auto" {
-            bail!("output_encoding must be explicit")
-        }
-        if ![
-            "none",
-            "hex_encode",
-            "hex_decode",
-            "bin_encode",
-            "bin_decode",
-            "dec_encode",
-            "dec_decode",
-        ]
-        .contains(&self.radix.as_str())
-        {
-            bail!("invalid radix mode")
-        }
-        io_plugin_util::bounded("rule_count", self.delete.len() + self.replace.len(), 0, 64)?;
-        for d in &self.delete {
-            io_plugin_util::bounded("pattern_bytes", d.len(), 0, 4096)?;
-            Regex::new(d)?;
-        }
-        for r in &self.replace {
-            io_plugin_util::bounded("pattern_bytes", r.pattern.len(), 0, 4096)?;
-            io_plugin_util::bounded("replacement_bytes", r.with.len(), 0, self.max_pending_bytes)?;
-            Regex::new(&r.pattern)?;
-        }
-        if self.prefix.len() + self.suffix.len() > self.max_pending_bytes {
-            bail!("prefix/suffix exceed pending bound")
+            bail!("invalid bounded reorder limits");
         }
         Ok(())
     }
 }
-
-pub struct Processor {
-    decoder: Option<Decoder>,
-    line: Vec<u8>,
-    token: Vec<u8>,
-    automatic: bool,
-    raw: bool,
+type Channel = (String, String, Option<String>);
+struct Queued {
+    record: Record,
+    received: Instant,
+    bytes: usize,
 }
-pub struct Output {
-    pub bytes: Vec<Vec<u8>>,
-    pub warnings: Vec<String>,
+#[derive(Default)]
+struct State {
+    next: u64,
+    pending: BTreeMap<u64, Queued>,
+}
+/// Counters are local diagnostics. They do not imply that missing source records can be recovered.
+#[derive(Default, Debug)]
+pub struct Stats {
+    pub duplicates: u64,
+    pub skipped: u64,
+    pub missing_source_seq: u64,
+}
+pub struct Processor {
+    config: Config,
+    channels: BTreeMap<Channel, State>,
+    records: usize,
+    bytes: usize,
+    pub stats: Stats,
+    number: u64,
+    source_sequences: BTreeMap<Option<String>, u64>,
 }
 impl Processor {
-    pub fn new(c: &Config) -> Self {
+    pub fn new(config: &Config) -> Self {
         Self {
-            decoder: Encoding::for_label(c.input_encoding.as_bytes()).map(|e| e.new_decoder()),
-            line: vec![],
-            token: vec![],
-            automatic: c.input_encoding == "auto",
-            raw: c.input_encoding == "raw",
+            config: config.clone(),
+            channels: BTreeMap::new(),
+            records: 0,
+            bytes: 0,
+            stats: Stats::default(),
+            number: 0,
+            source_sequences: BTreeMap::new(),
         }
     }
-    pub fn pending(&self) -> usize {
-        self.line.len() + self.token.len()
+    pub fn pending(&self) -> (usize, usize) {
+        (self.records, self.bytes)
     }
-    fn radix_decode(&mut self, input: &[u8], last: bool, c: &Config) -> Result<Vec<u8>> {
-        let base = match c.radix.as_str() {
-            "hex_decode" => 16,
-            "bin_decode" => 2,
-            "dec_decode" => 10,
-            _ => return Ok(input.to_vec()),
-        };
+    fn release(&mut self, key: &Channel, force: bool) -> Vec<Record> {
         let mut output = Vec::new();
-        for b in input
-            .iter()
-            .copied()
-            .chain(if last { Some(b' ') } else { None })
-        {
-            if b.is_ascii_whitespace() {
-                if !self.token.is_empty() {
-                    let s = std::str::from_utf8(&self.token)?;
-                    let s = match base {
-                        16 => s.strip_prefix("0x").unwrap_or(s),
-                        2 => s.strip_prefix("0b").unwrap_or(s),
-                        _ => s,
-                    };
-                    output.push(u8::from_str_radix(s, base)?);
-                    self.token.clear();
-                }
-            } else {
-                self.token.push(b);
-                if self.token.len() > 16 {
-                    bail!("numeric byte token exceeds 16 bytes")
-                }
+        let state = self.channels.get_mut(key).unwrap();
+        if force {
+            if let Some((&first, _)) = state.pending.first_key_value() {
+                self.stats.skipped = self
+                    .stats
+                    .skipped
+                    .saturating_add(first.saturating_sub(state.next));
+                state.next = first;
             }
+        }
+        while let Some(item) = state.pending.remove(&state.next) {
+            state.next = state.next.saturating_add(1);
+            self.records -= 1;
+            self.bytes -= item.bytes;
+            output.push(item.record);
+        }
+        output
+    }
+    fn oldest(&self) -> Option<Channel> {
+        self.channels
+            .iter()
+            .filter_map(|(key, state)| {
+                state
+                    .pending
+                    .values()
+                    .map(|v| v.received)
+                    .min()
+                    .map(|time| (key, time))
+            })
+            .min_by_key(|(_, time)| *time)
+            .map(|(key, _)| key.clone())
+    }
+    pub fn feed(&mut self, record: Record, now: Instant) -> Result<Vec<Record>> {
+        if !self.config.reorder {
+            return Ok(vec![record]);
+        }
+        let Some(seq) = record.source_seq else {
+            self.stats.missing_source_seq += 1;
+            return Ok(vec![record]);
+        };
+        if seq == 0 || seq == u64::MAX {
+            bail!("source sequence must be 1..u64::MAX-1");
+        }
+        let key = (
+            record.stream.clone(),
+            record.epoch.clone(),
+            record.channel.clone(),
+        );
+        if !self.channels.contains_key(&key) {
+            if self.channels.len() >= self.config.max_channels {
+                bail!("source channel state limit exceeded");
+            }
+            self.channels.insert(
+                key.clone(),
+                State {
+                    next: 1,
+                    pending: BTreeMap::new(),
+                },
+            );
+        }
+        let state = &self.channels[&key];
+        if seq < state.next || state.pending.contains_key(&seq) {
+            self.stats.duplicates += 1;
+            return Ok(vec![]);
+        }
+        if seq == state.next {
+            self.channels.get_mut(&key).unwrap().next += 1;
+            let mut output = vec![record];
+            output.extend(self.release(&key, false));
+            return Ok(output);
+        }
+        let bytes = serde_json::to_vec(&record)?.len();
+        if bytes > self.config.max_bytes {
+            bail!("record exceeds reorder byte budget");
+        }
+        let mut output = Vec::new();
+        while self.records >= self.config.max_records || self.bytes + bytes > self.config.max_bytes
+        {
+            let oldest = self.oldest().context("invalid reorder budget accounting")?;
+            output.extend(self.release(&oldest, true));
+        }
+        // A pressure flush can advance this channel beyond the incoming record.
+        if seq < self.channels[&key].next {
+            self.stats.duplicates += 1;
+            return Ok(output);
+        }
+        self.channels.get_mut(&key).unwrap().pending.insert(
+            seq,
+            Queued {
+                record,
+                received: now,
+                bytes,
+            },
+        );
+        self.records += 1;
+        self.bytes += bytes;
+        output.extend(self.release(&key, false));
+        Ok(output)
+    }
+    pub fn expire(&mut self, now: Instant) -> Vec<Record> {
+        let mut output = Vec::new();
+        while let Some(key) = self.oldest() {
+            let oldest = self.channels[&key]
+                .pending
+                .values()
+                .map(|q| q.received)
+                .min()
+                .unwrap();
+            if now.saturating_duration_since(oldest)
+                < Duration::from_millis(self.config.max_delay_ms)
+            {
+                break;
+            }
+            output.extend(self.release(&key, true));
+        }
+        output
+    }
+    pub fn flush(&mut self) -> Vec<Record> {
+        let mut output = Vec::new();
+        while let Some(key) = self.oldest() {
+            output.extend(self.release(&key, true));
+        }
+        output
+    }
+    pub fn next_source_sequence(&mut self, channel: Option<String>) -> Result<u64> {
+        let next = self.source_sequences.entry(channel).or_default();
+        *next = next
+            .checked_add(1)
+            .context("derived channel sequence exhausted")?;
+        Ok(*next)
+    }
+    pub fn decorate(&mut self, record: &Record) -> Result<Vec<u8>> {
+        self.number = self
+            .number
+            .checked_add(1)
+            .context("transform numbering exhausted")?;
+        let mut output = Vec::new();
+        if self.config.number {
+            output.extend_from_slice(format!("[n={}] ", self.number).as_bytes());
+        }
+        if self.config.timestamp {
+            output.extend_from_slice(
+                format!(
+                    "[ts_ns={}] ",
+                    record.source_ts_ns.unwrap_or(record.observed_ts_ns)
+                )
+                .as_bytes(),
+            );
+        }
+        output.extend_from_slice(&record.payload);
+        if output.len() > log_proto::MAX_PAYLOAD {
+            bail!("transformed record exceeds maximum payload; use smaller input chunks");
         }
         Ok(output)
     }
-    pub fn feed(&mut self, input: &[u8], last: bool, c: &Config) -> Result<Output> {
-        let input = self.radix_decode(input, last, c)?;
-        let mut warnings = vec![];
-        let data = if let Some(decoder) = &mut self.decoder {
-            let capacity = decoder
-                .max_utf8_buffer_length(input.len())
-                .ok_or_else(|| anyhow::anyhow!("decode capacity overflow"))?;
-            let mut text = String::with_capacity(capacity);
-            let (result, read, errors) = decoder.decode_to_string(&input, &mut text, last);
-            if errors {
-                bail!("invalid bytes in manual input encoding; original stream remains intact")
-            }
-            if result == encoding_rs::CoderResult::OutputFull || read != input.len() {
-                bail!("bounded decode output exhausted")
-            };
-            text.into_bytes()
-        } else {
-            if self.automatic && !input.is_empty() && std::str::from_utf8(&input).is_err() {
-                let mut detector = chardetng::EncodingDetector::new();
-                detector.feed(&input, last);
-                let (guess, assessed) = detector.guess_assess(None, true);
-                warnings.push(format!("encoding_uncertain: likely {}, assessed={}; keeping original bytes; set input_encoding manually to convert",guess.name(),assessed));
-            }
-            input
-        };
-        let mut units = vec![];
-        if c.split_lines {
-            // Consume incrementally so many short lines in one record never exceed the bound.
-            for b in data {
-                self.line.push(b);
-                if self.line.len() > c.max_pending_bytes {
-                    bail!("incomplete line exceeds max_pending_bytes")
-                };
-                if b == b'\n' {
-                    let mut line = std::mem::take(&mut self.line);
-                    if !c.keep_newline {
-                        line.pop();
-                        if line.last() == Some(&b'\r') {
-                            line.pop();
-                        }
-                    }
-                    units.push(line);
-                }
-            }
-            if last && !self.line.is_empty() {
-                if c.flush_partial {
-                    units.push(std::mem::take(&mut self.line))
-                } else {
-                    warnings.push(format!(
-                        "partial_line_not_emitted: {} bytes",
-                        self.line.len()
-                    ));
-                    self.line.clear();
-                }
-            }
-        } else if !data.is_empty() {
-            units.push(data)
-        }
-        let mut output = Vec::new();
-        for unit in units {
-            // Automatic uncertainty must not turn invalid data into replacements or apply text edits.
-            if self.automatic && std::str::from_utf8(&unit).is_err() {
-                output.push(radix_encode(unit, &c.radix));
-                continue;
-            }
-            let mut edited = unit;
-            for pattern in &c.delete {
-                edited = replace_bounded(
-                    &Regex::new(pattern)?,
-                    &edited,
-                    b"",
-                    c.max_pending_bytes.saturating_mul(4),
-                )?;
-            }
-            for replacement in &c.replace {
-                edited = replace_bounded(
-                    &Regex::new(&replacement.pattern)?,
-                    &edited,
-                    replacement.with.as_bytes(),
-                    c.max_pending_bytes.saturating_mul(4),
-                )?;
-            }
-            if edited.len() + c.prefix.len() + c.suffix.len()
-                > c.max_pending_bytes.saturating_mul(4)
-            {
-                bail!("edited unit exceeds expansion bound")
-            }
-            let mut wrapped = Vec::with_capacity(edited.len() + c.prefix.len() + c.suffix.len());
-            wrapped.extend_from_slice(c.prefix.as_bytes());
-            wrapped.extend(edited);
-            wrapped.extend_from_slice(c.suffix.as_bytes());
-            if !self.raw && c.output_encoding != "raw" {
-                let text = std::str::from_utf8(&wrapped)?;
-                let encoding = Encoding::for_label(c.output_encoding.as_bytes())
-                    .ok_or_else(|| anyhow::anyhow!("unknown target encoding"))?;
-                if encoding == encoding_rs::UTF_16LE || encoding == encoding_rs::UTF_16BE {
-                    wrapped = text
-                        .encode_utf16()
-                        .flat_map(|u| {
-                            if encoding == encoding_rs::UTF_16LE {
-                                u.to_le_bytes()
-                            } else {
-                                u.to_be_bytes()
-                            }
-                        })
-                        .collect();
-                } else {
-                    let (bytes, _, errors) = encoding.encode(text);
-                    if errors {
-                        bail!(
-                            "output encoding cannot represent input; no replacement bytes emitted"
-                        )
-                    };
-                    wrapped = bytes.into_owned();
-                }
-            }
-            output.push(radix_encode(wrapped, &c.radix));
-        }
-        Ok(Output {
-            bytes: output,
-            warnings,
-        })
-    }
 }
-fn replace_bounded(
-    regex: &Regex,
-    input: &[u8],
-    replacement: &[u8],
-    limit: usize,
-) -> Result<Vec<u8>> {
-    let mut output = Vec::new();
-    let mut end = 0;
-    for captures in regex.captures_iter(input) {
-        let m = captures.get(0).unwrap();
-        let mut expanded = Vec::new();
-        captures.expand(replacement, &mut expanded);
-        if output.len() + m.start() - end + expanded.len() > limit {
-            bail!("replacement exceeds expansion bound")
-        }
-        output.extend_from_slice(&input[end..m.start()]);
-        output.extend(expanded);
-        end = m.end();
-    }
-    if output.len() + input.len() - end > limit {
-        bail!("replacement exceeds expansion bound")
-    }
-    output.extend_from_slice(&input[end..]);
-    Ok(output)
-}
-fn radix_encode(bytes: Vec<u8>, mode: &str) -> Vec<u8> {
-    match mode {
-        "hex_encode" => bytes
-            .iter()
-            .map(|b| format!("{b:02x} "))
-            .collect::<String>()
-            .into_bytes(),
-        "bin_encode" => bytes
-            .iter()
-            .map(|b| format!("{b:08b} "))
-            .collect::<String>()
-            .into_bytes(),
-        "dec_encode" => bytes
-            .iter()
-            .map(|b| format!("{b} "))
-            .collect::<String>()
-            .into_bytes(),
-        _ => bytes,
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-    fn defaults() -> Config {
+    fn record(seq: u64) -> Record {
+        serde_json::from_value(serde_json::json!({"stream":"original","epoch":"e","seq":seq,"key":"key","payload":[0,255,10],"observed_ts_ns":42,"source_seq":seq,"upstream":{},"upstream_epochs":{}})).unwrap()
+    }
+    fn config() -> Config {
         Config {
-            streams: vec!["a".into()],
+            reorder: true,
             ..Config::default()
         }
     }
+    fn seq(records: Vec<Record>) -> Vec<u64> {
+        records.into_iter().map(|r| r.source_seq.unwrap()).collect()
+    }
     #[test]
-    fn split_utf8_and_edit_across_chunks() {
+    fn source_reordering_preserves_original_content() {
+        let mut p = Processor::new(&config());
+        let now = Instant::now();
+        assert!(p.feed(record(3), now).unwrap().is_empty());
+        assert_eq!(seq(p.feed(record(1), now).unwrap()), vec![1]);
+        let out = p.feed(record(2), now).unwrap();
+        assert_eq!(out[0], record(2));
+        assert_eq!(seq(out), vec![2, 3]);
+        assert_eq!(p.pending(), (0, 0));
+    }
+    #[test]
+    fn exact_capacity_does_not_drop_the_missing_record_when_it_arrives() {
+        let mut p = Processor::new(&Config {
+            max_records: 2,
+            ..config()
+        });
+        let now = Instant::now();
+        p.feed(record(2), now).unwrap();
+        p.feed(record(3), now).unwrap();
+        assert_eq!(seq(p.feed(record(1), now).unwrap()), vec![1, 2, 3]);
+        assert_eq!(p.stats.skipped, 0);
+    }
+    #[test]
+    fn derived_channel_sequences_are_independent() {
+        let mut p = Processor::new(&config());
+        assert_eq!(p.next_source_sequence(Some("out".into())).unwrap(), 1);
+        assert_eq!(p.next_source_sequence(Some("err".into())).unwrap(), 1);
+        assert_eq!(p.next_source_sequence(Some("out".into())).unwrap(), 2);
+    }
+    #[test]
+    fn gaps_flush_after_window_and_late_duplicates_are_dropped() {
+        let c = config();
+        let mut p = Processor::new(&c);
+        let now = Instant::now();
+        p.feed(record(4), now).unwrap();
+        assert!(p.expire(now + Duration::from_millis(99)).is_empty());
+        assert_eq!(seq(p.expire(now + Duration::from_millis(100))), vec![4]);
+        assert_eq!(p.stats.skipped, 3);
+        assert!(p.feed(record(2), now).unwrap().is_empty());
+        assert_eq!(p.stats.duplicates, 1);
+    }
+    #[test]
+    fn pending_duplicate_first_wins_and_stop_flushes_sorted() {
+        let mut p = Processor::new(&config());
+        let now = Instant::now();
+        p.feed(record(3), now).unwrap();
+        let mut duplicate = record(3);
+        duplicate.payload = b"different".to_vec();
+        p.feed(duplicate, now).unwrap();
+        p.feed(record(2), now).unwrap();
+        let out = p.flush();
+        assert_eq!(out[1].payload, record(3).payload);
+        assert_eq!(seq(out), vec![2, 3]);
+        assert_eq!(p.stats.duplicates, 1);
+        assert_eq!(p.stats.skipped, 1);
+    }
+    #[test]
+    fn pressure_is_bounded_and_channels_have_independent_source_order() {
         let c = Config {
-            input_encoding: "utf-8".into(),
-            split_lines: true,
-            prefix: "[".into(),
-            suffix: "]".into(),
-            replace: vec![Replacement {
-                pattern: "temp".into(),
-                with: "T".into(),
-            }],
-            ..defaults()
+            max_records: 2,
+            ..config()
         };
         let mut p = Processor::new(&c);
-        assert!(p
-            .feed(&[b't', b'e', b'm', b'p', b'=', 0xe4], false, &c)
-            .unwrap()
-            .bytes
-            .is_empty());
-        let out = p.feed(&[0xb8, 0xad, b'\n', b'z'], false, &c).unwrap();
-        assert_eq!(out.bytes, ["[T=中\n]".as_bytes()]);
-        assert_eq!(p.feed(b"", true, &c).unwrap().bytes, [b"[z]"]);
+        let now = Instant::now();
+        p.feed(record(3), now).unwrap();
+        p.feed(record(5), now).unwrap();
+        assert_eq!(seq(p.feed(record(7), now).unwrap()), vec![3]);
+        assert!(p.pending().0 <= 2);
+        let mut a = record(1);
+        a.channel = Some("stdout".into());
+        let mut b = record(1);
+        b.channel = Some("stderr".into());
+        assert_eq!(
+            p.feed(a, now).unwrap().last().unwrap().channel.as_deref(),
+            Some("stdout")
+        );
+        assert_eq!(
+            p.feed(b, now).unwrap().last().unwrap().channel.as_deref(),
+            Some("stderr")
+        );
     }
     #[test]
-    fn uncertain_preserves_invalid() {
-        let c = defaults();
-        let mut p = Processor::new(&c);
-        let o = p.feed(&[0xff, 0x00, 0xfe], false, &c).unwrap();
-        assert_eq!(o.bytes, [vec![0xff, 0x00, 0xfe]]);
-        assert!(!o.warnings.is_empty());
-    }
-    #[test]
-    fn manual_shift_jis() {
+    fn numbering_and_timestamp_have_explicit_fallback_without_mutation() {
         let c = Config {
-            input_encoding: "shift_jis".into(),
-            ..defaults()
+            number: true,
+            timestamp: true,
+            ..Config::default()
         };
         let mut p = Processor::new(&c);
-        assert!(p.feed(&[0x93], false, &c).unwrap().bytes.is_empty());
-        assert_eq!(p.feed(&[0xfa], false, &c).unwrap().bytes, ["日".as_bytes()]);
+        let r = record(1);
+        assert_eq!(
+            p.decorate(&r).unwrap(),
+            [b"[n=1] [ts_ns=42] ".as_slice(), &r.payload].concat()
+        );
+        assert_eq!(r.payload, vec![0, 255, 10]);
+        let mut next = r.clone();
+        next.source_ts_ns = Some(99);
+        assert!(p.decorate(&next).unwrap().starts_with(b"[n=2] [ts_ns=99] "));
     }
     #[test]
-    fn numeric_roundtrip_chunk_boundary() {
-        for (enc, dec) in [
-            ("hex_encode", "hex_decode"),
-            ("bin_encode", "bin_decode"),
-            ("dec_encode", "dec_decode"),
-        ] {
-            let e = Config {
-                input_encoding: "raw".into(),
-                radix: enc.into(),
-                ..defaults()
-            };
-            let mut p = Processor::new(&e);
-            let text = p.feed(&[0, 42, 255], false, &e).unwrap().bytes.concat();
-            let d = Config {
-                input_encoding: "raw".into(),
-                radix: dec.into(),
-                ..defaults()
-            };
-            let mut q = Processor::new(&d);
-            let mut out = vec![];
-            for b in text {
-                out.extend(q.feed(&[b], false, &d).unwrap().bytes.concat())
-            }
-            out.extend(q.feed(b"", true, &d).unwrap().bytes.concat());
-            assert_eq!(out, [0, 42, 255]);
-        }
-    }
-    #[test]
-    fn bounded_line_and_invalid_encoding() {
+    fn rejects_oversize_payload_and_excess_channel_states() {
         let c = Config {
-            split_lines: true,
-            max_pending_bytes: 4,
-            ..defaults()
+            number: true,
+            max_channels: 1,
+            ..config()
         };
-        assert!(Processor::new(&c).feed(b"12345", false, &c).is_err());
-        let c = Config {
-            input_encoding: "utf-8".into(),
-            ..defaults()
-        };
-        assert!(Processor::new(&c).feed(&[0xff], true, &c).is_err());
+        let mut p = Processor::new(&c);
+        let now = Instant::now();
+        p.feed(record(1), now).unwrap();
+        let mut other = record(1);
+        other.channel = Some("other".into());
+        assert!(p.feed(other, now).is_err());
+        let mut large = record(2);
+        large.payload = vec![0; log_proto::MAX_PAYLOAD];
+        assert!(p.decorate(&large).is_err());
     }
 }

@@ -1,40 +1,38 @@
-# 跟随日志文件
+# 读取日志文件
 
-适合已经把日志写入普通文件的应用。`input-file` 读取新增字节，不要求每条日志以换行结尾。
-
-## 配置文件输入
-
-将以下完整配置保存为仓库根目录的 `file.json`，把 `path` 改为自己的日志路径。启动前确保文件存在。
+`input-file` 支持持续跟随和静态快速读取，按原始字节分块，日志不需要以换行结尾。以下完整配置保存为 `file.json`，把 `path` 改为已有普通文件的绝对路径：
 
 ```json
 {
   "plugins": [{
-    "id": "file", "bin": "input-file",
-    "streams": [{"id": "logs"}],
-    "config": {"path": "example.log", "stream": "logs", "from_start": false, "poll_ms": 50}
+    "id": "file", "role": "input", "bin": "input-file",
+    "streams": [{"id": "logs", "description": "应用日志文件"}],
+    "config": {"path": "/absolute/path/app.log", "mode": "follow", "from_start": false}
   }]
 }
 ```
 
 ```sh
 ./target/release/log-print --state .log-print/file.json start --config file.json
-./target/release/log-print --state .log-print/file.json read logs --raw --wait-ms 1000
+./target/release/log-print --state .log-print/file.json streams
+```
+
+`streams` 返回 Core 分配的实际 `id`（UUID）。将下方 `STREAM_ID` 换成该值，即可查看当前缓冲和停止：
+
+```sh
+./target/release/log-print --state .log-print/file.json read STREAM_ID --raw
+./target/release/log-print --state .log-print/file.json plugin stop file
 ./target/release/log-print --state .log-print/file.json stop
 ```
 
-采集运行期间，由原应用继续写入日志。这里只配置输入，也能通过 CLI 读取 Core；不要求额外配置输出插件。
+`read` 是一次有限快照，每次从当前仍保留的最早记录开始，默认最多 64 条；反复执行可能重复看到同一段，不是持续订阅。持续处理与保存使用 Output 插件，见[输出与归档](archive.md)。
 
-## 从哪里开始读
+## 选择读取方式
 
-- `from_start: false`：从本次启动时的文件末尾开始，适合只看新内容。
-- `from_start: true`：从文件开头读取，适合连已有内容一起采集。
+- 持续跟随新日志：`mode: "follow"`、`from_start: false`，从打开文件时的末尾开始。
+- 跟随并包含已有内容：`mode: "follow"`、`from_start: true`。
+- 尽快读完整个静态文件：`mode: "static"`，总是从头读取，第一次 EOF 后退出。
 
-这是输入文件位置，与 CLI 的 `read --from` 不同：后者是已进入 Core 的记录序号。
+静态模式的 `source_eof` 表示源读完及传输侧发布调用结束，**不是下游全部保存完成**。Core 缓冲满时会覆盖未读数据，Input 不等待 Output，因此快读不保证全量导入。插件退出后 Core 仍运行，已有流和缓冲保留至手动停止 Core。
 
-## 文件轮转与短暂消失
-
-插件检测文件身份变化和长度回退，发现替换或截断后建立新 segment，从新内容开头读取；路径短暂消失时等待恢复并报告状态。
-
-轮转期间旧文件未读完的尾部、检测间隔内的多次替换，以及部分无法识别的重写，可能造成未知数量的数据缺失。Windows 上替换能否完成还与写日志程序使用的 API 有关。需要严格保留历史时，应同时保留原始日志文件，不能将轮询监控理解为任何轮转方式下都绝对无损。
-
-字段、动态轮询间隔和平台细节见 [input-file 参考](../plugins/input-file.md)。需要保存采集结果时继续阅读 [输出与归档](archive.md)。
+跟随模式检测替换和截断后从新段开头读，路径暂时消失则等待。旧文件尾部和轮询之间的变化可能无法补回，不能理解为绝对无损监控。所有配置随主程序启动固定，改文件后需重启主程序。[完整参数与边界](../plugins/input-file.md)。

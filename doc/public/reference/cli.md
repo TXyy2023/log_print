@@ -1,66 +1,31 @@
 # CLI 参考
 
 ```text
-log-print [--state STATE] COMMAND [OPTIONS]
+log-print [--state STATE] COMMAND
 ```
 
-`--state` 是全局选项，默认 `.log-print/state.json`。本页省略可执行文件目录；未安装到 PATH 时使用 `./target/release/log-print`。
+默认状态路径 `.log-print/state.json`。成功输出 JSON，失败向 stderr 报错并返回非零；`read --raw` 输出 payload 字节。
 
-## 实例命令
-
-| 命令 | 行为 |
+| 命令 | 作用 |
 | --- | --- |
-| `run --config FILE` | 前台启动，Ctrl-C 请求收尾 |
-| `start --config FILE` | 后台启动，返回启动信息和日志路径 |
-| `status` | 查询实例、插件和流状态 |
-| `streams` | 查询流状态 |
-| `stop` | 请求停止，并等待状态文件移除 |
-| `--version` / `--help` | 查看版本或帮助 |
+| `run --config FILE` | 前台启动，Ctrl-C 停止自有进程 |
+| `start --config FILE` | 后台启动，等就绪后返回 PID、日志路径和流 ID |
+| `status` | Core、插件报告、子进程退出状态 |
+| `streams` | 列出流 UUID、说明、归属与缓冲状态 |
+| `stream UUID` | 查看一个流对象 |
+| `read UUID [--limit 64] [--wait-ms 0] [--raw]` | 当前保留缓冲的快照，limit 1..64；空结果可等待 0..60000 ms |
+| `config [--plugin ID]` | 读取运行时采用的启动快照 |
+| `plugin start ID [--stream UUID]` | 启动预配置插件；可把未连接 Output 关联到真实流 ID |
+| `plugin stop ID` | 请求收尾并等待子进程退出，返回 success/forced |
+| `plugin restart ID` | 停止后使用同一启动快照重新启动 |
+| `plugin call ID METHOD [--json JSON]` | 插件控制方法，如 `config.get`、output-file 的 `status.get` |
+| `call OP [--json JSON]` | 高级 Core 对象/RPC 操作 |
+| `stop` | 停止实例并等待状态文件移除 |
 
-一个状态路径对应一个实例。不要删除仍在运行实例的状态文件来绕过启动冲突；文件中含管理令牌，不应提交或公开。
+示例：`call stream.describe --json '{"stream":"UUID","description":"编译日志"}'` 修改显示说明，不改变身份或内容。
 
-## 读取命令
+`read` 每次从当前最早保留记录取快照，不提供持久历史游标，重复执行可能读到相同记录。需要持续消费使用 Output/SDK 订阅。旧 `--from`、`--epoch`、`config set`、`session` 已移除。
 
-```text
-log-print read STREAM [--from N] [--limit N] [--epoch EPOCH] [--wait-ms MS] [--raw]
-```
+状态文件包含管理凭据，不要提交。已有实例占用状态文件时，新启动会失败；不要删除正在运行实例的状态文件绕过检查。配置文件修改只有主程序重启后生效，不提供 reload 或热配置。
 
-| 参数 | 默认 / 作用 |
-| --- | --- |
-| `--from` | `1`，请求记录序号；`0` 从当前 `head + 1` 请求快照 |
-| `--limit` | `64`，一页请求条数，范围 1..64 |
-| `--epoch` | 可选，校验历史身份 |
-| `--wait-ms` | `0`，无记录且无缺口时等待，范围 0..60000 |
-| `--raw` | 只输出 payload，拒绝含缺口的页 |
-
-连续等待新记录时应传入明确的下一条序号；不要反复用 `--from 0` 代替保存游标。`read` 不是 `tail -f`。脚本应使用返回的 `epoch` 和 `next` 连续请求，见 [读取与管理实例](../guides/read.md)。
-
-## 配置与插件命令
-
-```text
-log-print config
-log-print config --plugin ID
-log-print config set ID --json JSON
-log-print plugin start ID
-log-print plugin stop ID
-log-print plugin restart ID
-log-print plugin call ID METHOD [--json JSON]
-```
-
-插件 ID 来自配置的 `id`。通用方法包括 `config.get` 和 `shutdown`；可动态更新的字段通过 `config set` 调用。`output-file` 额外提供完整 `status.get`。
-
-修改启动配置文件后，正在运行的主程序不会自动重载；单纯 `plugin restart` 使用主程序已加载的插件声明。需要加载新的静态配置时，应正常停止并重新启动实例。
-
-## Core RPC
-
-```text
-log-print call OP [--json JSON]
-```
-
-这是高级入口，例如 `config.patch` 修改 Core 动态设置、`resume` 处理已修复的保存阻塞。参数应与对应操作匹配，不能用任意插件业务字段替代 Core 字段。
-
-## 帮助中出现的其他命令
-
-代码中保留 `session` 命令用于绘图插件接口；TUI、WebUI 不在当前版本默认构建范围，因此本手册不把它作为可用的图形功能教程。
-
-命令成功一般向 stdout 输出 JSON，错误写 stderr 并返回非零状态；`read --raw` 成功时只输出原始字节。完整参数可用 `log-print COMMAND --help` 查看。
+停止命令返回实际收尾结果；任一插件失败或强制终止时CLI返回非零，restart在停止失败后不再拉起新进程。任意卡死Unix插件若最终被SIGKILL，其内部清理无法执行；此时来源进程清理状态未确认，不表示完整保存或完整树回收。

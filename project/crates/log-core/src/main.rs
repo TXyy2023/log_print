@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use log_core::Core;
-use log_proto::RuntimeConfig;
+use log_proto::{RuntimeConfig, ServerListener};
 use std::io::Read;
 #[tokio::main(worker_threads = 2)]
 async fn main() -> Result<()> {
@@ -16,10 +16,11 @@ async fn main() -> Result<()> {
     };
     let runtime: RuntimeConfig =
         serde_json::from_slice(&std::fs::read(value("--runtime-config")?)?)?;
+    let transport = runtime.config.core.transport;
     let core = Core::new(runtime)?;
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await?;
+    let mut listener = ServerListener::bind("127.0.0.1:0", transport).await?;
     let ready = serde_json::to_vec(
-        &serde_json::json!({"address":listener.local_addr()?.to_string(),"pid":std::process::id()}),
+        &serde_json::json!({"address":listener.local_addr().to_string(),"pid":std::process::id(),"transport":transport}),
     )?;
     let ready_path = value("--ready-file")?;
     let mut options = std::fs::OpenOptions::new();
@@ -43,7 +44,7 @@ async fn main() -> Result<()> {
         tokio::select! {
             _=&mut stop_rx=>break,
         _=async {if tokio::signal::ctrl_c().await.is_err(){std::future::pending::<()>().await}}=>break,
-            incoming=listener.accept()=>{let (socket,_)=incoming?;let core=core.clone();tokio::spawn(async move{if let Err(e)=core.connection(socket).await{eprintln!("Core connection: {e:#}");}});}
+            incoming=listener.accept()=>{let socket=match incoming { Ok(socket)=>socket, Err(e)=>{eprintln!("Core handshake: {e:#}");continue} };let core=core.clone();tokio::spawn(async move{if let Err(e)=core.serve_connection(socket).await{eprintln!("Core connection: {e:#}");}});}
         }
     }
     let _ = std::fs::remove_file(ready_path);

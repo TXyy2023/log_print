@@ -21,3 +21,6 @@ log-plugin-sdk.workspace = true
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_System_Console"] }
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"

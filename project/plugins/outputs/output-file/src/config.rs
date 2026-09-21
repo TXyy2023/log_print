@@ -58,9 +58,6 @@ impl Default for QueueConfig {
         }
     }
 }
-fn default_from() -> u64 {
-    1
-}
 fn yes() -> bool {
     true
 }
@@ -68,8 +65,6 @@ fn yes() -> bool {
 #[serde(deny_unknown_fields)]
 pub struct Config {
     pub streams: Vec<String>,
-    #[serde(default = "default_from")]
-    pub from: u64,
     pub mode: Mode,
     pub file: Option<FileConfig>,
     pub sqlite: Option<SqliteConfig>,
