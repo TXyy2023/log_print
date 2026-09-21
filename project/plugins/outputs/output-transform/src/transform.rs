@@ -125,16 +125,6 @@ impl Processor {
             .map(|(key, _)| key.clone())
     }
     pub fn feed(&mut self, record: Record, now: Instant) -> Result<Vec<Record>> {
-        if !self.config.reorder {
-            return Ok(vec![record]);
-        }
-        let Some(seq) = record.source_seq else {
-            self.stats.missing_source_seq += 1;
-            return Ok(vec![record]);
-        };
-        if seq == 0 || seq == u64::MAX {
-            bail!("source sequence must be 1..u64::MAX-1");
-        }
         let key = (
             record.stream.clone(),
             record.epoch.clone(),
@@ -151,6 +141,16 @@ impl Processor {
                     pending: BTreeMap::new(),
                 },
             );
+        }
+        if !self.config.reorder {
+            return Ok(vec![record]);
+        }
+        let Some(seq) = record.source_seq else {
+            self.stats.missing_source_seq += 1;
+            return Ok(vec![record]);
+        };
+        if seq == 0 || seq == u64::MAX {
+            bail!("source sequence must be 1..u64::MAX-1");
         }
         let state = &self.channels[&key];
         if seq < state.next || state.pending.contains_key(&seq) {
@@ -191,6 +191,15 @@ impl Processor {
         output.extend(self.release(&key, false));
         Ok(output)
     }
+    /// Earliest pending record deadline, independent of any periodic timer phase.
+    pub fn next_deadline(&self) -> Option<Instant> {
+        self.channels
+            .values()
+            .flat_map(|state| state.pending.values())
+            .map(|queued| queued.received)
+            .min()
+            .map(|received| received + Duration::from_millis(self.config.max_delay_ms))
+    }
     pub fn expire(&mut self, now: Instant) -> Vec<Record> {
         let mut output = Vec::new();
         while let Some(key) = self.oldest() {
@@ -217,6 +226,11 @@ impl Processor {
         output
     }
     pub fn next_source_sequence(&mut self, channel: Option<String>) -> Result<u64> {
+        if !self.source_sequences.contains_key(&channel)
+            && self.source_sequences.len() >= self.config.max_channels
+        {
+            bail!("derived channel state limit exceeded");
+        }
         let next = self.source_sequences.entry(channel).or_default();
         *next = next
             .checked_add(1)
@@ -292,6 +306,57 @@ mod tests {
         assert_eq!(p.next_source_sequence(Some("out".into())).unwrap(), 1);
         assert_eq!(p.next_source_sequence(Some("err".into())).unwrap(), 1);
         assert_eq!(p.next_source_sequence(Some("out".into())).unwrap(), 2);
+    }
+    #[test]
+    fn all_input_paths_bound_channel_state_and_preserve_existing_channels() {
+        for (reorder, source_seq) in [(false, Some(1)), (true, None)] {
+            let mut p = Processor::new(&Config {
+                reorder,
+                max_channels: 1,
+                ..Config::default()
+            });
+            let now = Instant::now();
+            let mut first = record(1);
+            first.source_seq = source_seq;
+            first.channel = Some("first".into());
+            assert_eq!(p.feed(first.clone(), now).unwrap(), vec![first.clone()]);
+            let mut second = first.clone();
+            second.channel = Some("second".into());
+            assert!(p
+                .feed(second, now)
+                .unwrap_err()
+                .to_string()
+                .contains("channel state limit"));
+            assert_eq!(p.channels.len(), 1);
+            assert_eq!(p.feed(first.clone(), now).unwrap(), vec![first]);
+        }
+    }
+    #[test]
+    fn derived_channel_state_has_its_own_limit() {
+        let mut p = Processor::new(&Config {
+            max_channels: 1,
+            ..Config::default()
+        });
+        assert_eq!(p.next_source_sequence(Some("first".into())).unwrap(), 1);
+        assert!(p.next_source_sequence(Some("second".into())).is_err());
+        assert_eq!(p.source_sequences.len(), 1);
+        assert_eq!(p.next_source_sequence(Some("first".into())).unwrap(), 2);
+    }
+    #[test]
+    fn deadline_tracks_oldest_pending_arrival_and_disappears_when_drained() {
+        let mut p = Processor::new(&config());
+        let now = Instant::now();
+        assert_eq!(p.next_deadline(), None);
+        p.feed(record(3), now + Duration::from_millis(45)).unwrap();
+        assert_eq!(p.next_deadline(), Some(now + Duration::from_millis(145)));
+        let mut other = record(2);
+        other.channel = Some("stderr".into());
+        p.feed(other, now + Duration::from_millis(80)).unwrap();
+        assert_eq!(p.next_deadline(), Some(now + Duration::from_millis(145)));
+        assert_eq!(seq(p.expire(now + Duration::from_millis(145))), vec![3]);
+        assert_eq!(p.next_deadline(), Some(now + Duration::from_millis(180)));
+        p.flush();
+        assert_eq!(p.next_deadline(), None);
     }
     #[test]
     fn gaps_flush_after_window_and_late_duplicates_are_dropped() {

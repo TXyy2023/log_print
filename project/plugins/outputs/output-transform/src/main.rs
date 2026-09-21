@@ -3,10 +3,7 @@ use anyhow::{bail, Result};
 use log_plugin_sdk::{stopped, Event};
 use log_proto::Record;
 use serde_json::{json, Value};
-use std::{
-    collections::BTreeMap,
-    time::{Duration, Instant},
-};
+use std::{collections::BTreeMap, time::Instant};
 use transform::{Config, Processor};
 fn validate(v: &Value) -> Result<Value> {
     let c: Config = serde_json::from_value(v.clone())?;
@@ -75,12 +72,18 @@ async fn run(cx: &mut log_plugin_sdk::Context) -> Result<()> {
     let mut number = 0;
     let run = uuid::Uuid::new_v4().to_string();
     cx.client.request("report",json!({"state":"transforming","streams":c.streams,"output_stream":output,"number":c.number,"timestamp":c.timestamp,"reorder":c.reorder})).await?;
-    let mut ticker = tokio::time::interval(Duration::from_millis(c.max_delay_ms));
-    ticker.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
     loop {
+        let deadline = processor.next_deadline();
+        let expiry = async {
+            match deadline {
+                Some(deadline) => tokio::time::sleep_until(deadline.into()).await,
+                None => std::future::pending::<()>().await,
+            }
+        };
         let records = tokio::select! {
+            biased;
             _=stopped(&mut cx.shutdown)=>break,
-            _=ticker.tick()=>processor.expire(Instant::now()),
+            _=expiry=>processor.expire(Instant::now()),
             event=cx.events.recv()=>match event {
                 Some(Event::Record(record))=>processor.feed(record,Instant::now())?,
                 Some(Event::Disconnected{stream,reason})=>bail!("source disconnected for {stream}: {reason}"),

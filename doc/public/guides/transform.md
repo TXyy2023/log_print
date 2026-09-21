@@ -30,7 +30,7 @@ python3 -c "open('example.log','ab').write(b'temperature=23.5\n')"
 
 ## 有界重排
 
-增加 `"reorder":true,"max_records":128,"max_bytes":4194304,"max_delay_ms":100`。它使用 Input 的 source_seq，按来源流及 channel 分别排序。缺号最多等待窗口，到期或缓冲将满时跳过缺号继续，重复号保留第一条。
+增加 `"reorder":true,"max_records":128,"max_bytes":4194304,"max_delay_ms":100`。它使用 Input 的 source_seq，按来源流及 channel 分别排序。缺号按最早待重排记录的接收时间设置窗口，到期唤醒或缓冲将满时跳过缺号继续，重复号保留第一条；实际发布还受进程调度和传输耗时影响。
 
 该策略适合处理可观察的来源乱序；不能补出 UDP 丢包或 Core 已覆盖的数据，也不保证来源时间戳全局有序。多路 stdout/stderr 保持各自来源顺序。
 

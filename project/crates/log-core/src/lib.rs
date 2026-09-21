@@ -1309,7 +1309,13 @@ mod tests {
         async fn message(&mut self) -> ServerMessage {
             tokio::time::timeout(Duration::from_secs(3), self.r.receive())
                 .await
-                .expect("timed out")
+                .unwrap_or_else(|error| {
+                    let peer = match &self.r {
+                        ClientReader::Udp(socket) => socket.local_addr().ok(),
+                        ClientReader::Tcp(_) => None,
+                    };
+                    panic!("timed out receiving Core message: {error}; next_request_id={}, local_udp_peer={peer:?}", self.next);
+                })
                 .unwrap()
                 .expect("closed")
         }

@@ -3,7 +3,11 @@ from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlsplit, unquote
 import json, sys
+if len(sys.argv) != 2:
+    sys.exit('usage: verify_links.py BUILT_SITE_DIRECTORY')
 root = Path(sys.argv[1]).resolve()
+if not root.is_dir():
+    sys.exit(f'built site directory does not exist: {root}')
 class Page(HTMLParser):
     def __init__(self, file):
         super().__init__(); self.ids=set(); self.links=[]; self.file=file
@@ -16,6 +20,8 @@ class Page(HTMLParser):
 pages={}
 for f in root.rglob('*.html'):
     p=Page(f); p.feed(f.read_text()); pages[f]=p
+if not pages:
+    sys.exit(f'no HTML pages found under {root}')
 errors=[]; checked=0
 for f,p in pages.items():
     for tag,ref in p.links:

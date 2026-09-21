@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Real Core + Output acceptance. All bytes below are explicit test fixtures."""
 import json
+from contextlib import closing
 import os
 from pathlib import Path
 import sqlite3
 import subprocess
 import tempfile
+import time
 import unittest
 from support import BIN, EXE, Core, eventually
 
@@ -98,7 +100,9 @@ class Outputs(unittest.TestCase):
                 else:
                     rows=[json.loads(line) for line in path.read_text().splitlines()]
                     self.assertTrue(all(r['format_version']==2 for r in rows));self.assertEqual([r['record'] for r in rows],expected)
-                with sqlite3.connect(db) as sql:
+                # sqlite3's context manager commits/rolls back but does not close
+                # its file handle; Windows cannot remove the fixture until closed.
+                with closing(sqlite3.connect(db)) as sql:
                     rows=sql.execute('SELECT payload,source_ts_ns,channel,source_seq FROM records ORDER BY length(seq),seq').fetchall()
                     self.assertEqual(rows,[(bytes(r['payload']),str(2**64-1),'stdout',str(i+1)) for i,r in enumerate(expected)])
                     self.assertEqual(sql.execute('PRAGMA integrity_check').fetchone()[0],'ok')
@@ -172,5 +176,33 @@ class Outputs(unittest.TestCase):
             run.ready('transforming');publish(core,writer,b'out2',2,channel='stdout');publish(core,writer,b'err1',1,channel='stderr');publish(core,writer,b'out1',1,channel='stdout')
             rows=eventually(lambda:(r if len(r:=read(core,'sink'))==3 else None));run.stop()
             self.assertEqual([(r['channel'],r['source_seq'],bytes(r['payload'])) for r in rows],[('stderr',1,b'err1'),('stdout',1,b'out1'),('stdout',2,b'out2')])
+
+    def test_transform_channel_limit_applies_without_reorder_or_source_sequence(self):
+        for reorder, source_sequence in [(False, True), (True, False)]:
+            with self.subTest(reorder=reorder,source_sequence=source_sequence):
+                plugin=output('output-transform',{'reorder':reorder,'max_channels':1},derived=True)
+                with Core(plugins=[source(),plugin]) as core,core.rpc('source') as writer,Output(core,plugin) as run:
+                    run.ready('transforming')
+                    extra={'source_seq':1} if source_sequence else {}
+                    writer.publish(core.stream('source'),b'first',channel='first',**extra)
+                    eventually(lambda:len(read(core,'sink'))==1)
+                    writer.publish(core.stream('source'),b'over-limit',channel='second',**extra)
+                    self.assertNotEqual(run.process.wait(timeout=8),0)
+                    self.assertEqual(run.report()['state'],'failed')
+                    self.assertIn('channel state limit',run.report()['error'])
+                    self.assertEqual([bytes(r['payload']) for r in read(core,'sink')],[b'first'])
+
+    def test_transform_expiry_uses_record_deadline_without_an_extra_timer_period(self):
+        plugin=output('output-transform',{'reorder':True,'max_delay_ms':2000},derived=True)
+        with Core(plugins=[source(),plugin]) as core,core.rpc('source') as writer,Output(core,plugin) as run:
+            run.ready('transforming')
+            # The former periodic timer fired at start; an arrival just afterwards
+            # waited nearly two periods. Leave ample scheduling margin for CI.
+            time.sleep(.15)
+            started=time.monotonic()
+            publish(core,writer,b'gap-at-two',2)
+            eventually(lambda:len(read(core,'sink'))==1,timeout=5)
+            self.assertLess(time.monotonic()-started,3.2)
+            run.stop()
 
 if __name__=='__main__': unittest.main(verbosity=2)

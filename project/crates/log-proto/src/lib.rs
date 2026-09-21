@@ -397,6 +397,26 @@ impl ServerConnection {
         })
     }
 }
+struct UdpSession {
+    incoming: mpsc::Sender<Request>,
+    writer: tokio::task::JoinHandle<()>,
+}
+impl UdpSession {
+    async fn retire(mut self) {
+        self.writer.abort();
+        // Abort requests cancellation; joining establishes that no old writer
+        // can send after a replacement session on this address is admitted.
+        let _ = (&mut self.writer).await;
+    }
+}
+impl Drop for UdpSession {
+    fn drop(&mut self) {
+        // A closed peer address may immediately belong to a different client.
+        // Stop old outbound work before admitting a registration on that address.
+        self.writer.abort();
+    }
+}
+
 pub struct ServerListener {
     address: SocketAddr,
     incoming: mpsc::Receiver<Result<ServerConnection>>,
@@ -445,16 +465,35 @@ impl ServerListener {
                 let socket = Arc::new(UdpSocket::bind(addr).await?);
                 let address = socket.local_addr()?;
                 let task = tokio::spawn(async move {
-                    let mut sessions = BTreeMap::<SocketAddr, mpsc::Sender<Request>>::new();
+                    let mut sessions = BTreeMap::<SocketAddr, UdpSession>::new();
                     let mut bytes = vec![0; MAX_DATAGRAM + 1];
                     while let Ok((n, peer)) = socket.recv_from(&mut bytes).await {
                         if n > MAX_DATAGRAM || !peer.ip().is_loopback() {
                             continue;
                         };
-                        sessions.retain(|_, s| !s.is_closed());
+                        // Preserve a closed route until its writer is finished,
+                        // or retire it explicitly before accepting this peer again.
+                        sessions.retain(|_, s| !s.incoming.is_closed() || !s.writer.is_finished());
+                        if sessions.get(&peer).is_some_and(|s| s.incoming.is_closed()) {
+                            if let Some(session) = sessions.remove(&peer) {
+                                session.retire().await;
+                            }
+                        }
                         if let Some(session) = sessions.get(&peer) {
                             if let Ok(request) = serde_json::from_slice::<Request>(&bytes[..n]) {
-                                let _ = session.try_send(request);
+                                if request.op == "disconnect" {
+                                    // Retire routing when the transport receives close,
+                                    // not after Core eventually consumes the queue. UDP
+                                    // ports can be reused before that business task runs.
+                                    // Dropping the sender also closes a full queue even
+                                    // if its best-effort disconnect cannot be enqueued.
+                                    if let Some(session) = sessions.remove(&peer) {
+                                        let _ = session.incoming.try_send(request);
+                                        session.retire().await;
+                                    }
+                                } else {
+                                    let _ = session.incoming.try_send(request);
+                                }
                             };
                             continue;
                         };
@@ -486,7 +525,13 @@ impl ServerListener {
                             tasks: vec![writer.abort_handle()],
                         };
                         if tx.try_send(Ok(conn)).is_ok() {
-                            sessions.insert(peer, itx);
+                            sessions.insert(
+                                peer,
+                                UdpSession {
+                                    incoming: itx,
+                                    writer,
+                                },
+                            );
                         }
                     }
                 });
@@ -591,5 +636,106 @@ mod tests {
                 .await
                 .is_err()
         );
+    }
+    async fn assert_udp_disconnect_retires_route(queued_requests: usize) {
+        let mut listener = ServerListener::bind("127.0.0.1:0", TransportKind::Udp)
+            .await
+            .unwrap();
+        let client = UdpSocket::bind("127.0.0.1:0").await.unwrap();
+        client.connect(listener.local_addr()).await.unwrap();
+        let mut hello = Hello {
+            protocol: PROTOCOL.into(),
+            plugin: "peer".into(),
+            token: "first".into(),
+            events: false,
+        };
+        client.send(&datagram(&hello).unwrap()).await.unwrap();
+        let old = tokio::time::timeout(Duration::from_secs(1), listener.accept())
+            .await
+            .unwrap()
+            .unwrap();
+        for id in 1..=queued_requests {
+            client
+                .send(
+                    &datagram(&Request {
+                        id: id as u64,
+                        op: "queued".into(),
+                        args: Value::Null,
+                    })
+                    .unwrap(),
+                )
+                .await
+                .unwrap();
+        }
+        // Keep the old receiver alive and deliberately do not let Core consume
+        // its close. A reused client port must still be able to register again.
+        client
+            .send(
+                &datagram(&Request {
+                    id: 0,
+                    op: "disconnect".into(),
+                    args: Value::Null,
+                })
+                .unwrap(),
+            )
+            .await
+            .unwrap();
+        hello.token = "second".into();
+        client.send(&datagram(&hello).unwrap()).await.unwrap();
+        let new = tokio::time::timeout(Duration::from_secs(1), listener.accept())
+            .await
+            .expect("Hello after explicit disconnect was swallowed by the old peer route")
+            .unwrap();
+        assert_eq!(new.hello.token, "second");
+        assert!(
+            old.tasks.iter().all(AbortHandle::is_finished),
+            "replacement admission must wait for the old sender to finish cancelling"
+        );
+        if queued_requests > EVENT_QUEUE {
+            assert_eq!(
+                old.incoming.len(),
+                EVENT_QUEUE,
+                "regression must exercise a saturated request queue"
+            );
+        }
+        assert!(
+            old.send(ServerMessage::Response {
+                id: 99,
+                result: serde_json::json!("stale"),
+                error: None
+            })
+            .await
+            .is_err(),
+            "retired session writer must not send into the replacement session"
+        );
+        new.send(ServerMessage::Response {
+            id: 0,
+            result: serde_json::json!("second"),
+            error: None,
+        })
+        .await
+        .unwrap();
+        let mut bytes = vec![0; MAX_DATAGRAM];
+        let n = tokio::time::timeout(Duration::from_secs(1), client.recv(&mut bytes))
+            .await
+            .unwrap()
+            .unwrap();
+        let response: ServerMessage = serde_json::from_slice(&bytes[..n]).unwrap();
+        match response {
+            ServerMessage::Response {
+                id: 0,
+                result,
+                error: None,
+            } => assert_eq!(result, "second"),
+            other => panic!("old session traffic reached the replacement peer: {other:?}"),
+        }
+    }
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn udp_disconnect_retires_peer_route_before_core_consumes_close() {
+        assert_udp_disconnect_retires_route(0).await;
+    }
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn udp_disconnect_retires_even_a_full_old_request_queue() {
+        assert_udp_disconnect_retires_route(EVENT_QUEUE + 1).await;
     }
 }
