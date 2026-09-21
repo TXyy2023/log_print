@@ -23,7 +23,7 @@
 - [x] 文件保存读回与故障，转换原流不变/派生流、排序窗口和缺号处理。
 - [x] 文档构建、链接与公开范围检查；全新 checkout 可构建。
 - [x] 推送候选分支 `codex/release-0.1.2`，启动三平台远程 CI。
-- [ ] 修复远程 CI 暴露的问题并完成三平台验收。
+- [x] 修复远程 CI 暴露的问题并完成三平台验收。
 
 发布门槛：最终提交的 CI 通过后，快进远端 `dev` 并推送 `ver-0.1.2` 标签，核对 SHA；发布结果另记录在 GitHub Release 与本地验收回执。
 
@@ -44,4 +44,6 @@
 
 本机完整日志保留于 `quality/artifacts/release-0.1.2/`（Git忽略）。公开仓库只提交可重复运行的测试与本验收摘要，不提交运行凭据、PID状态文件或本地内部文档。
 
-最终强杀任意卡死的Unix插件时，插件的清理代码无法执行，故返回forced/失败及来源进程清理未确认，不宣称任意SIGKILL情形都能安全收尾。TCP/UDP常规Core崩溃回收已实际验证；Windows需以对应CI结果为准。
+远程三平台验收全部通过：[GitHub Actions 35628377898](https://github.com/TXyy2023/log_print/actions/runs/35628377898)，代码提交 `4fe45ed8b061ccb9be96a2128e4dcfc09a215c50`。Linux 与 macOS 含真实 tmux；Windows 按平台范围跳过 tmux，其余进程验收通过，包含 Job Object 进程树停止、TCP/UDP Core 崩溃后的清理。
+
+最终强杀任意卡死的Unix插件时，插件的清理代码无法执行，故返回forced/失败及来源进程清理未确认，不宣称任意SIGKILL情形都能安全收尾。
