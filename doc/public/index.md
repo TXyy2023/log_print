@@ -6,6 +6,7 @@
 
 - [安装与构建](installation.md)
 - [快速开始](quickstart.md)
+- [视频演示](demos.md)
 - [流、传输与保存的边界](concepts.md)
 
 ## 按任务选择

@@ -1,0 +1,41 @@
+{
+  "scenario": "file-read",
+  "checks": [
+    {
+      "name": "version is 0.1.2",
+      "passed": true
+    },
+    {
+      "name": "read bytes equal teaching file",
+      "passed": true,
+      "bytes": 73,
+      "sha256": "1f4b55ccabdd04f9fe3bb2dcc85120499df2e86c6e85cc9162e04d5563a39e18"
+    },
+    {
+      "name": "source EOF does not claim downstream completion",
+      "passed": true
+    },
+    {
+      "name": "state removed after stop",
+      "passed": true
+    },
+    {
+      "name": "all observed owned processes exited",
+      "passed": true,
+      "pids": [
+        30474,
+        30475
+      ]
+    }
+  ],
+  "passed": true,
+  "state_removed": true,
+  "processes_exited": true,
+  "redactions": [
+    "binary directory -> <bin-dir>",
+    "temporary fixture directory -> <demo-dir>",
+    "repository -> <repo>",
+    "Python executable -> <python3>"
+  ],
+  "recorded_at": "2026-09-22T15:04:20+0800"
+}

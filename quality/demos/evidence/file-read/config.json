@@ -1,0 +1,19 @@
+{
+  "plugins": [
+    {
+      "id": "file",
+      "role": "input",
+      "bin": "input-file",
+      "streams": [
+        {
+          "id": "demo-file",
+          "description": "Teaching fixture: three generated lines"
+        }
+      ],
+      "config": {
+        "path": "<demo-dir>/teaching.log",
+        "mode": "static"
+      }
+    }
+  ]
+}

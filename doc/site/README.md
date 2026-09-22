@@ -24,7 +24,7 @@ npm run stop --prefix doc/site
 | 内部开发文档 | `doc/local/`（归档子目录以外） | 参考、设计、计划、研究、验收和图表 |
 | 归档文档 | `doc/local/archive/` | 旧计划、历史发布和交付记录 |
 
-公开手册正文统一维护在 `doc/public/`，两站均读取此处。根 README 和五个插件 README 仅保留仓库入口与链接，不再复制正式手册正文。`public-sources.json` 仅用于本机旧源码链接的路由映射，不是内容同步清单。`public-navigation.json` 显式维护侧栏顺序，`public-pages.json` 维护公开构建白名单；新增页面同步更新二者。
+公开手册正文统一维护在 `doc/public/`，两站均读取此处。根 README 和五个插件 README 提供概览、常用示例及手册入口，完整命令与参数以公开手册为准。`public-sources.json` 仅用于本机旧源码链接的路由映射，不是内容同步清单。`public-navigation.json` 显式维护侧栏顺序，`public-pages.json` 维护公开构建白名单；新增页面同步更新二者。内部与归档目录仅在拥有本地资料的工作区存在，不随公开仓库分发。
 
 本机 URL 使用 `/published/`（避免与 VitePress 的保留静态资源目录 `public` 混淆）、`/local/`、`/local/archive/`。内部混合资料保留原分类并提示版本边界，不因存在未来设计就整体移入归档。旧 1.0.0 叙述不表示当前 0.1.2 能力。
 
@@ -42,29 +42,33 @@ npm run preview:public --prefix doc/site
 
 两个站都使用中文分词的本地全文搜索。Mermaid 按需在浏览器渲染；原有 19 张 SVG 和 Markdown 中的 Mermaid 源码均保留。代码块、图表及下载附件依然属于原文件所写的历史环境。
 
-`doc/public/`、`doc/local/` 及文档入口继续默认 Git 忽略；`doc/site/` 的工具源码可单独纳入跟踪，依赖、缓存和产物仍忽略。本轮不提交、推送或发布；未来公开时只逐项选择公开正文及必要构建文件，不能整体加入 doc。构建工具不会自动创建仓库或部署。
+当前 Git 跟踪 `doc/README.md`、`doc/public/` 的公开正文及 `doc/site/` 的工具源码；内部资料 `doc/local/`、依赖、缓存和产物仍忽略。新增公开文件需逐项检查范围，不能整体强制加入 doc。构建工具不会自动创建仓库或部署。
 
-## 备份和回滚
+## 历史整理记录：2026-09-19
+
+以下保留当时的整理范围、快照路径和迁移记录，便于本地溯源。快照与内部资料未随公开仓库分发；当时的“未提交、未发布”状态不代表当前仓库状态。
+
+### 备份和回滚
 
 - 初次整理前：`quality/artifacts/doc-reorganization-2026-09-19/original-doc/`，103 文件，与同目录 `source-manifest.json` SHA-256 全部相符。
-- 本轮明确批准实施前：`quality/artifacts/vitepress-approved-20260919-224610/`，含当时 doc、脚手架配置和 `.gitignore`。
+- 当时明确批准实施前：`quality/artifacts/vitepress-approved-20260919-224610/`，含当时 doc、脚手架配置和 `.gitignore`。
 - 早期接手快照：`quality/artifacts/vitepress-2026-09-19/`。
 
-回滚前先停止本站，再另存当时整个 doc、doc/site（依赖可排除）和 .gitignore，之后选择对应快照恢复。不要直接覆盖后续新增正文。初次整理的旧 rollback.py 有哈希保护，会拒绝覆盖本轮改动；这是预期行为。备份含内部资料，仅本地保存。
+回滚前先停止本站，再另存当前整个 doc、doc/site（依赖可排除）和 .gitignore，之后选择对应快照恢复。不要直接覆盖后续新增正文。初次整理的旧 rollback.py 有哈希保护，会拒绝覆盖后续改动；这是预期行为。备份含内部资料，仅本地保存。
 
-## 本次公开手册整理
+### 公开手册整理
 
 公开侧栏按入门、使用指南、参考、插件参考组织，共20页；内部入口与侧栏按真实目录嵌套，一级菜单为文件夹名，文档显示相对于 `doc/local/` 的实际路径，归档独立。修改前快照位于 `quality/artifacts/public-manual-20260919-225737/`，包括旧公开正文、README、站点配置及内部入口。其他内部正文未作改写。
 
-源码 README 已改为指向单一正文的入口；将来提交时，需将这些入口与其引用的公开正文一起逐项纳入跟踪，避免远端链接缺失。当前不执行提交或发布。
+当时将源码 README 改为指向单一正文的入口，并记录了后续提交时须同时纳入入口及其引用正文的要求。该次整理没有执行提交或网站部署；公开正文现已纳入仓库，网站部署仍是独立操作。
 
-## 三入口与移除文档
+### 三入口与移除文档
 
-本机顶部为“GitHub 文档 / 本地文档站 / 归档文档”。GitHub 文档是待公开手册的本机入口，不表示已部署 GitHub Pages。本地导航由磁盘目录生成，归档不混入内部菜单。`doc/local/index.md` 的目录标记在生成时展开，新增、移动文档后自动更新。
+当时将本机顶部整理为“GitHub 文档 / 本地文档站 / 归档文档”。GitHub 文档是公开手册的本机入口，不表示已部署 GitHub Pages。本地导航由磁盘目录生成，归档不混入内部菜单。`doc/local/index.md` 的目录标记在生成时展开，新增、移动文档后自动更新。
 
 2026-09-19 的移除资料存入 `doc/local/archive/removed-2026-09-19/`，清单记录来源和哈希。移动后的旧链接由 `legacy-paths.json` 转到新位置；归档原文的相对链接根据 `archive-origins.json` 按原位置解析，保留原文字节。今后移除资料应先移入归档并登记原路径，不直接删除。
 
-## 项目目录迁移
+### 项目目录迁移
 
 站点工具已从 `docs-site/` 移到 `doc/site/`。源码及测试旧路径由 `repository-paths.json` 映射；`repository-origins.json` 为完整保留的插件历史报告指定原始链接基准目录。这些映射仅用于本地站，公开构建仍只接受公开白名单。
 
