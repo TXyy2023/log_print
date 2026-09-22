@@ -19,12 +19,6 @@
   "plugins/output-raw.md",
   "plugins/output-transform.md",
   "plugins/output-file.md",
-  "demos.md",
   "assets/branding/SOURCE.md",
-  "assets/branding/log-print-banner.png",
-  "assets/demos/SOURCE.md",
-  "assets/demos/01-file-read.mp4",
-  "assets/demos/01-file-read.png",
-  "assets/demos/02-transform-archive.mp4",
-  "assets/demos/02-transform-archive.png"
+  "assets/branding/log-print-banner.png"
 ]

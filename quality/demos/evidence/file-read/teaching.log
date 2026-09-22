@@ -1,3 +1,0 @@
-INFO demo=file step=boot
-WARN demo=file queue=3
-INFO demo=file step=done

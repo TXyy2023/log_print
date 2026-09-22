@@ -15,25 +15,12 @@
 
 <p align="center">
   <strong>把文件和程序的日志，接入终端与 AI Agent。</strong><br>
-  <a href="#视频演示">视频演示</a> · <a href="#快速开始">快速开始</a> · <a href="#接入-ai-agent">Agent Skill</a> · <a href="doc/public/index.md">使用手册</a> · <a href="https://github.com/TXyy2023/log_print/releases/tag/ver-0.1.2">0.1.2 Release</a>
+  <a href="#快速开始">快速开始</a> · <a href="#接入-ai-agent">Agent Skill</a> · <a href="doc/public/index.md">使用手册</a> · <a href="https://github.com/TXyy2023/log_print/releases/tag/ver-0.1.2">0.1.2 Release</a>
 </p>
 
 **log_print** 是一个用 Rust 编写的本地日志工具：采集文件、子程序或已有 tmux 窗格的输出，以独立日志流读取、显示、转换，并按需保存为原始文件、JSONL 或 SQLite。
 
 **A local Rust CLI and Agent Skill for collecting, reading, transforming and archiving file, process and tmux logs.** 运行时不需要云服务或大模型；AI Agent 通过 CLI 与配套 Skill 使用它。
-
-## 视频演示
-
-以下视频实时记录 **0.1.2 的实际 CLI 命令和返回结果**，由脚本驱动，使用明确标注的教学输入。它们展示可复现的功能流程；没有把演示输入当作真实生产日志，也没有把脚本录像当作 AI 自主执行。
-
-<table>
-  <tr>
-    <td width="50%"><strong>① 文件采集与日志读取</strong><br><a href="doc/public/assets/demos/01-file-read.mp4"><img src="doc/public/assets/demos/01-file-read.png" alt="播放文件采集与日志读取演示" width="100%"></a><br>导入静态教学文件 → 查询真实流 UUID → 读取保留快照 → 核实来源 EOF → 停止实例。</td>
-    <td width="50%"><strong>② 程序日志、转换与归档</strong><br><a href="doc/public/assets/demos/02-transform-archive.mp4"><img src="doc/public/assets/demos/02-transform-archive.png" alt="播放程序日志转换与归档演示" width="100%"></a><br>采集 stdout / stderr → 生成派生日志流 → 保存 JSONL / SQLite → 读回验证。</td>
-  </tr>
-</table>
-
-点击封面打开 MP4；录制方式、素材来源和复现步骤见[演示说明](doc/public/demos.md)。标题图的提示词与生成方式见[图片来源](doc/public/assets/branding/SOURCE.md)。
 
 ## 可以用它做什么
 
