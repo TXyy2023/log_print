@@ -23,13 +23,29 @@ fn main() -> Result<()> {
     let parser = Arc::new(Mutex::new(vt100::Parser::new(36, 140, 100)));
     let raw = Arc::new(Mutex::new(Vec::<u8>::new()));
     let mut reader = pair.master.try_clone_reader()?;
+    let writer = Arc::new(Mutex::new(pair.master.take_writer()?));
+    let reply = writer.clone();
     let p = parser.clone();
     let output = raw.clone();
     std::thread::spawn(move || {
         let mut bytes = [0; 8192];
+        let mut probe = Vec::new();
         while let Ok(n) = reader.read(&mut bytes) {
             if n == 0 {
                 break;
+            }
+            // ConPTY INHERIT_CURSOR asks its terminal host for a cursor report.
+            // Service it on the reader thread, including fragmented escape sequences.
+            for byte in &bytes[..n] {
+                probe.push(*byte);
+                if probe.ends_with(b"\x1b[6n") {
+                    let mut input = reply.lock().unwrap();
+                    let _ = input.write_all(b"\x1b[1;1R");
+                    let _ = input.flush();
+                }
+                if probe.len() > 32 {
+                    probe.remove(0);
+                }
             }
             p.lock().unwrap().process(&bytes[..n]);
             let mut raw = output.lock().unwrap();
@@ -40,7 +56,6 @@ fn main() -> Result<()> {
             raw.extend_from_slice(&bytes[..n]);
         }
     });
-    let mut writer = pair.master.take_writer()?;
     println!("{}", json!({"ready":true}));
     io::stdout().flush()?;
     let result = (|| -> Result<()> {
@@ -58,8 +73,9 @@ fn main() -> Result<()> {
                 })?;
             }
             if let Some(s) = request["send"].as_str() {
-                writer.write_all(s.as_bytes())?;
-                writer.flush()?;
+                let mut input = writer.lock().unwrap();
+                input.write_all(s.as_bytes())?;
+                input.flush()?;
             }
             let finish = request["finish"] == true;
             let expected = request["wait"].as_str();
@@ -80,7 +96,9 @@ fn main() -> Result<()> {
                 }
                 if Instant::now() > deadline {
                     bail!(
-                        "terminal timeout: {request}\n{}",
+                        "terminal timeout: {request}; child={:?}; bytes={}\n{}",
+                        child.try_wait()?,
+                        raw.lock().unwrap().len(),
                         parser.lock().unwrap().screen().contents()
                     );
                 }
