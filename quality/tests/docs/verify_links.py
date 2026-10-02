@@ -2,10 +2,15 @@
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlsplit, unquote
-import json, sys
-if len(sys.argv) != 2:
-    sys.exit('usage: verify_links.py BUILT_SITE_DIRECTORY')
-root = Path(sys.argv[1]).resolve()
+import argparse, json, sys
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('built_site_directory')
+parser.add_argument('--base', default='/', help='absolute site path ending in / (default: /)')
+args = parser.parse_args()
+base = args.base
+if not base.startswith('/') or not base.endswith('/') or base.startswith('//') or any(part in ('.', '..') for part in base.split('/')) or any(c in base for c in ('?', '#', '\\')):
+    parser.error('--base must be an absolute site path ending in /')
+root = Path(args.built_site_directory).resolve()
 if not root.is_dir():
     sys.exit(f'built site directory does not exist: {root}')
 class Page(HTMLParser):
@@ -27,8 +32,18 @@ for f,p in pages.items():
     for tag,ref in p.links:
         url=urlsplit(ref)
         if url.scheme or url.netloc: continue
-        dst=(root/unquote(url.path).lstrip('/')) if url.path.startswith('/') else (f.parent/unquote(url.path)) if url.path else f
+        url_path = unquote(url.path)
+        if url_path.startswith('/'):
+            if base != '/' and not url_path.startswith(base):
+                errors.append({'page':str(f.relative_to(root)),'link':ref,'reason':'outside site base'})
+                continue
+            dst = root / url_path[len(base):]
+        else:
+            dst = f.parent / url_path if url_path else f
         dst=dst.resolve()
+        if not dst.is_relative_to(root):
+            errors.append({'page':str(f.relative_to(root)),'link':ref,'reason':'outside site directory'})
+            continue
         if dst.is_dir(): dst=dst/'index.html'
         if not dst.exists() and not dst.suffix: dst=dst.with_suffix('.html')
         checked+=1

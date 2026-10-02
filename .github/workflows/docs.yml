@@ -1,0 +1,66 @@
+name: Documentation
+
+on:
+  push:
+    branches: [dev, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build and verify public documentation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: doc/site/package-lock.json
+      - name: Install documentation dependencies
+        run: npm ci --prefix doc/site
+      - name: Build and verify the default site path
+        run: |
+          npm run build:public --prefix doc/site
+          python3 quality/tests/docs/verify_links.py doc/site/dist/public
+      - name: Build and verify the Pages site path
+        env:
+          DOCS_BASE: /log_print/
+        run: |
+          npm run build:public --prefix doc/site
+          python3 quality/tests/docs/verify_links.py doc/site/dist/public --base /log_print/
+      - name: Upload public documentation
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: doc/site/dist/public
+
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v6
+      - name: Deploy public documentation
+        id: deployment
+        uses: actions/deploy-pages@v5

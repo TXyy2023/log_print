@@ -15,7 +15,7 @@
 
 <p align="center">
   <strong>把文件和程序的日志，接入终端与 AI Agent。</strong><br>
-  <a href="#快速开始">快速开始</a> · <a href="#接入-ai-agent">Agent Skill</a> · <a href="doc/public/index.md">使用手册</a> · <a href="https://github.com/TXyy2023/log_print/releases/tag/ver-0.1.2">0.1.2 Release</a>
+  <a href="#快速开始">快速开始</a> · <a href="#接入-ai-agent">Agent Skill</a> · <a href="https://TXyy2023.github.io/log_print/">在线文档</a> · <a href="doc/public/index.md">使用手册源码</a> · <a href="https://github.com/TXyy2023/log_print/releases/tag/ver-0.1.2">0.1.2 Release</a>
 </p>
 
 **log_print** 是一个用 Rust 编写的本地日志工具：采集文件、子程序或已有 tmux 窗格的输出，以独立日志流读取、显示、转换，并按需保存为原始文件、JSONL 或 SQLite。
