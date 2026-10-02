@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="doc/public/assets/branding/log-print-banner.png" alt="log_print：汇聚日志流的终端标识" width="960">
+  <img src="doc/public/assets/branding/log-print-logo.png" alt="log_print LP 标识" width="360">
 </p>
 
 <h1 align="center">log_print</h1>

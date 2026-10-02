@@ -1,3 +1,5 @@
+![log_print](../assets/branding/log-print-logo.png)
+
 <span id="log-print-manual"></span>
 
 # log_print 使用手册

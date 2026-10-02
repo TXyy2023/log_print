@@ -129,25 +129,11 @@ kbd {
   letter-spacing: -0.3px;
 }
 .brand-symbol {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  width: 20px;
-  height: 22px;
-}
-.brand-symbol i {
-  width: 4px;
-  border-radius: 1px;
-  background: var(--accent);
-}
-.brand-symbol i:nth-child(1) {
-  height: 11px;
-}
-.brand-symbol i:nth-child(2) {
-  height: 19px;
-}
-.brand-symbol i:nth-child(3) {
-  height: 14px;
+  display: block;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 4px;
 }
 .brand-divider,
 .toolbar-divider {

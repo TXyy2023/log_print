@@ -338,8 +338,8 @@ async function copyCli() {
   >
     <header class="app-header">
       <div class="app-brand">
-        <span class="brand-symbol"><i></i><i></i><i></i></span
-        ><strong>log-print</strong><span class="brand-divider"></span
+        <img class="brand-symbol" src="/log-print-icon.svg" alt="" />
+        <strong>log_print</strong><span class="brand-divider"></span
         ><span class="app-caption">工作台</span>
       </div>
       <div class="connection-summary">

@@ -22,6 +22,8 @@
   "plugins/output-tui.md",
   "assets/branding/SOURCE.md",
   "assets/branding/log-print-banner.png",
+  "assets/branding/log-print-logo.png",
+  "assets/branding/log-print-icon.svg",
   "assets/webui/workbench.png",
   "zh/index.md",
   "zh/installation.md",

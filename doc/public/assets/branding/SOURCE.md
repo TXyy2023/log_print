@@ -1,3 +1,21 @@
+# Primary logo provenance {#primary-logo-provenance}
+
+- Selected by the user on 2026-10-03: negative-space LP concept (candidate 6).
+- `log-print-logo.png`: the selected 1254 × 1254 image, copied unchanged from the user attachment.
+- `log-print-icon.svg`: an SVG viewport of the same embedded PNG, showing only the LP emblem. No pixels were regenerated or retouched.
+- Used by both READMEs, the documentation homepage/navigation/favicon, and the WebUI header/favicon.
+- Generated with the built-in imagegen tool; no specific model is asserted.
+- The earlier banner below remains as a historical asset.
+
+## Selected logo prompt {#selected-logo-prompt}
+
+```text
+Use case: logo-brand
+Asset type: original logo concept for "log_print", a local logging and log-stream developer utility.
+Design an exceptionally refined contemporary software identity. This is a new direction after rejected bulky complicated terminal illustrations. Treat it as professional graphic identity work: disciplined geometry, visual wit, beautiful negative space, restrained detail, precise optical balance. Flat solid fills, perfectly clean edges. White square presentation canvas with abundant breathing room. One standalone emblem above, one modest-size wordmark below; do not repeat the emblem. Text exactly "log_print", lowercase with underscore, impeccable kerning, light or medium-weight type, never heavy bubbly bold. Choose a restrained palette suitable to this specific concept. No explanatory text, no extra words, no numbers, no mockups, no gradients, textures, shading, embossing, 3D, watermark. Avoid generic terminal windows, >_ motifs, multicolor cable networks, connected colored dots, oversized rounded strokes. The mark must be compelling as a small software icon.
+Primary request: A bold compact single-color geometric tile using expertly carved negative space to hint subtly at both lowercase l and p. Angular cuts and carefully controlled rounded counters, exquisite balance, no circuitry or wiring. A restrained modern grotesk wordmark beneath. Identity should feel engineered and premium.
+```
+
 <span id="标题图片来源"></span>
 
 # Banner provenance

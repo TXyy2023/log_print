@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="doc/public/assets/branding/log-print-banner.png" alt="log_print: local logs, clear signals" width="960">
+  <img src="doc/public/assets/branding/log-print-logo.png" alt="log_print LP logo" width="360">
 </p>
 
 <h1 align="center">log_print</h1>

@@ -1,3 +1,21 @@
+# 主 Logo 来源 {#primary-logo-provenance}
+
+- 用户于 2026-10-03 选定负形 LP 方案（候选 6）。
+- `log-print-logo.png`：用户所选 1254 × 1254 图片，从附件原样复制。
+- `log-print-icon.svg`：内嵌同一 PNG，通过 SVG 视窗仅展示 LP 图标；没有重新生成或修饰像素。
+- 用于中英文 README、文档首页/导航栏/浏览器图标、WebUI 页头/浏览器图标。
+- 原设计由内置 imagegen 生成，不宣称具体模型。
+- 下方早期横幅继续保留为历史素材。
+
+## 选定 Logo 提示词 {#selected-logo-prompt}
+
+```text
+Use case: logo-brand
+Asset type: original logo concept for "log_print", a local logging and log-stream developer utility.
+Design an exceptionally refined contemporary software identity. This is a new direction after rejected bulky complicated terminal illustrations. Treat it as professional graphic identity work: disciplined geometry, visual wit, beautiful negative space, restrained detail, precise optical balance. Flat solid fills, perfectly clean edges. White square presentation canvas with abundant breathing room. One standalone emblem above, one modest-size wordmark below; do not repeat the emblem. Text exactly "log_print", lowercase with underscore, impeccable kerning, light or medium-weight type, never heavy bubbly bold. Choose a restrained palette suitable to this specific concept. No explanatory text, no extra words, no numbers, no mockups, no gradients, textures, shading, embossing, 3D, watermark. Avoid generic terminal windows, >_ motifs, multicolor cable networks, connected colored dots, oversized rounded strokes. The mark must be compelling as a small software icon.
+Primary request: A bold compact single-color geometric tile using expertly carved negative space to hint subtly at both lowercase l and p. Angular cuts and carefully controlled rounded counters, exquisite balance, no circuitry or wiring. A restrained modern grotesk wordmark beneath. Identity should feel engineered and premium.
+```
+
 <span id="banner-provenance"></span>
 
 # 标题图片来源
