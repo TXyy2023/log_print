@@ -130,6 +130,11 @@ impl App {
         }
     }
     pub fn accept(&mut self, snapshot: Snapshot) {
+        if snapshot.state["revision"] != self.snapshot.state["revision"]
+            || snapshot.notice != self.snapshot.notice
+        {
+            self.status.clear();
+        }
         self.snapshot = snapshot;
         let id = self
             .selected()

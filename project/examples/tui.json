@@ -1,0 +1,32 @@
+{
+  "core": {
+    "buffer_records": 16
+  },
+  "plugins": [
+    {
+      "id": "source",
+      "role": "input",
+      "bin": "input-file",
+      "streams": [
+        {
+          "id": "source",
+          "description": "Application log"
+        }
+      ],
+      "config": {
+        "path": "./io/replay.log",
+        "mode": "follow",
+        "from_start": true
+      }
+    },
+    {
+      "id": "term",
+      "role": "output",
+      "bin": "output-tui",
+      "read_all": true,
+      "config": {
+        "archive_dir": "../../capture"
+      }
+    }
+  ]
+}

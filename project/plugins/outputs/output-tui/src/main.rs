@@ -91,19 +91,28 @@ async fn viewer(url: &str, snapshot: bool, width: u16, height: u16) -> Result<()
         EnableBracketedPaste
     )?;
     let mut terminal = Terminal::new(CrosstermBackend::new(io::stdout()))?;
-    let (commands, updates, task) = client::worker(connection);
+    let (commands, mut updates, task) = client::worker(connection);
     let mut app = ui::App::new();
     app.accept(initial);
     let stop = termination();
     tokio::pin!(stop);
     let result: Result<()> = async {
+        let mut dirty = true;
         loop {
-            if updates.borrow().state.is_object() {
-                app.accept(updates.borrow().clone());
+            if updates.has_changed().unwrap_or(false) {
+                let snapshot = updates.borrow_and_update().clone();
+                if snapshot.state.is_object() {
+                    app.accept(snapshot);
+                    dirty = true;
+                }
             }
-            terminal.draw(|f| render::draw(f, &mut app))?;
+            if dirty {
+                terminal.draw(|f| render::draw(f, &mut app))?;
+                dirty = false;
+            }
             if event::poll(Duration::from_millis(40))? {
                 let input = event::read()?;
+                dirty = true;
                 if let Event::Resize(_, _) = input {
                     terminal.autoresize()?;
                 }

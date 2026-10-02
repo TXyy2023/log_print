@@ -13,3 +13,5 @@ log-print tui web attach
 完整使用说明、功能映射、CLI、终端限制和测试入口见 [用户文档](../../../../doc/public/plugins/output-tui.md)。
 
 `src/client.rs` 负责有界 HTTP 读取及配置提交；`src/ui.rs` 负责输入、编辑 revision 和命令面板；`src/render.rs` 使用 Ratatui 渲染表格、曲线与布局。业务状态、持久化与历史代码在 [log-view](../../../crates/log-view/README.md)。`examples/pty_driver.rs` 仅用于跨系统真实 PTY/ConPTY 测试，不是运行依赖。
+
+JSON 启动示例见 [project/examples/tui.json](../../../examples/tui.json)，与 WebUI 使用相同的 `archive_dir` / `history_plugin` 配置。
