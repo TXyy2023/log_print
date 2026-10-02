@@ -112,6 +112,7 @@ pub struct App {
     pub status: String,
     pub body: Rect,
     last_panel: String,
+    pending_row: Option<(String, usize)>,
 }
 impl App {
     pub fn new() -> Self {
@@ -127,6 +128,7 @@ impl App {
             status: String::new(),
             body: Rect::default(),
             last_panel: String::new(),
+            pending_row: None,
         }
     }
     pub fn accept(&mut self, snapshot: Snapshot) {
@@ -145,7 +147,15 @@ impl App {
             self.row = 0;
             self.scroll = 0;
             self.horizontal = 0;
-            self.last_panel = id;
+            self.last_panel = id.clone();
+        }
+        if self
+            .pending_row
+            .as_ref()
+            .is_some_and(|(panel, _)| panel == &id)
+            && self.selected().is_some_and(|p| p["follow"] == false)
+        {
+            self.row = self.pending_row.take().unwrap().1;
         }
     }
     pub fn revision(&self) -> u64 {
@@ -322,7 +332,7 @@ impl App {
                 KeyCode::Char('o')=>self.modal=Some(Modal::Info{title:"Coverage / gaps / query progress".into(),text:serde_json::to_string_pretty(&json!({"archive_enabled":self.snapshot.state["archive_enabled"],"writer":self.snapshot.state["archive_writer"],"coverage":self.panel_data(&panel)["status"]["coverage"],"query_state":self.panel_data(&panel)["status"]["state"],"scanned":self.panel_data(&panel)["status"]["scanned"],"error":self.panel_data(&panel)["error"]})).unwrap_or_default(),offset:0}),
                 KeyCode::Char('I')=>{
                     let rows=sorted_rows(&self.panel_data(&panel),&panel);
-                    if let Some(row)=rows.get(self.row.min(rows.len().saturating_sub(1))) {self.modal=Some(Modal::Info{title:"Record identity / metadata".into(),text:serde_json::to_string_pretty(row).unwrap_or_default(),offset:0});}
+                    if let Some(row)=rows.get(self.row_index(&panel,rows.len())) {self.modal=Some(Modal::Info{title:"Record identity / metadata".into(),text:serde_json::to_string_pretty(row).unwrap_or_default(),offset:0});}
                 },
                 KeyCode::Tab|KeyCode::BackTab=>self.next_panel(tx,key.code==KeyCode::BackTab),
                 KeyCode::Char('m')|KeyCode::Char('r')=>self.begin_draft(panel,(0,0),key.code==KeyCode::Char('r'),false),
@@ -332,7 +342,7 @@ impl App {
                 KeyCode::Left=>self.horizontal=self.horizontal.saturating_sub(1),KeyCode::Right=>self.horizontal=self.horizontal.saturating_add(1),
                 KeyCode::Enter=>{
                     let rows=sorted_rows(&self.panel_data(&panel),&panel);
-                    if let Some(row)=rows.get(self.row.min(rows.len().saturating_sub(1))) {self.history(tx,"history.context",Some(row.clone()));}
+                    if let Some(row)=rows.get(self.row_index(&panel,rows.len())) {self.history(tx,"history.context",Some(row.clone()));}
                 },
                 KeyCode::Char('+')|KeyCode::Char('=')|KeyCode::Char('-')=>self.set(tx,true,json!({"view_zoom":(number(&page,"view_zoom",1.)*if key.code==KeyCode::Char('-'){0.8}else{1.25}).clamp(0.2,2.)})),
                 KeyCode::Char('0')=>self.fit(tx),_=>{}
@@ -379,8 +389,8 @@ impl App {
                                 }
                             }
                             HitKind::Row(id, row) => {
-                                self.row = row;
-                                self.set(tx, true, json!({"active_panel":id}));
+                                self.pending_row = Some((id.clone(), row));
+                                self.send(tx,Call{method:"panel.set".into(),args:json!({"page":self.page_id(),"panel":id,"follow":false,"revision":self.revision()}),after:Some(After::FocusPanel{id})});
                             }
                         }
                     }
@@ -422,6 +432,13 @@ impl App {
             }
         }
         Ok(true)
+    }
+    pub fn row_index(&self, panel: &Value, len: usize) -> usize {
+        if panel["follow"] == true {
+            len.saturating_sub(1)
+        } else {
+            self.row.min(len.saturating_sub(1))
+        }
     }
     fn begin_pan(&mut self, x: u16, y: u16) {
         let page = self.page().cloned().unwrap_or_default();
@@ -1173,5 +1190,26 @@ mod tests {
         erase(&mut p, 1);
         assert_eq!(p.text, "温度");
         assert_eq!(safe("a\u{1b}[2J\t"), "a\\u001b[2J\\u0009");
+    }
+}
+
+#[cfg(test)]
+mod row_tests {
+    use super::*;
+    #[test]
+    fn following_context_uses_the_highlighted_last_record() {
+        let mut app = App::new();
+        app.snapshot.state = json!({"revision":5,"selected":"page","pages":[{"id":"page","active_panel":"log","panels":[{"id":"log","kind":"log","follow":true}]}]});
+        app.snapshot.panels.insert("log".into(),json!({"rows":[{"seq":"1","stream":"s","epoch":"e","offset":0},{"seq":"9","stream":"s","epoch":"e","offset":3}]}));
+        let (tx, mut rx) = mpsc::channel(1);
+        app.event(
+            Event::Key(KeyEvent::new(KeyCode::Enter, KeyModifiers::NONE)),
+            &tx,
+        )
+        .unwrap();
+        let call = rx.try_recv().unwrap();
+        assert_eq!(call.method, "history.context");
+        assert_eq!(call.args["seq"], "9");
+        assert_eq!(call.args["byte_offset"], 3);
     }
 }

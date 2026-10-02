@@ -17,6 +17,7 @@ pub struct Snapshot {
 pub enum After {
     SelectPage,
     SelectPanel,
+    FocusPanel { id: String },
     ShowQuery { page: String, panel: String },
 }
 pub struct Call {
@@ -174,6 +175,7 @@ impl Connection {
         match call.after {
             Some(After::SelectPage) => { self.command("page.select",json!({"page":result["result"]["id"],"revision":result["revision"]})).await?; }
             Some(After::SelectPanel) => { self.command("page.set",json!({"page":call.args["page"],"active_panel":result["result"]["id"],"revision":result["revision"]})).await?; }
+            Some(After::FocusPanel{id}) => {self.command("page.set",json!({"page":call.args["page"],"active_panel":id,"revision":result["revision"]})).await?;}
             Some(After::ShowQuery{page,panel}) => {
                 if let Err(error)=self.command("panel.set",json!({"page":page,"panel":panel,"query":result["query"],"mode":"history","offset":0,"paused":false,"revision":call.args["revision"]})).await {
                     let _=self.command("query.cancel",json!({"query":result["query"]})).await;

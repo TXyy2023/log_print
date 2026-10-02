@@ -63,16 +63,19 @@ fn main() -> Result<()> {
             }
             let finish = request["finish"] == true;
             let expected = request["wait"].as_str();
+            let absent = request["absent"].as_str();
             let deadline = Instant::now()
                 + Duration::from_millis(request["timeout_ms"].as_u64().unwrap_or(8000));
             let mut exit = None;
             loop {
                 let found =
                     expected.is_none_or(|s| parser.lock().unwrap().screen().contents().contains(s));
+                let gone =
+                    absent.is_none_or(|s| !parser.lock().unwrap().screen().contents().contains(s));
                 if finish {
                     exit = child.try_wait()?;
                 }
-                if found && (!finish || exit.is_some()) {
+                if found && gone && (!finish || exit.is_some()) {
                     break;
                 }
                 if Instant::now() > deadline {

@@ -20,7 +20,7 @@ try{
  cli('page','set','--title','Browser acceptance','--sidebar-open','false','--view-x','24','--view-y','24','--view-zoom','1');
  cli('panel','add','--title','Console CI','--left','0','--top','0','--panel-width','760','--panel-height','440','--column','text');
  let config=await read();const log=config.pages[0].panels[0].id;
- cli('panel','add','--kind','curve','--title','Temperature CI','--left','800','--top','0','--panel-width','600','--panel-height','440');
+ cli('panel','add','--kind','curve','--title','Temperature CI','--left','960','--top','0','--panel-width','520','--panel-height','440');
  config=await read();const curve=config.pages[0].panels[1].id;
  cli('series','add','--panel',curve,'--name','Temperature','--regex','temperature=(?P<value>[0-9.]+)');
  const node=p=>p.locator(`.vue-flow__node[data-id="${log}"]`);

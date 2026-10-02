@@ -46,7 +46,7 @@ class TerminalAcceptance(unittest.TestCase):
             app.cli('tui','web','page','set','--active-panel',panel)
             with Terminal(url) as term:
                 self.assertTrue(term.call(wait='PTY console')['alternate'])
-                term.call(send='?',wait='TERMINAL WORKBENCH');term.call(send='\x1b')
+                term.call(send='?',wait='TERMINAL WORKBENCH');term.call(send='\x1b',absent='TERMINAL WORKBENCH')
                 term.call(send=':panel set --title "终端设置"\r',wait='Saved · panel.set')
                 eventually(lambda:request(url)['pages'][0]['panels'][0]['title']=='终端设置')
                 # Captured edit revision must not overwrite concurrent CLI changes.
@@ -90,7 +90,7 @@ class TerminalAcceptance(unittest.TestCase):
                 with Terminal(url) as term:
                     term.call(wait='ERROR 早期记录')
                     term.call(send='h',wait='HISTORY')
-                    term.call(send='o',wait='archive_and_memory');term.call(send='\x1b')
+                    term.call(send='o',wait='archive_and_memory');term.call(send='\x1b',absent='Coverage / gaps / query progress')
                     term.call(send='l',wait='LIVE')
                     term.call(send=' ',wait='PAUSED')
                     with source.open('a',encoding='utf-8') as file:file.write('continued-after-pause\n')
