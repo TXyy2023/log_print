@@ -9,16 +9,16 @@
 <p align="center">
   <a href="https://github.com/TXyy2023/log_print/actions/workflows/validate.yml"><img src="https://github.com/TXyy2023/log_print/actions/workflows/validate.yml/badge.svg?branch=main" alt="CI"></a>
   <a href="https://txyy2023.github.io/log_print/"><img src="https://github.com/TXyy2023/log_print/actions/workflows/docs.yml/badge.svg?branch=main" alt="Documentation"></a>
-  <a href="https://github.com/TXyy2023/log_print/releases/tag/ver-0.1.2"><img src="https://img.shields.io/badge/version-0.1.2-8574d8" alt="Version 0.1.2"></a>
+  <a href="https://github.com/TXyy2023/log_print/releases/tag/ver-0.1.3"><img src="https://img.shields.io/badge/version-0.1.3-8574d8" alt="Version 0.1.3"></a>
   <a href="Cargo.toml"><img src="https://img.shields.io/badge/Rust-%3E%3D1.92-dea584?logo=rust&amp;logoColor=white" alt="Rust 1.92 or newer"></a>
   <a href="doc/public/concepts.md"><img src="https://img.shields.io/badge/protocol-log--print%2F2-64748b" alt="Protocol log-print/2"></a>
-  <a href="quality/release-0.1.2.md"><img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-64748b" alt="macOS, Linux, Windows"></a>
+  <a href="quality/release-0.1.3.md"><img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-64748b" alt="macOS, Linux, Windows"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-e6b950" alt="MIT License"></a>
 </p>
 
 <p align="center">
   <strong>Local logs, in your terminal, browser and AI workflow.</strong><br>
-  <a href="#quick-start">Quick start</a> · <a href="#ai-agent-integration">Agent Skill</a> · <a href="https://TXyy2023.github.io/log_print/">Documentation</a> · <a href="doc/public/index.md">Manual source</a> · <a href="https://github.com/TXyy2023/log_print/releases/tag/ver-0.1.2">0.1.2 Release</a>
+  <a href="#quick-start">Quick start</a> · <a href="#ai-agent-integration">Agent Skill</a> · <a href="https://TXyy2023.github.io/log_print/">Documentation</a> · <a href="doc/public/index.md">Manual source</a> · <a href="https://github.com/TXyy2023/log_print/releases/tag/ver-0.1.3">0.1.3 Release</a>
 </p>
 
 **log_print** is a local Rust toolkit for collecting, viewing, transforming and archiving logs from files, child processes and existing tmux panes. Use a CLI, a browser workbench or a terminal workbench, with the same stream identities and explicit persistence boundaries.
@@ -44,7 +44,7 @@ The workbench above uses synthetic data and CLI-arranged panels. [WebUI](doc/pub
 
 Core buffers and routes logs in memory, using TCP by default or optional UDP. Inputs do not wait for Outputs, and slow consumers can lose overwritten records. **Published does not mean persisted.** Configure `output-file` and inspect its commit results when you need storage. Core restarts discard its memory, and `read` is not a persistent cursor. See [streams and persistence](doc/public/concepts.md).
 
-Serial input is outside the current workspace. Old `log-print/1` clients and configurations need [migration](doc/public/guides/recovery.md). The workspace version remains 0.1.2, but current `main` includes features added after the original release tag; build binaries from the same revision as the manual.
+Serial input is outside the current workspace. Old `log-print/1` clients and configurations need [migration](doc/public/guides/recovery.md). Version 0.1.3 includes the CLI, WebUI and TUI updates; build binaries from the same revision as the manual.
 
 ## Documentation
 
@@ -147,7 +147,7 @@ The main program supervises the instance and child processes. The protocol defin
 python3 quality/run.py
 ```
 
-The full suite needs Python 3.12+, Node.js 24/npm, Rust stable, rustfmt and Clippy. It covers Rust tests and real subprocess scenarios for the protocol, CLI lifecycle, inputs, transformations, archives, WebUI/TUI and failures. GitHub CI runs Linux, macOS and Windows, including real PTY/ConPTY terminal interactions and Chromium workbench tests. See [validation instructions](quality/README.md); the CI badge reports current main status. The [original 0.1.2 report](quality/release-0.1.2.md) describes its release revision, not every later change.
+The full suite needs Python 3.12+, Node.js 24/npm, Rust stable, rustfmt and Clippy. It covers Rust tests and real subprocess scenarios for the protocol, CLI lifecycle, inputs, transformations, archives, WebUI/TUI and failures. GitHub CI runs Linux, macOS and Windows, including real PTY/ConPTY terminal interactions and Chromium workbench tests. See [validation instructions](quality/README.md); the CI badge reports current main status. See the [0.1.3 release report](quality/release-0.1.3.md) for this release and the [original 0.1.2 report](quality/release-0.1.2.md) for historical validation.
 
 Documentation changes must pass both root-path and GitHub Pages subpath builds, locale/link checks and public-content isolation. The [Documentation workflow](https://github.com/TXyy2023/log_print/actions/workflows/docs.yml) validates `dev` and `main`, and deploys `main` to GitHub Pages. Internal development notes remain local. See [site maintenance](doc/site/README.md).
 

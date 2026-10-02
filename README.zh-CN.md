@@ -9,16 +9,16 @@
 <p align="center">
   <a href="https://github.com/TXyy2023/log_print/actions/workflows/validate.yml"><img src="https://github.com/TXyy2023/log_print/actions/workflows/validate.yml/badge.svg?branch=main" alt="CI"></a>
   <a href="https://txyy2023.github.io/log_print/zh/"><img src="https://github.com/TXyy2023/log_print/actions/workflows/docs.yml/badge.svg?branch=main" alt="文档部署"></a>
-  <a href="https://github.com/TXyy2023/log_print/releases/tag/ver-0.1.2"><img src="https://img.shields.io/badge/version-0.1.2-8574d8" alt="Version 0.1.2"></a>
+  <a href="https://github.com/TXyy2023/log_print/releases/tag/ver-0.1.3"><img src="https://img.shields.io/badge/version-0.1.3-8574d8" alt="Version 0.1.3"></a>
   <a href="Cargo.toml"><img src="https://img.shields.io/badge/Rust-%3E%3D1.92-dea584?logo=rust&amp;logoColor=white" alt="Rust 1.92 或更新"></a>
   <a href="doc/public/zh/concepts.md"><img src="https://img.shields.io/badge/protocol-log--print%2F2-64748b" alt="Protocol log-print/2"></a>
-  <a href="quality/release-0.1.2.md"><img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-64748b" alt="macOS、Linux、Windows"></a>
+  <a href="quality/release-0.1.3.md"><img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-64748b" alt="macOS、Linux、Windows"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-e6b950" alt="MIT License"></a>
 </p>
 
 <p align="center">
   <strong>把文件和程序的日志，接入终端与 AI Agent。</strong><br>
-  <a href="#快速开始">快速开始</a> · <a href="#接入-ai-agent">Agent Skill</a> · <a href="https://TXyy2023.github.io/log_print/zh/">在线文档</a> · <a href="doc/public/zh/index.md">使用手册源码</a> · <a href="https://github.com/TXyy2023/log_print/releases/tag/ver-0.1.2">0.1.2 Release</a>
+  <a href="#快速开始">快速开始</a> · <a href="#接入-ai-agent">Agent Skill</a> · <a href="https://TXyy2023.github.io/log_print/zh/">在线文档</a> · <a href="doc/public/zh/index.md">使用手册源码</a> · <a href="https://github.com/TXyy2023/log_print/releases/tag/ver-0.1.3">0.1.3 Release</a>
 </p>
 
 **log_print** 是一个用 Rust 编写的本地日志工具：采集文件、子程序或已有 tmux 窗格的输出，以独立日志流读取、显示、转换，并按需保存为原始文件、JSONL 或 SQLite。
@@ -38,7 +38,7 @@
 
 Core 只做内存缓冲与转发，默认使用 TCP，也可显式选择 UDP。Input 发布不等待 Output；慢消费者可能遇到缓冲覆盖。**发布成功不等于已保存**，持久化需要配置 `output-file` 并检查保存结果。Core 重启会丢失内存内容，`read` 也不是持久游标。完整约定见[流、传输与保存](doc/public/zh/concepts.md)。
 
-本地 WebUI 支持全部流、持久化 Page、可自由摆放和缩放的日志/曲线窗口、CLI 精确编排，以及可选的 SQLite 全量上下文查询，见 [output-webui](doc/public/zh/plugins/output-webui.md)。同等显示与历史功能可在 [output-tui](doc/public/zh/plugins/output-tui.md) 终端工作台使用，也可连接现有 WebUI 同步控制。串口输入插件不在当前版本范围。旧 `log-print/1` 配置和客户端不能直接用于 0.1.2，迁移说明见[完整性与迁移](doc/public/zh/guides/recovery.md)。
+本地 WebUI 支持全部流、持久化 Page、可自由摆放和缩放的日志/曲线窗口、CLI 精确编排，以及可选的 SQLite 全量上下文查询，见 [output-webui](doc/public/zh/plugins/output-webui.md)。同等显示与历史功能可在 [output-tui](doc/public/zh/plugins/output-tui.md) 终端工作台使用，也可连接现有 WebUI 同步控制。串口输入插件不在当前版本范围。旧 `log-print/1` 配置和客户端不能直接用于 0.1.3，迁移说明见[完整性与迁移](doc/public/zh/guides/recovery.md)。
 
 ## 文档
 
@@ -122,7 +122,7 @@ flowchart LR
 python3 quality/run.py
 ```
 
-需要 Python 3.12+、Node.js 24 与 npm、Rust stable、rustfmt 和 Clippy。验收覆盖 Rust 测试，以及协议、CLI 生命周期、输入、转换、保存与异常退出的真实子进程场景。macOS、Linux、Windows 的 0.1.2 结果见[验收记录](quality/release-0.1.2.md)；本次展示与 Skill 的验证见[交付记录](quality/github-showcase-0.1.2.md)。CI 徽章显示当前 main 的最新状态。
+需要 Python 3.12+、Node.js 24 与 npm、Rust stable、rustfmt 和 Clippy。验收覆盖 Rust 测试，以及协议、CLI 生命周期、输入、转换、保存与异常退出的真实子进程场景。当前发布见[0.1.3 验收记录](quality/release-0.1.3.md)，旧版结果见[0.1.2 历史记录](quality/release-0.1.2.md)。CI 徽章显示当前 main 的最新状态。
 
 文档更新须通过两种站点路径的构建、双语页面和链接检查、公开内容隔离；`dev` 验证，`main` 由 [Documentation 工作流](https://github.com/TXyy2023/log_print/actions/workflows/docs.yml)自动部署到 GitHub Pages。发布内容仅为公开使用手册；内部开发资料和归档保留在本地。构建、预览和部署细节见[文档站说明](doc/site/README.md)。
 

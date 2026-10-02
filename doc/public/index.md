@@ -2,7 +2,7 @@
 
 # log_print manual
 
-This manual follows the current source tree, version **0.1.2 / log-print/2**. Two input plugins feed Core's memory buffers; five output plugins display, archive or transform the streams. Build from the same source revision as this manual: the original `ver-0.1.2` release does not contain every feature now on `main`.
+This manual follows the current source tree, version **0.1.3 / log-print/2**. Two input plugins feed Core's memory buffers; five output plugins display, archive or transform the streams. Build from the same source revision as this manual: `ver-0.1.3` includes the CLI, WebUI and TUI updates introduced after `ver-0.1.2`.
 
 <span id="开始使用"></span>
 

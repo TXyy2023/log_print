@@ -1,4 +1,4 @@
-# 0.1.2 测试与 CI
+# 测试与 CI
 
 从仓库根目录运行：
 
@@ -34,7 +34,7 @@ python3 quality/tests/docs/verify_links.py doc/site/dist/local
 python3 quality/tests/docs/verify_links.py doc/site/dist/public
 ```
 
-[0.1.2 实施与验收记录](release-0.1.2.md)
+[0.1.3 发布与验收](release-0.1.3.md) · [0.1.2 历史验收记录](release-0.1.2.md)
 
 ## 双显示器与真实交互
 

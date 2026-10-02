@@ -39,11 +39,11 @@ $LogPrintBin = (Resolve-Path .\target\release\log-print.exe).Path
 
 需要 Git、Rust **1.92 或更新版**及当前平台的编译工具链。先执行 `git --version`、`rustc --version`、`cargo --version`；缺少 Rust 时使用[官方安装入口](https://www.rust-lang.org/tools/install)。tmux 模式额外需要 Unix 与已安装的 tmux，普通文件/程序采集不需要 tmux。
 
-下面把公开的 0.1.2 版本克隆到一个**尚不存在**的新目录。已有 checkout 时先检查分支和未提交改动，不覆盖用户的工作目录，也不为了安装执行 reset/clean。
+下面把公开的 0.1.3 版本克隆到一个**尚不存在**的新目录。已有 checkout 时先检查分支和未提交改动，不覆盖用户的工作目录，也不为了安装执行 reset/clean。
 
 ```sh
-git clone --depth 1 --branch ver-0.1.2 https://github.com/TXyy2023/log_print.git log-print-0.1.2
-cd log-print-0.1.2
+git clone --depth 1 --branch ver-0.1.3 https://github.com/TXyy2023/log_print.git log-print-0.1.3
+cd log-print-0.1.3
 cargo build --release --workspace --locked
 ```
 
@@ -57,6 +57,8 @@ input-program
 output-raw
 output-file
 output-transform
+output-webui
+output-tui
 ```
 
 Windows 文件名带 `.exe`。只构建或安装 `app-log-print` 不会带齐 Core 和独立插件；不要使用未经验证的同名包作为替代。默认推荐直接使用本次仓库的 `target/release/log-print`；也可仅为当前终端把**整个目录**加入 PATH：

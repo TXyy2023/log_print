@@ -29,7 +29,7 @@ cargo build --release --locked --workspace
 ./target/release/log-print --version
 ```
 
-For an existing checkout, run the build command there. The workspace version is currently `0.1.2`, but `main` includes CLI, WebUI and TUI changes added after the original `ver-0.1.2` tag. A version string alone does not establish identical interfaces: use the manual and binaries from the same commit. Local uncommitted changes are not included in a fresh clone. `--locked` uses the committed dependency lockfile; the first build downloads dependencies and is not an offline installation procedure.
+For an existing checkout, run the build command there. The workspace version is currently `0.1.3`, and `ver-0.1.3` includes CLI, WebUI and TUI changes added after the original `ver-0.1.2` tag. A version string alone does not establish identical interfaces: use the manual and binaries from the same commit. Local uncommitted changes are not included in a fresh clone. `--locked` uses the committed dependency lockfile; the first build downloads dependencies and is not an offline installation procedure.
 
 The executables are in `target/release/`:
 

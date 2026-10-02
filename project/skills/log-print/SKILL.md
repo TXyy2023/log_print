@@ -3,13 +3,13 @@ name: log-print
 description: Collect and inspect local logs with the log-print Rust CLI. Use for file following, program stdout/stderr capture, existing tmux pane output, bounded stream reads, and raw/JSONL/SQLite log archives. 用于本地日志采集、排查和归档，不用于任意 PID 附着、云端日志检索或无人值守监控。
 license: MIT
 metadata:
-  version: "0.1.2"
+  version: "0.1.3"
   repository: https://github.com/TXyy2023/log_print
 ---
 
 # log-print
 
-通过本地 CLI 管理日志采集与有界读取。本文对应 **0.1.2 / log-print/2**；Skill 安装不会安装 Rust CLI。
+通过本地 CLI 管理日志采集与有界读取。本文对应 **0.1.3 / log-print/2**；Skill 安装不会安装 Rust CLI。
 
 ## 先检查可执行程序
 
