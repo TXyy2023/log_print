@@ -19,8 +19,6 @@ app-log-print 启动时解析命令行设置或读取配置文件一次，保存
 }
 ```
 
-<span id="core"></span>
-
 ## Core
 
 | 字段 | 默认值与约束 |

@@ -19,8 +19,6 @@ app-log-print reads command-line settings or the configuration file once at star
 }
 ```
 
-<span id="core"></span>
-
 ## Core
 
 | Field | Default and constraints |

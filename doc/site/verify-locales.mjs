@@ -20,6 +20,8 @@ for (const page of pages) {
     const rel = (zh ? 'zh/' : '') + page;
     const html = fs.readFileSync(path.join(dist, rel.replace(/\.md$/, '.html')), 'utf8');
     assert.match(html, new RegExp(`<html lang="${zh ? 'zh-CN' : 'en'}"`), rel + ': language');
+    const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
+    assert.equal(new Set(ids).size, ids.length, rel + ': duplicate HTML anchor');
     const counterpart = base + route((zh ? '' : 'zh/') + page);
     assert.ok(html.includes(`href="${counterpart}"`), rel + ': missing corresponding language link');
     const otherHtml = fs.readFileSync(path.join(dist, ((zh ? '' : 'zh/') + page).replace(/\.md$/, '.html')), 'utf8');
