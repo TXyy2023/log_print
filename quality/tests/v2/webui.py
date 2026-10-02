@@ -160,7 +160,9 @@ class WebUI(unittest.TestCase):
                         writer.publish(stream,b'after archive\n')
                         eventually(lambda:file.process.poll() is not None)
                         self.assertNotEqual(file.process.returncode,0)
-                        eventually(lambda:request(url)['archive_writer']['report']['state']=='failed')
+                        # Health polling can observe registration before the
+                        # first report; wait for the failure report to arrive.
+                        eventually(lambda:((request(url).get('archive_writer') or {}).get('report') or {}).get('state')=='failed')
                         failed=complete(url,job(url,streams=[stream]))
                         coverage=failed['status']['coverage']
                         self.assertEqual(coverage['writer']['report']['state'],'failed')
@@ -259,11 +261,14 @@ class WebUI(unittest.TestCase):
                      'config':{'mode':'create','discover_streams':True,'sqlite':{'path':str(path)},'fail_on_gap':False,
                                'queue':{'max_records':1},'commit':{'max_records':1}}}
             plugins=base({'state_path':str(Path(td)/'pages.sqlite3'),'history_path':str(path),'history_plugin':'archive'},archive)
-            with Core(options={'buffer_records':1},plugins=plugins) as core,Output(core,archive,{'LOG_PRINT_ARCHIVE_TESTING':'1','LOG_PRINT_ARCHIVE_TEST_DELAY_MS':'5'}) as file:
+            # Bound Core's event queue too, and make the writer slower than the
+            # publisher on all CI hosts. Small records at 5 ms can be absorbed
+            # entirely by TCP/SDK queues, producing no actual eviction gap.
+            with Core(options={'buffer_records':1,'queue_records':1},plugins=plugins) as core,Output(core,archive,{'LOG_PRINT_ARCHIVE_TESTING':'1','LOG_PRINT_ARCHIVE_TEST_DELAY_MS':'50'}) as file:
                 file.ready('archiving')
                 with core.rpc('source') as writer:
                     stream=core.stream('source');writer.call('stream.claim',stream=stream)
-                    for i in range(1,501):writer.publish(stream,b'p'*8192+f'\nvalue={i}\n'.encode(),channel='stdout')
+                    for i in range(1,501):writer.publish(stream,b'p'*(48*1024)+f'\nvalue={i}\n'.encode(),channel='stdout')
                 with closing(sqlite3.connect(path)) as db:
                     eventually(lambda:db.execute('SELECT next FROM checkpoints WHERE stream=?',(stream,)).fetchone()[0]=='501',15)
                     self.assertGreater(db.execute('SELECT COUNT(*) FROM gaps').fetchone()[0],0)

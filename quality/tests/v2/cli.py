@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Native CLI launch and readable output acceptance using real child processes."""
 import json
+from contextlib import closing
 from pathlib import Path
 import sqlite3
 import subprocess
@@ -102,7 +103,7 @@ class NativeCliTests(unittest.TestCase):
                 stopped = self.readable(app.cli('stop'))
                 self.assertIn('success: yes', stopped)
                 self.assertEqual(archive.read_bytes(), expected)
-                with sqlite3.connect(database) as connection:
+                with closing(sqlite3.connect(database)) as connection:
                     payloads = connection.execute('SELECT payload FROM records').fetchall()
                 self.assertEqual(b''.join(row[0] for row in payloads), expected)
 
@@ -131,7 +132,14 @@ class NativeCliTests(unittest.TestCase):
                 process = subprocess.Popen([str(BIN/('log-print'+EXE)), '--state', str(state), 'run'],
                                            cwd=ROOT, stdout=stdout, stderr=stderr)
                 try:
-                    eventually(lambda:state.exists() and 'address' in json.loads(state.read_text()))
+                    def ready():
+                        try:
+                            return 'address' in json.loads(state.read_text())
+                        except (OSError, json.JSONDecodeError):
+                            # The exclusive state placeholder precedes the
+                            # completed startup JSON; existence is not readiness.
+                            return False
+                    eventually(ready)
                     result = subprocess.run([str(BIN/('log-print'+EXE)), '--state', str(state), 'stop'],
                                             cwd=ROOT, capture_output=True, text=True, timeout=15)
                     self.assertEqual(result.returncode, 0, result.stderr)
