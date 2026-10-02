@@ -224,6 +224,10 @@ class PublicTests(unittest.IsolatedAsyncioTestCase):
                     raise RuntimeError('business secret that must not enter report')
             report = await asyncio.to_thread(call, core, 'plugin.status', plugin='other-out')
             self.assertEqual(report['report'], {'state': 'failed', 'error': 'RuntimeError'})
+            async with connect(core, 'other-out') as reporter:
+                await reporter.report(state='completed', confirmed_records=7)
+            report = await asyncio.to_thread(call, core, 'plugin.status', plugin='other-out')
+            self.assertEqual(report['report'], {'state': 'completed', 'confirmed_records': 7})
 
     async def test_directory_pagination(self):
         plugins = [dict(id=f'p{n}', role='input', bin='unused', streams=[dict(id=f's{n}')]) for n in range(70)]

@@ -141,7 +141,8 @@ CancelledError; cancellation also does not undo an operation already sent.
 
 Initialization reports sdk_ready (connection/configuration only, not business readiness);
 normal context exit reports stopped with business_complete=false for supervisor
-compatibility. Business progress/completion remains the plugin's responsibility.
+compatibility only when the plugin has not supplied its own business report.
+Explicit business reports are preserved. Business progress/completion remains the plugin's responsibility.
 Shutdown acknowledges stopping, not completion; async iteration ends normally on
 requested shutdown. Connection loss raises. Config updates require restart.
 Exceptions leaving a context report failure type, not exception text that might

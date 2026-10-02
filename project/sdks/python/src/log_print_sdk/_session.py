@@ -166,6 +166,7 @@ class Session:
         self._closed = False
         self._key_prefix = uuid.uuid4().hex
         self._key_sequence = 0
+        self._business_reported = False
 
     async def __aenter__(self) -> Session:
         if self._entered:
@@ -227,7 +228,7 @@ class Session:
                 with contextlib.suppress(Exception):
                     async with asyncio.timeout(2):
                         await self.report(state='failed', error=type(error).__name__)
-            elif error is None and self._connection and not self._error:
+            elif error is None and self._connection and not self._error and not self._business_reported:
                 with contextlib.suppress(Exception):
                     async with asyncio.timeout(2):
                         await self.report(state='stopped', business_complete=False)
@@ -391,6 +392,7 @@ class Session:
         if not self._connection or self._closed:
             raise ConfigurationError('session is not open', code='session_not_open')
         await self._connection.request('report', fields)
+        self._business_reported = True
 
     async def close(self) -> None:
         if self._closed:
