@@ -36,9 +36,9 @@ log-print webui web streams
 log-print webui web capabilities
 log-print webui web page create --name monitor --title '运行监控' --theme dark
 log-print webui web page select --page monitor
-log-print webui web panel add --page monitor --kind log --title Logs --stream source --w 12 --h 6
+log-print webui web panel add --page monitor --kind log --title Logs --stream source --left 24 --top 24 --panel-width 760 --panel-height 480
 log-print webui web panel set --panel PANEL_UUID --text error --channel stderr --follow false --metadata true
-log-print webui web panel add --kind curve --title Temperature --y 6 --h 5
+log-print webui web panel add --kind curve --title Temperature --left 808 --top 24 --panel-width 520 --panel-height 340
 log-print webui web series add --panel CURVE_UUID --name temperature \
   --stream source --regex 'temperature=(?P<value>[0-9.]+)' --color '#50c8b8' --width 2
 log-print webui web series set --panel CURVE_UUID --series SERIES_UUID --field metrics.temperature
@@ -47,7 +47,21 @@ log-print webui web page clone --page monitor --name monitor-copy
 log-print webui web page set --page monitor --title '主监控' --revision 8
 ```
 
-Page 支持 list/get/create/set/clone/delete/select；panel 支持 add/get/set/remove；series 支持 add/set/remove。Page 的 UUID、唯一名称、标题、主题、顺序、布局、来源绑定、过滤器与曲线定义保存在独立的 SQLite 配置数据库（默认在实例状态目录 `.webui/WEB/pages.sqlite3`）。UUID、owner/alias 绑定在当前 Core 中解析；缺失来源显示“等待来源”。选中 Page、暂停、跟随、列状态、图表缩放和图例通过后端统一管理，所有浏览器同步。提交 SQLite 成功后才确认修改，网页自动携带 revision，CLI 可选择携带。
+Page 支持 list/get/create/set/clone/delete/select；panel 支持 add/get/set/clone/remove；series 支持 add/set/remove。Page 的 UUID、唯一名称、标题、主题、顺序、布局、来源绑定、过滤器与曲线定义保存在独立的 SQLite 配置数据库（默认在实例状态目录 `.webui/WEB/pages.sqlite3`）。UUID、owner/alias 绑定在当前 Core 中解析；缺失来源显示“等待来源”。选中 Page、暂停、跟随、列状态、图表缩放和图例通过后端统一管理，所有浏览器同步。提交 SQLite 成功后才确认修改，网页自动携带 revision，CLI 可选择携带。
+
+## 自由工作台
+
+新 Page 默认使用 Vue Flow 自由画布，支持像素位置、窗口尺寸、重叠层级、锁定、隐藏、共享平移缩放视口和缩略图。原有 Page 在打开配置库时补全显示字段，保留 GridStack 模式及原网格坐标；切换模式分别保存两套坐标。来源目录、紧凑工具栏和按需打开的属性栏用于日常调试；日志虚拟表格与曲线不自行重造。
+
+```sh
+log-print webui web panel clone --panel PANEL_UUID --title '错误监视' --text ERROR
+log-print webui web layout set --place LOG_UUID=24,24,760,480 --place CURVE_UUID=808,24,520,340
+log-print webui web page set --layout-mode canvas --view-x 24 --view-y 24 --view-zoom 0.8
+log-print webui web page set --show-grid true --snap true --show-minimap false --inspector-open false
+log-print webui web panel set --panel PANEL_UUID --font-size 13 --row-height 30 --hidden false --locked true
+```
+
+`layout.set` 原子提交多个矩形，`--revision` 可防止覆盖别人正在修改的布局。自由画布宽 320–4000 px、高 220–4000 px，缩放 20%–200%；锁定只限制网页手动拖动，CLI 仍可定位。所有已提交显示状态保存在 Rust 后端，两个浏览器的选择、布局、主题、过滤、视口同步。详见[工作台使用手册](../../../../doc/public/plugins/output-webui.md)。
 
 ## 固定历史查询
 
@@ -85,4 +99,4 @@ cargo build --workspace --locked
 python3 quality/run.py
 ```
 
-`assets/` 已提交并嵌入二进制；最终用户运行无需 Node、CDN 或互联网。前端源码与 package-lock 提交到 Git。固定 Vue 3.5.43、Element Plus 2.14.7、GridStack 14.0.0 官方 Vue 集成、AG Grid Community/Vue 36.2.0、ECharts 6.1.0；许可证文本见 `frontend/public/THIRD_PARTY_LICENSES.md`（随前端产物一起打包）。详细验收记录见 [VERIFICATION.md](VERIFICATION.md)。
+`assets/` 已提交并嵌入二进制；最终用户运行无需 Node、CDN 或互联网。前端源码与 package-lock 提交到 Git。固定 Vue 3.5.43、Element Plus 2.14.7、Vue Flow Core 1.48.2 / NodeResizer 1.5.1 / MiniMap 1.5.4、Element Plus Icons 2.3.2、GridStack 14.0.0 官方 Vue 集成、AG Grid Community/Vue 36.2.0、ECharts 6.1.0；许可证文本见 `frontend/public/THIRD_PARTY_LICENSES.md`（随前端产物一起打包）。详细验收记录见 [VERIFICATION.md](VERIFICATION.md)。

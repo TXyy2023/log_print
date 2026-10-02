@@ -7,7 +7,7 @@ const lock = JSON.parse(
   fs.readFileSync(path.join(root, "package-lock.json"), "utf8"),
 );
 let out =
-  "# Third-party license notices\n\nlog-print output-webui uses Vue 3, Element Plus, GridStack, AG Grid Community and Apache ECharts. No AG Grid Enterprise modules are included. Browser assets are bundled locally; these notices accompany distribution.\n\n";
+  "# Third-party license notices\n\nlog-print output-webui uses Vue 3, Element Plus, Vue Flow, GridStack, AG Grid Community and Apache ECharts. No AG Grid Enterprise modules are included. Browser assets are bundled locally; these notices accompany distribution.\n\n";
 for (const [directory, entry] of Object.entries(lock.packages).sort(
   ([a], [b]) => a.localeCompare(b),
 )) {

@@ -1,40 +1,38 @@
-# output-webui 验收记录 — 2026-10-02
+# output-webui 工作台验收 — 2026-10-02
 
-本版使用 log-print/2，Rust/Axum 后端和内嵌 Vue 前端。此次执行环境为 macOS 26.5 arm64、Rust 1.92.0、Python 3.14.1；实际浏览器为 Codex 内置浏览器的两个独立窗口。来源为明确标注的合成 temperature/voltage 数据。
+本版使用 log-print/2、Rust/Axum 后端和内嵌 Vue 前端。此次执行环境为 macOS 26.5 arm64、Rust 1.92.0、Python 3.14.1；浏览器为 Codex 内置浏览器的独立页面。持续输入为明确标注的合成串口文本、temperature/voltage 与事件数据，不代表真实硬件采集。
 
 ## 自动检查
 
-最终入口：`python3 quality/run.py --report-dir quality/artifacts/validation/output-webui-completed`。机器报告位于该目录的 `results.json`，12 个步骤全部通过，`complete_selected_suite=true`。
+入口：`python3 quality/run.py --report-dir quality/artifacts/validation/output-webui-workbench`。该目录的 `results.json` 记录 12 步全部通过，`complete_selected_suite=true`。
 
-- 前端锁文件安装、Vue/TypeScript 类型检查、许可证汇总和离线构建通过；npm 安装审计未发现漏洞。
-- workspace 格式检查、Clippy 全目标零警告、77 个 Rust 测试和全部二进制构建通过。
-- 真实进程验收共 62 项：协议 13、supervisor 8、启动故障 4、CLI 5、输入 11、输出 12、WebUI 9；未跳过项目。
-- 文档公开入口构建通过；22 个公开页面的 769 个链接目标检查无错误。
+- 前端锁文件安装、Vue/TypeScript 类型检查、许可证汇总和离线构建通过；npm 审计 0 漏洞。
+- workspace 格式检查、Clippy 全目标零警告、79 个 Rust 测试和全部二进制构建通过。
+- 真实进程场景 63 项：协议 13、supervisor 8、启动故障 4、CLI 5、输入 11、输出 12、WebUI 10；本机没有跳过项目。
+- 界面验收期间的来源绑定、深色配色、曲线刻度及窄窗口修正，另外重新执行前端类型/构建与 Rust 二进制构建，并在真实浏览器验证。
+- 公开和本地文档均构建并验证链接；公开站点保留隔离检查。
 
-WebUI 的 9 组进程测试覆盖：
+新增 Rust 测试验证旧配置迁移不丢网格、来源与过滤，非法坐标/选择/revision 拒绝，批量布局原子性，复制新 UUID，以及冷启动恢复。新增 CLI/HTTP/SSE 进程场景覆盖负数/小数坐标、多个矩形一次提交、隐藏/锁定/层级/字号、共享视口和工具栏、过期 revision、插件重启与实例冷启动，以及删除当前面板后清除选择。
 
-1. 默认无归档、HTTP/SSE、Origin 拒绝、revision 冲突、空流及小缓冲覆盖状态。
-2. 420 条日志超过 Core 缓冲后的早期记录分页、全文/正则搜索、跨 Record UTF-8 和 stdout/stderr 分行、前后上下文、历史曲线、精确纳秒边界、固定查询水位、动态派生流归档、错误 epoch/归档身份拒绝及停止归档状态。
-3. 迟启归档的实际起点和未覆盖前缀，注入 SQLite 写失败后的真实故障与尚未提交范围。
-4. UDP 回复帧预算、大批结果分页、按 Record 字节偏移定位上下文；UDP 流目录描述超过单帧时完整分页获取。
-5. 两个后台任务并发限制、第三个拒绝、取消、任务分页及有界实时缓存。
-6. CLI 独立编排 Page/面板/曲线、列宽/排序/暂停、缺失来源保留、插件重启和实例冷启动恢复；实时、配套归档、绑定显式 SQLite 三种启动方式；互斥参数和不覆盖现有归档。
-7. 慢归档、Core 单条缓冲及队列溢出产生持久缺口后继续归档后续记录；日志和经过通道/文本/时间过滤的曲线保留缺口。
-8. 暂停帧由 Rust 后端共享，新增查看者得到相同帧；暂停期间 Core 持续采集，恢复显示后显示最新记录。
-
-部分条目共享一组测试；编号表示覆盖场景，不表示额外测试数量。
+其余 9 项 WebUI 进程测试继续覆盖：小 Core 缓冲之外的早期记录查询；跨 Record/UTF-8/stdout/stderr 分行；固定水位、分页、搜索、上下文与历史曲线；动态流归档；错误 epoch/归档身份；迟启和停止归档、写失败、缺口和后续数据；后台任务并发/取消；共享暂停帧；HTTP 同源与 UDP 帧预算。具体断言见 `quality/tests/v2/webui.py`。
 
 ## 实际浏览器
 
-- GridStack 官方 Vue 集成：实际拖动窄面板到另一列，实际将日志面板高度 6 改为 7，第二窗口同步接收布局；CLI 恢复布局、插件重启后恢复选中 Page 与布局。
-- AG Grid Community：200 行数据页只渲染有限可视行；实际把时间列从 120 拖到 160 像素，SQLite 提交后第二窗口同步，后续 SSE 更新没有重置列宽。
-- ECharts：真实 Canvas 绘制两条曲线，滚轮缩放提交到 Rust 后端；历史曲线扫描 46,924 Records 后共返回 1,124 个点，低于两曲线合计 2,000 点预算。
-- CLI 创建/选择 Page 和修改标题均同步到两个窗口；在旧表单打开期间用 CLI 改标题，旧表单保存被 revision 冲突拒绝。
-- 真实暂停/继续操作：两个窗口保持相同冻结尾行，采集继续；新窗口和 CLI 读取同一后台暂停帧。
-- Core 仅保留 8 条 Record，仍可浏览起始序号 1 的归档、翻到下一页、双击历史行取得 21 行上下文，并绘制本次运行的历史曲线。分页结果包括真实缺口标记，因此显示行数可以超过扫描 Record 数。
-- 输入 `temperature=26.` 后立即点击全范围搜索已实际复测，首个结果页全部匹配；查询等待筛选配置成功提交，不使用旧条件。
-- 最终构建对应浏览器未发现控制台 warning/error。资产均由本地服务提供，不依赖运行时 CDN；未执行整机断网试验。
+工作台通过 CLI 完成初始编排，再用真实 UI 验证：
 
-浏览器证据位于仓库内忽略的 `quality/artifacts/webui-browser/`：`evidence.json`、`history-context.png`、`resized-history.png` 和 `final.png`。演示输入停止后保留 Core、归档和 WebUI 供本地查看；其状态文件为 `quality/artifacts/webui-demo/state.json`，URL 可通过 CLI 的 `webui web url` 获取。
+- Vue Flow 标题拖动把日志窗口从 `(16,16)` 移到 `(88,40)`；另一浏览器接收相同坐标。拖动未被其他窗口遮挡的边角，将 `704×448` 调整到 `752×480`，后端保存。
+- 画布「适应全部」、平移、缩放与选择写回 Rust；CLI 原子编排四个面板，两窗口同步位置、尺寸、字体、侧栏与视口。界面置顶后 z-index 为 3。
+- 属性栏保留未提交草稿；另一 CLI 修改字号后，旧草稿提交被 revision 冲突拒绝。点击还原后读取新配置。恢复来源选择显示正确 alias，不因 JSON 字段顺序误标等待。
+- GridStack 网格兼容页实际从 `(0,0,6,5)` 拖动并缩放到 `(2,1,7,6)`，另一浏览器收到相同布局。
+- AG Grid 日志页最多 200 行，DOM 仅保留有限可视行；字体/行高、历史/实时和列配置继续可用。历史扫描在 Core 仅保留 32 Records 的条件下读回运行起始记录，固定 4,106 行边界并翻到 offset 200，然后返回实时。
+- ECharts 真实 Canvas 绘图，拖动时间滑块将温度曲线 zoom_start 保存为 `26.08695652173913`，画布视口保持不变；窗口缩放由 ResizeObserver 调整图表。
+- 实际检查浅色、深色、属性面板以及 640/390 px 窄窗口；两种宽度都无文档横向溢出，390 px 工具栏最右边界 382 px，属性栏可打开/关闭。曲线刻度在小面板下避免重叠，深色滚动条与坐标标签保持可读。
+- 插件重启后，浏览器加载嵌入资源并恢复 Page、模式、位置与显示配置；日志仍只绑定本次 Core。最终浏览器没有 console warning/error。
 
-此次结果证明本机功能链路与故障边界，不是 Windows/Linux 实测、真实硬件采集、断电耐久或性能基准。旧实现记录保留在 [VERIFICATION.v1.md](VERIFICATION.v1.md) 和 [SUSTAINED.md](SUSTAINED.md)，不作为本版证据。
+证据保存在仓库忽略的 `quality/artifacts/webui-workbench-20261002/`：CLI 编排脚本、配置、SQLite 归档、`evidence.json`、浅色/深色截图。演示来源为合成数据；验收后停止生成器，保留本地工作台与有限实时缓存供查看，URL 通过该目录 state.json 对应的 `webui web url` 获取。
+
+## 边界
+
+使用成熟 Element Plus、Vue Flow、GridStack、AG Grid Community 和 ECharts；没有手写布局或图表引擎。构建资源按组件分包，随 Rust 二进制离线提供；未进行整机断网试验。显示配置仍由 Output SQLite 管理，Core 和 output-file 职责不变。这份记录是本机验收，远端各平台结果以该提交 GitHub Actions 为准；真实串口硬件、长时间性能与断电耐久不由本次结果推导。
+
+更早实现记录保留在 [VERIFICATION.v1.md](VERIFICATION.v1.md) 和 [SUSTAINED.md](SUSTAINED.md)，不作为本次证据。

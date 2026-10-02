@@ -20,5 +20,6 @@
   "plugins/output-file.md",
   "plugins/output-webui.md",
   "assets/branding/SOURCE.md",
-  "assets/branding/log-print-banner.png"
+  "assets/branding/log-print-banner.png",
+  "assets/webui/workbench.png"
 ]

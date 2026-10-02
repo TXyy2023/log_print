@@ -10,7 +10,7 @@ import {
   nextTick,
 } from "vue";
 import { AgGridVue } from "ag-grid-vue3";
-import { useGridStack, useGridStackItem } from "gridstack/dist/vue";
+import Icon from "./Icon.vue";
 import {
   AllCommunityModule,
   ModuleRegistry,
@@ -29,7 +29,7 @@ import {
 } from "echarts/components";
 import { CanvasRenderer } from "echarts/renderers";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { AppContext, type Data } from "./api";
+import { AppContext, bindingValue, type Data } from "./api";
 ModuleRegistry.registerModules([AllCommunityModule]);
 echarts.use([
   LineChart,
@@ -41,8 +41,6 @@ echarts.use([
 ]);
 const props = defineProps<{ id: string }>(),
   ctx = inject(AppContext)!;
-const gridStack = useGridStack(),
-  gridItem = useGridStackItem();
 const page = computed(() =>
   ctx.state.value.pages.find((p: Data) => p.id === ctx.state.value.selected),
 );
@@ -86,12 +84,22 @@ let chart: echarts.ECharts | undefined,
   fetching = false;
 const theme = computed(() =>
   themeQuartz.withParams({
-    backgroundColor: page.value?.theme === "light" ? "#fff" : "#151d27",
-    foregroundColor: page.value?.theme === "light" ? "#253348" : "#dce6f2",
-    borderColor: page.value?.theme === "light" ? "#dde3eb" : "#293444",
-    fontSize: 12,
+    browserColorScheme: page.value?.theme === "dark" ? "dark" : "light",
+    backgroundColor: page.value?.theme === "light" ? "#fff" : "#1b1e24",
+    foregroundColor: page.value?.theme === "light" ? "#303640" : "#d9dce3",
+    borderColor: page.value?.theme === "light" ? "#e7e9ed" : "#30343d",
+    fontSize: panel.value.font_size || 12,
+    fontFamily: 'SFMono-Regular, Consolas, "Liberation Mono", monospace',
+    headerFontFamily:
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    headerFontSize: 11,
+    headerFontWeight: 500,
+    rowBorder: false,
+    wrapperBorder: false,
+    headerHeight: 30,
+    cellHorizontalPadding: 12,
     headerBackgroundColor:
-      page.value?.theme === "light" ? "#f4f6f9" : "#1a2531",
+      page.value?.theme === "light" ? "#f8f9fb" : "#22262e",
   }),
 );
 const allColumns = [
@@ -181,12 +189,20 @@ watch(
           field === "time"
             ? new Date(Number(params.value)).toLocaleTimeString("zh-CN", {
                 hour12: false,
-              })
-            : field === "text" && panel.value.format === "hex"
-              ? (params.data?.hex ?? params.data?.text)
-              : typeof params.value === "object"
-                ? JSON.stringify(params.value)
-                : String(params.value ?? ""),
+              }) +
+              "." +
+              String(new Date(Number(params.value)).getMilliseconds()).padStart(
+                3,
+                "0",
+              )
+            : field === "stream"
+              ? ctx.state.value.streams.find((s: Data) => s.id === params.value)
+                  ?.alias || String(params.value || "").slice(0, 8)
+              : field === "text" && panel.value.format === "hex"
+                ? (params.data?.hex ?? params.data?.text)
+                : typeof params.value === "object"
+                  ? JSON.stringify(params.value)
+                  : String(params.value ?? ""),
       };
     });
   },
@@ -194,7 +210,7 @@ watch(
 );
 const streamOptions = computed(() =>
   ctx.state.value.streams.map((s: Data) => ({
-    value: JSON.stringify(
+    value: bindingValue(
       s.alias
         ? { owner: s.owner, alias: s.alias }
         : { owner: s.owner, alias: null, stream: s.id, epoch: s.epoch },
@@ -205,6 +221,24 @@ const streamOptions = computed(() =>
 const coverage = computed(() => result.value.status?.coverage);
 const waiting = computed(
   () => result.value.waiting === true || result.value.status?.waiting === true,
+);
+const sourceLabel = computed(() => {
+  const bindings = panel.value.streams || [];
+  return bindings.length
+    ? bindings.map((s: Data) => s.alias || s.owner || "动态流").join(" · ")
+    : "全部来源";
+});
+const queryRunning = computed(() => result.value.status?.state === "running");
+const hasCoverageIssue = computed(
+  () =>
+    coverage.value &&
+    (coverage.value.gap_count ||
+      coverage.value.archive_error ||
+      coverage.value.runtime_match === false ||
+      coverage.value.streams?.some(
+        (s: Data) =>
+          s.uncovered_prefix || s.uncovered_between || s.uncovered_after,
+      )),
 );
 async function set(args: Data) {
   await ctx.command("panel.set", {
@@ -317,21 +351,50 @@ function draw(data: Data) {
     {
       animation: false,
       backgroundColor: "transparent",
-      textStyle: { color: "#899bb1" },
-      tooltip: { trigger: "axis" },
+      textStyle: {
+        color: page.value.theme === "light" ? "#727985" : "#9ca4b3",
+        fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+        fontSize: 11,
+      },
+      tooltip: { trigger: "axis", confine: true },
       legend: {
         show: panel.value.legend,
         selected: panel.value.legend_selected || {},
         top: 4,
-        textStyle: { color: "#a8b8cc" },
+        textStyle: {
+          color: page.value.theme === "light" ? "#626b79" : "#afb7c5",
+          fontSize: 11,
+        },
       },
-      grid: { left: 55, right: 24, top: 40, bottom: 62 },
-      xAxis: { type: "time", axisLine: { lineStyle: { color: "#344458" } } },
+      grid: { left: 48, right: 20, top: 30, bottom: 48 },
+      xAxis: {
+        type: "time",
+        axisLine: {
+          lineStyle: {
+            color: page.value.theme === "light" ? "#dfe3e9" : "#383d48",
+          },
+        },
+        axisTick: { show: false },
+        axisLabel: {
+          hideOverlap: true,
+          color: page.value.theme === "light" ? "#727985" : "#9ca4b3",
+        },
+      },
       yAxis: {
         type: "value",
+        splitNumber: 3,
+        axisLabel: {
+          hideOverlap: true,
+          color: page.value.theme === "light" ? "#727985" : "#9ca4b3",
+        },
         min: panel.value.y_min ?? null,
         max: panel.value.y_max ?? null,
-        splitLine: { lineStyle: { color: "#253242" } },
+        splitLine: {
+          lineStyle: {
+            color: page.value.theme === "light" ? "#eef0f4" : "#2c3039",
+            type: "dashed",
+          },
+        },
       },
       dataZoom: [
         {
@@ -341,8 +404,27 @@ function draw(data: Data) {
         },
         {
           type: "slider",
-          height: 18,
-          bottom: 12,
+          borderColor: page.value.theme === "light" ? "#dde3ed" : "#343c49",
+          backgroundColor: page.value.theme === "light" ? "#f4f6fa" : "#202631",
+          fillerColor: page.value.theme === "light" ? "#4777c420" : "#83a9ee20",
+          handleStyle: {
+            color: page.value.theme === "light" ? "#fff" : "#566379",
+            borderColor: page.value.theme === "light" ? "#b9c7db" : "#75859f",
+          },
+          dataBackground: {
+            lineStyle: { color: "#8899b3" },
+            areaStyle: {
+              color: page.value.theme === "light" ? "#d4ddec" : "#3b4659",
+            },
+          },
+          selectedDataBackground: {
+            lineStyle: { color: "#8da7cf" },
+            areaStyle: {
+              color: page.value.theme === "light" ? "#bdcdea" : "#4c5e7d",
+            },
+          },
+          height: 16,
+          bottom: 6,
           start: panel.value.zoom_start ?? 0,
           end: panel.value.zoom_end ?? 100,
         },
@@ -422,7 +504,7 @@ function edit() {
   form.value = {
     ...panel.value,
     revision: ctx.state.value.revision,
-    streams: panel.value.streams.map((s: Data) => JSON.stringify(s)),
+    streams: panel.value.streams.map((s: Data) => bindingValue(s)),
   };
   settings.value = true;
 }
@@ -451,7 +533,7 @@ async function remove() {
 }
 function editSeries(series?: Data) {
   seriesForm.value = series
-    ? { ...series, streams: series.streams.map((s: Data) => JSON.stringify(s)) }
+    ? { ...series, streams: series.streams.map((s: Data) => bindingValue(s)) }
     : {
         name: "value",
         streams: [],
@@ -525,12 +607,17 @@ async function saveColumns(event: any) {
 }
 onMounted(async () => {
   await nextTick();
-  if (gridItem.node?.el) gridStack.grid?.refreshDragHandles(gridItem.node.el);
   await update();
   timer = setInterval(update, 750);
   observer = new ResizeObserver(() => chart?.resize());
   if (chartElement.value) observer.observe(chartElement.value);
 });
+watch(
+  () => page.value.theme,
+  () => {
+    if (chart) draw(result.value);
+  },
+);
 watch(
   () => JSON.stringify(panel.value.column_state),
   (next, old) => {
@@ -556,110 +643,138 @@ onBeforeUnmount(() => {
 });
 </script>
 <template>
-  <section class="panel" v-if="panel.id">
+  <section
+    class="panel nowheel nopan"
+    :class="{
+      selected: page.active_panel === id,
+      'panel-paused': panel.paused,
+    }"
+    :data-panel-id="id"
+    v-if="panel.id"
+  >
     <div class="panel-header">
-      <div class="panel-drag">
-        <span>{{ panel.kind === "log" ? "▤" : "⌁" }}</span>
-        <strong>{{ panel.title }}</strong>
-        <small>{{ panel.mode === "history" ? "固定历史" : "实时" }}</small>
+      <div class="panel-drag" @click="ctx.selectPanel(id)">
+        <Icon :name="panel.kind" /><strong>{{ panel.title }}</strong>
+        <Icon v-if="panel.locked" name="lock" :size="12" />
       </div>
-      <div>
-        <el-button text size="small" @click="set({ paused: !panel.paused })">
-          {{ panel.paused ? "▶ 继续" : "Ⅱ 暂停" }}
-        </el-button>
-        <el-button text size="small" @click="edit">设置</el-button>
-        <el-button text size="small" @click="remove">×</el-button>
+      <span
+        class="panel-mode"
+        :class="{ live: panel.mode === 'live' && !panel.paused }"
+        >{{
+          panel.paused ? "已暂停" : panel.mode === "history" ? "历史" : "实时"
+        }}</span
+      >
+      <div class="panel-actions nodrag">
+        <button
+          class="icon-button"
+          :aria-label="panel.paused ? '继续显示' : '暂停显示'"
+          :title="panel.paused ? '继续显示' : '暂停显示（采集继续）'"
+          @click.stop="set({ paused: !panel.paused })"
+        >
+          <Icon :name="panel.paused ? 'play' : 'pause'" />
+        </button>
+        <button
+          class="icon-button"
+          aria-label="面板属性"
+          title="面板属性"
+          @click.stop="ctx.selectPanel(id, true)"
+        >
+          <Icon name="inspector" />
+        </button>
+        <el-dropdown trigger="click" placement="bottom-end">
+          <button class="icon-button" aria-label="面板菜单">
+            <Icon name="more" />
+          </button>
+          <template #dropdown
+            ><el-dropdown-menu>
+              <el-dropdown-item @click="edit">筛选与显示设置</el-dropdown-item>
+              <el-dropdown-item
+                @click="ctx.command('panel.clone', { panel: id })"
+                >复制面板</el-dropdown-item
+              >
+              <el-dropdown-item @click="set({ locked: !panel.locked })">{{
+                panel.locked ? "解锁位置" : "锁定位置"
+              }}</el-dropdown-item>
+              <el-dropdown-item @click="set({ hidden: true })"
+                >隐藏面板</el-dropdown-item
+              >
+              <el-dropdown-item divided @click="remove"
+                >删除面板…</el-dropdown-item
+              >
+            </el-dropdown-menu></template
+          >
+        </el-dropdown>
       </div>
     </div>
-    <div class="panel-toolbar">
+    <div class="panel-toolbar nodrag">
       <el-input
         v-model="filterText"
-        placeholder="筛选内容…"
+        placeholder="筛选日志…"
         clearable
         size="small"
+        aria-label="筛选日志"
         @focus="filterRevision = ctx.state.value.revision"
         @change="changeText"
-      />
-      <el-button
-        size="small"
-        :loading="working"
-        @click="history('history.read')"
-      >
-        历史
-      </el-button>
-      <el-button size="small" @click="history('history.search')">
-        全范围搜索
-      </el-button>
-      <el-button
-        size="small"
-        :type="panel.mode === 'live' ? 'primary' : 'default'"
+        ><template #prefix><Icon name="search" :size="14" /></template
+      ></el-input>
+      <button
+        class="text-button"
+        :class="{ active: panel.mode === 'live' }"
         @click="live"
       >
         实时
-      </el-button>
-      <el-button
-        v-if="panel.kind === 'curve'"
-        size="small"
-        @click="editSeries()"
+      </button>
+      <button
+        class="text-button"
+        :class="{ active: panel.mode === 'history' }"
+        :disabled="working"
+        @click="history('history.read')"
       >
-        ＋ 曲线
-      </el-button>
-    </div>
-    <div v-if="coverage" class="coverage">
-      <b>
-        {{ coverage.mode === "memory_only" ? "仅内存范围" : "归档 + 内存" }}
-      </b>
-      <span v-for="s in coverage.streams" :key="s.stream">
-        归档
-        {{
-          s.archived
-            ? s.archived.empty
-              ? "等待提交"
-              : `${s.archived.first}–${s.archived.last}`
-            : "不可用"
-        }}
-        · 内存 {{ s.memory.first || "无" }}–{{ s.memory.last || "无" }}
-        <em
-          v-if="
-            s.uncovered_prefix ||
-            s.uncovered_between ||
-            s.uncovered_after ||
-            s.memory.range_count > 1
-          "
+        历史
+      </button>
+      <el-dropdown trigger="click" placement="bottom-end"
+        ><button class="icon-button" aria-label="查询操作" title="查询操作">
+          <Icon name="search" :size="14" />
+        </button>
+        <template #dropdown
+          ><el-dropdown-menu
+            ><el-dropdown-item @click="history('history.search')"
+              >搜索全部可用上下文</el-dropdown-item
+            ><el-dropdown-item @click="edit"
+              >设置正则与时间范围</el-dropdown-item
+            ></el-dropdown-menu
+          ></template
         >
-          存在未覆盖区间
-        </em>
-        <em v-if="s.uncommitted && coverage.mode !== 'memory_only'">
-          尚未提交
-        </em>
-      </span>
-      <em v-if="coverage.runtime_match === false">归档未匹配本次运行</em>
-      <em v-if="coverage.writer?.report?.state === 'failed'">
-        归档写入失败：{{ coverage.writer.report.error }}
-      </em>
-      <em v-if="coverage.archive_error">
-        归档故障：{{ coverage.archive_error }}
-      </em>
-      <em v-if="coverage.gap_count">{{ coverage.gap_count }} 个归档缺口</em>
-      <em v-if="coverage.writer && coverage.writer.connected === false">
-        归档已停止，保留已提交前缀
-      </em>
+      </el-dropdown>
     </div>
-    <el-alert
+    <div
       v-if="result.error || result.status?.state === 'failed'"
-      :title="result.error || result.status?.error"
-      type="warning"
-      :closable="false"
-    />
-    <div v-if="waiting" class="waiting">等待来源 · 保留面板配置</div>
+      class="inline-error"
+    >
+      <Icon name="warning" />{{ result.error || result.status?.error }}
+    </div>
+    <div v-if="waiting" class="waiting">
+      <Icon name="stream" />等待来源连接，配置已保留
+    </div>
     <AgGridVue
       v-if="panel.kind === 'log'"
-      class="log-grid"
+      class="log-grid nodrag"
       :theme="theme"
       :row-data="rows"
       :column-defs="columns"
       :default-col-def="{ resizable: true }"
-      :row-height="30"
+      :row-height="panel.row_height || 28"
+      :locale-text="{
+        noRowsToShow: filterText ? '没有匹配的日志' : '暂无日志，等待来源数据',
+      }"
+      :animate-rows="false"
+      :suppress-cell-focus="false"
+      :row-class-rules="{
+        'log-error': (p: any) =>
+          p.data?.channel === 'stderr' ||
+          /\b(ERROR|FATAL)\b/i.test(p.data?.text || ''),
+        'log-warning': (p: any) => /\bWARN(?:ING)?\b/i.test(p.data?.text || ''),
+      }"
       :get-row-id="
         (p) =>
           [
@@ -676,63 +791,134 @@ onBeforeUnmount(() => {
       @column-moved="saveColumns"
       @sort-changed="saveColumns"
     />
-    <div v-else class="chart-wrapper">
+    <div v-else class="chart-wrapper nodrag">
+      <div v-if="!panel.series.length" class="chart-empty">
+        <Icon name="curve" :size="28" /><strong>添加第一条曲线</strong
+        ><span>从日志中的数值或 JSON 字段开始</span
+        ><el-button size="small" @click="editSeries()">添加曲线</el-button>
+      </div>
+      <div v-show="panel.series.length" ref="chartElement" class="chart"></div>
       <div class="series-chips">
-        <el-tag
+        <button
           v-for="s in panel.series"
           :key="s.id"
-          closable
+          class="series-chip"
           @click="editSeries(s)"
-          @close="removeSeries(s.id)"
         >
-          {{ s.name }}
-        </el-tag>
-        <span v-if="!panel.series.length">添加正则或 JSON 数值曲线</span>
+          <i :style="{ background: s.color }"></i>{{ s.name }}</button
+        ><button class="text-button" title="添加曲线" @click="editSeries()">
+          <Icon name="plus" :size="12" />
+        </button>
       </div>
-      <div ref="chartElement" class="chart"></div>
     </div>
-    <div class="panel-footer">
-      <span>
-        {{
-          panel.paused
-            ? "显示已暂停，仍在采集"
-            : result.status?.state === "running"
-              ? `扫描中 · ${result.status.scanned} Records`
-              : panel.kind === "log"
-                ? `${rows.length} 行 · 双击定位上下文`
-                : "拖动滑块或滚轮缩放"
-        }}
-      </span>
-      <template v-if="panel.mode === 'history' && panel.kind === 'log'">
-        <el-button
-          text
-          size="small"
+    <div class="panel-footer nodrag">
+      <el-popover
+        placement="top-start"
+        width="360"
+        trigger="click"
+        :disabled="!coverage"
+      >
+        <template #reference
+          ><button
+            class="coverage-trigger"
+            :class="{ warning: hasCoverageIssue }"
+            :title="sourceLabel"
+          >
+            <span
+              class="status-dot"
+              :class="{ warning: hasCoverageIssue }"
+            ></span
+            >{{
+              hasCoverageIssue
+                ? "覆盖不完整"
+                : coverage?.mode === "memory_only"
+                  ? "内存范围"
+                  : "归档上下文"
+            }}<span class="footer-source"> · {{ sourceLabel }}</span>
+          </button></template
+        >
+        <div v-if="coverage" class="coverage-details">
+          <strong>{{
+            coverage.mode === "memory_only" ? "当前内存覆盖" : "归档与内存覆盖"
+          }}</strong>
+          <p v-for="s in coverage.streams" :key="s.stream">
+            归档
+            {{
+              s.archived
+                ? s.archived.empty
+                  ? "等待提交"
+                  : `${s.archived.first}–${s.archived.last}`
+                : "不可用"
+            }}
+            · 内存 {{ s.memory.first || "无" }}–{{ s.memory.last || "无"
+            }}<em
+              v-if="
+                s.uncovered_prefix ||
+                s.uncovered_between ||
+                s.uncovered_after ||
+                s.memory.range_count > 1
+              "
+              >存在未覆盖区间</em
+            ><em v-if="s.uncommitted && coverage.mode !== 'memory_only'"
+              >尚未提交</em
+            >
+          </p>
+          <em v-if="coverage.runtime_match === false">归档未匹配本次运行</em
+          ><em v-if="coverage.writer?.report?.state === 'failed'"
+            >归档写入失败：{{ coverage.writer.report.error }}</em
+          ><em v-if="coverage.archive_error"
+            >归档故障：{{ coverage.archive_error }}</em
+          ><em v-if="coverage.gap_count">{{ coverage.gap_count }} 个归档缺口</em
+          ><em v-if="coverage.writer?.connected === false"
+            >归档已停止，保留已提交前缀</em
+          >
+        </div>
+      </el-popover>
+      <span v-if="queryRunning" class="scan-progress"
+        >扫描 {{ result.status.scanned }} 条</span
+      >
+      <span v-else-if="panel.kind === 'log'" class="row-count"
+        >{{ rows.length }} 行</span
+      >
+      <template v-if="panel.mode === 'history' && panel.kind === 'log'"
+        ><button
+          class="icon-button compact"
           :disabled="!panel.offset"
+          title="上一页"
+          aria-label="上一页"
           @click="paginate(Math.max(0, (panel.offset || 0) - 200))"
         >
-          上一页
-        </el-button>
-        <span>{{ panel.offset || 0 }} / {{ result.total || 0 }}</span>
-        <el-button
-          text
-          size="small"
+          <Icon name="back" :size="12" /></button
+        ><span>{{ panel.offset || 0 }} / {{ result.total || 0 }}</span
+        ><button
+          class="icon-button compact"
           :disabled="(result.next || 0) >= (result.total || 0)"
+          title="下一页"
+          aria-label="下一页"
           @click="paginate(result.next)"
         >
-          下一页
-        </el-button>
-      </template>
-      <el-button
-        v-if="panel.mode === 'history' && result.status?.state === 'running'"
-        text
-        size="small"
+          <Icon name="next" :size="12" /></button
+      ></template>
+      <button
+        v-if="queryRunning"
+        class="text-button"
         @click="ctx.command('query.cancel', { query: panel.query })"
       >
-        取消查询
-      </el-button>
+        取消
+      </button>
+      <button
+        v-if="panel.kind === 'log' && panel.mode === 'live'"
+        class="follow-button"
+        :class="{ active: panel.follow }"
+        :aria-pressed="panel.follow"
+        title="自动跟随最新记录"
+        @click="set({ follow: !panel.follow })"
+      >
+        跟随
+      </button>
     </div>
   </section>
-  <el-dialog v-model="settings" title="面板设置" width="660">
+  <el-dialog v-model="settings" title="筛选与显示" width="580" append-to-body>
     <el-form label-position="top" class="settings-form">
       <el-form-item label="标题">
         <el-input v-model="form.title" />
@@ -787,7 +973,7 @@ onBeforeUnmount(() => {
       <el-button type="primary" @click="save">保存设置</el-button>
     </template>
   </el-dialog>
-  <el-dialog v-model="seriesDialog" title="曲线定义" width="540">
+  <el-dialog v-model="seriesDialog" title="曲线定义" width="480" append-to-body>
     <el-form label-position="top">
       <el-form-item label="名称">
         <el-input v-model="seriesForm.name" />
@@ -822,7 +1008,13 @@ onBeforeUnmount(() => {
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button type="primary" @click="saveSeries">保存曲线</el-button>
+      <el-button
+        v-if="seriesForm.id"
+        type="danger"
+        plain
+        @click="removeSeries(seriesForm.id).then(() => (seriesDialog = false))"
+        >删除曲线</el-button
+      ><el-button type="primary" @click="saveSeries">保存曲线</el-button>
     </template>
   </el-dialog>
 </template>

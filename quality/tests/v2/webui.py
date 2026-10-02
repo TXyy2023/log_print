@@ -288,6 +288,44 @@ class WebUI(unittest.TestCase):
                     web.stop()
                 file.stop()
 
+    def test_canvas_cli_atomic_layout_revision_and_restart(self):
+        with NativeApp('--output-webui','web') as app:
+            def control(method,**args):
+                state=json.loads(app.state.read_text())
+                with RPC(state['address'],'__manager__',state['token']) as manager:
+                    return manager.call('core.call',op='control',args={'target':'web','method':method,'args':args})
+            url=control('url')['url']
+            app.cli('webui','web','page','create','--name','canvas','--layout-mode','canvas','--theme','light')
+            app.cli('webui','web','page','select','--page','canvas')
+            app.cli('webui','web','panel','add','--title','Console','--left','-24.5','--top','32','--panel-width','760','--panel-height','480')
+            first=control('page.get')['page']['panels'][0]['id']
+            app.cli('webui','web','panel','clone','--panel',first,'--title','Second')
+            second=control('page.get')['page']['panels'][1]['id']
+            app.cli('webui','web','layout','set','--place',f'{first}=0,0,760,480','--place',f'{second}=800,0,520,360')
+            app.cli('webui','web','panel','set','--panel',second,'--hidden','true','--locked','true','--font-size','14','--row-height','32','--z-index','2')
+            app.cli('webui','web','page','set','--view-x','-80','--view-y','24','--view-zoom','0.75','--show-minimap','true','--show-grid','false','--snap','false','--sidebar-open','false','--inspector-open','true','--active-panel',first,'--tool','pan')
+            before=control('page.get')['page']
+            self.assertEqual(before['layout_mode'],'canvas');self.assertEqual(before['view_zoom'],.75)
+            self.assertEqual(before['panels'][1]['left'],800);self.assertTrue(before['panels'][1]['hidden'])
+            with urllib.request.urlopen(url+'/api/events',timeout=5) as sse:
+                self.assertIn(b'event: state',sse.readline())
+                event=json.loads(sse.readline().decode().removeprefix('data: '))
+                self.assertEqual(next(p for p in event['pages'] if p['id']==event['selected']),before)
+            revision=request(url)['revision']
+            bad=app.cli('webui','web','layout','set','--place',f'{first}=40,40,760,480','--place','missing=0,0,500,300',ok=False)
+            self.assertNotEqual(bad.returncode,0)
+            self.assertEqual(control('page.get')['page'],before)
+            self.assertEqual(request(url)['revision'],revision)
+            app.cli('webui','web','page','set','--view-zoom','0.8')
+            self.assertNotEqual(app.cli('webui','web','page','set','--revision',str(revision),'--view-zoom','1',ok=False).returncode,0)
+            expected=control('page.get')['page']
+            app.cli('plugin','restart','web')
+            self.assertEqual(control('page.get')['page'],expected)
+            app.cli('stop');app.started=False;app.start()
+            self.assertEqual(control('page.get')['page'],expected)
+            app.cli('webui','web','panel','remove','--panel',first)
+            self.assertIsNone(control('page.get')['page']['active_panel'])
+
     def test_cli_pages_restore_launch_modes_and_archive_flags(self):
         with tempfile.TemporaryDirectory() as td:
             source=Path(td)/'app.log';source.write_text('')

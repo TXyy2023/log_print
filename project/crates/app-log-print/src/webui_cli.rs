@@ -15,6 +15,11 @@ pub enum WebuiAction {
         #[command(subcommand)]
         command: PanelAction,
     },
+    /// Apply multiple panel rectangles in one committed layout change.
+    Layout {
+        #[command(subcommand)]
+        command: LayoutAction,
+    },
     Series {
         #[command(subcommand)]
         command: SeriesAction,
@@ -43,7 +48,12 @@ pub enum PanelAction {
     Add(Options),
     Get(Options),
     Set(Options),
+    Clone(Options),
     Remove(Options),
+}
+#[derive(Subcommand)]
+pub enum LayoutAction {
+    Set(Options),
 }
 #[derive(Subcommand)]
 pub enum SeriesAction {
@@ -94,6 +104,50 @@ pub struct Options {
     w: Option<u32>,
     #[arg(long)]
     h: Option<u32>,
+    #[arg(long)]
+    layout_mode: Option<String>,
+    #[arg(long, allow_hyphen_values = true)]
+    left: Option<f64>,
+    #[arg(long, allow_hyphen_values = true)]
+    top: Option<f64>,
+    #[arg(long)]
+    panel_width: Option<f64>,
+    #[arg(long)]
+    panel_height: Option<f64>,
+    #[arg(long)]
+    z_index: Option<u32>,
+    #[arg(long)]
+    hidden: Option<bool>,
+    #[arg(long)]
+    locked: Option<bool>,
+    #[arg(long)]
+    font_size: Option<u32>,
+    #[arg(long)]
+    row_height: Option<u32>,
+    #[arg(long, allow_hyphen_values = true)]
+    view_x: Option<f64>,
+    #[arg(long, allow_hyphen_values = true)]
+    view_y: Option<f64>,
+    #[arg(long)]
+    view_zoom: Option<f64>,
+    #[arg(long)]
+    show_grid: Option<bool>,
+    #[arg(long)]
+    show_minimap: Option<bool>,
+    #[arg(long)]
+    snap: Option<bool>,
+    #[arg(long)]
+    sidebar_open: Option<bool>,
+    #[arg(long)]
+    inspector_open: Option<bool>,
+    #[arg(long)]
+    active_panel: Option<String>,
+    #[arg(long)]
+    clear_active_panel: bool,
+    #[arg(long)]
+    tool: Option<String>,
+    #[arg(long = "place", value_name = "PANEL=LEFT,TOP,WIDTH,HEIGHT")]
+    placements: Vec<String>,
     #[arg(long = "stream")]
     streams: Vec<String>,
     #[arg(long = "channel")]
@@ -188,6 +242,26 @@ impl Options {
             y,
             w,
             h,
+            layout_mode,
+            left,
+            top,
+            panel_width,
+            panel_height,
+            z_index,
+            hidden,
+            locked,
+            font_size,
+            row_height,
+            view_x,
+            view_y,
+            view_zoom,
+            show_grid,
+            show_minimap,
+            snap,
+            sidebar_open,
+            inspector_open,
+            active_panel,
+            tool,
             text,
             regex,
             field,
@@ -215,6 +289,26 @@ impl Options {
             zoom_start,
             zoom_end
         );
+        if self.clear_active_panel {
+            v["active_panel"] = Value::Null;
+        }
+        if !self.placements.is_empty() {
+            let mut layout = Vec::new();
+            for placement in self.placements {
+                let (id, rectangle) = placement.split_once('=').ok_or_else(|| {
+                    anyhow::anyhow!("--place requires PANEL=LEFT,TOP,WIDTH,HEIGHT")
+                })?;
+                let numbers = rectangle
+                    .split(',')
+                    .map(str::parse::<f64>)
+                    .collect::<std::result::Result<Vec<_>, _>>()?;
+                if id.is_empty() || numbers.len() != 4 || numbers.iter().any(|n| !n.is_finite()) {
+                    anyhow::bail!("--place requires a panel id and four finite numbers");
+                }
+                layout.push(json!({"id":id,"left":numbers[0],"top":numbers[1],"panel_width":numbers[2],"panel_height":numbers[3]}));
+            }
+            v["layout"] = json!(layout);
+        }
         if !self.streams.is_empty() || self.clear_streams {
             v["streams"] = json!(self.streams);
         }
@@ -285,7 +379,11 @@ impl WebuiAction {
                 PanelAction::Add(v) => ("panel.add", Some(v)),
                 PanelAction::Get(v) => ("panel.get", Some(v)),
                 PanelAction::Set(v) => ("panel.set", Some(v)),
+                PanelAction::Clone(v) => ("panel.clone", Some(v)),
                 PanelAction::Remove(v) => ("panel.remove", Some(v)),
+            },
+            Self::Layout { command } => match command {
+                LayoutAction::Set(v) => ("layout.set", Some(v)),
             },
             Self::Series { command } => match command {
                 SeriesAction::Add(v) => ("series.add", Some(v)),

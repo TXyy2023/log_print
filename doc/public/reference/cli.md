@@ -104,7 +104,8 @@ log-print plugin call archive status.get
 ```text
 log-print webui WEB url|streams|capabilities
 log-print webui WEB page list|get|create|set|clone|delete|select
-log-print webui WEB panel add|get|set|remove
+log-print webui WEB panel add|get|set|clone|remove
+log-print webui WEB layout set --place PANEL=LEFT,TOP,WIDTH,HEIGHT
 log-print webui WEB series add|set|remove
 log-print webui WEB history read|search|context|curve
 log-print webui WEB query get|cancel
