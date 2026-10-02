@@ -42,7 +42,23 @@ npm run preview:public --prefix doc/site
 
 两个站都使用中文分词的本地全文搜索。Mermaid 按需在浏览器渲染；原有 19 张 SVG 和 Markdown 中的 Mermaid 源码均保留。代码块、图表及下载附件依然属于原文件所写的历史环境。
 
-当前 Git 跟踪 `doc/README.md`、`doc/public/` 的公开正文及 `doc/site/` 的工具源码；内部资料 `doc/local/`、依赖、缓存和产物仍忽略。新增公开文件需逐项检查范围，不能整体强制加入 doc。构建工具不会自动创建仓库或部署。
+当前 Git 跟踪 `doc/README.md`、`doc/public/` 的公开正文及 `doc/site/` 的工具源码；内部资料 `doc/local/`、依赖、缓存和产物仍忽略。新增公开文件需逐项检查范围，不能整体强制加入 doc。本机构建不会自动创建仓库或部署。
+
+## GitHub Pages 部署
+
+在线文档：https://TXyy2023.github.io/log_print/ 。公开手册仍在 `doc/public/` 编辑；新增页面或资源同步更新公开白名单和导航。
+
+`.github/workflows/docs.yml` 在 `dev`、`main` 推送及手动触发时构建并检查默认路径和 Pages 路径，只允许 `main` 部署。发布更新先在 `dev` 验证，再 merge 到 `main`。首次配置需在仓库 Settings → Pages → Source 选择 GitHub Actions；之后每次推送 `main` 自动更新站点。
+
+`DOCS_BASE` 控制公开构建的站点路径，默认 `/`；工作流设置为 `/log_print/`。内部本机站始终使用 `/`。本地复现 Pages 构建：
+
+```sh
+DOCS_BASE=/log_print/ npm run build:public --prefix doc/site
+python3 quality/tests/docs/verify_links.py doc/site/dist/public --base /log_print/
+npm run preview:public --prefix doc/site
+```
+
+打开 http://127.0.0.1:5174/log_print/ 。恢复根路径预览时重新执行不带 `DOCS_BASE` 的公开构建。链接检查的 `--base` 默认 `/`，原有命令无需修改。工作流只上传 `doc/site/dist/public/`，内部文档和归档不进入部署产物；运行状态见仓库 Actions 的 Documentation 工作流。
 
 ## 历史整理记录：2026-09-19
 
