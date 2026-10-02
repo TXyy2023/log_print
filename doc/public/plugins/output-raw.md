@@ -1,18 +1,20 @@
-# output-raw：终端日志展示
+<span id="output-raw-终端日志展示"></span>
 
-订阅 Core 流并写到插件 stdout。保存日志使用 [output-file](output-file.md)，加工内容使用 [output-transform](output-transform.md)。
+# output-raw: terminal log output
+
+Subscribes to Core streams and writes to the plugin's stdout. Use [output-file](output-file.md) for persistence and [output-transform](output-transform.md) to modify content.
 
 ```json
 {"streams":["source"],"annotate":false}
 ```
 
-| 字段 | 行为 |
+| Field | Behavior |
 | --- | --- |
-| streams | 可选流 alias / UUID 数组；主配置 `reads` 或 CLI 实际绑定优先 |
-| annotate | 默认 false；true 在每条记录前显示流 UUID、Core 接收序号、来源通道 |
+| streams | Optional aliases/UUIDs; main-config `reads` or actual CLI bindings take precedence |
+| annotate | false by default; true prefixes each record with stream UUID, Core sequence and source channel |
 
-默认逐条写出 payload 原始字节，不添加换行，支持二进制和空 payload。多流按本插件收到的顺序交错；不声明全局时间顺序。主进程可以重定向插件 stdout，实际位置以启动状态显示为准。
+By default, payload bytes are written without added newlines, including binary and empty payloads. Multiple streams interleave in this plugin's receive order, without a global time-order guarantee. The main program may redirect stdout; consult startup status for the actual location.
 
-订阅从 Core 当前缓冲最早保留的记录开始，读到末尾后持续等待，Input 暂离或空闲不会触发正常结束。停止由用户手动触发。滚动覆盖和 UDP 丢包可能导致数据缺失，终端输出不承诺完整性。
+Subscriptions begin at Core's oldest retained record, then wait for new data. An idle or departed Input does not end the Output normally. Stop it explicitly. Buffer eviction and UDP loss can omit data; terminal output does not guarantee completeness.
 
-本版本不接受 `path`、`paths`、`from`、`append` 或 `overwrite`。配置是主进程启动快照，`config.get` 可查看；修改文件需重启主进程，`config.patch` 返回 restart_required。
+`path`, `paths`, `from`, `append` and `overwrite` are not accepted. Configuration is the main program's startup snapshot, available through `config.get`. Restart the main program after edits; `config.patch` returns restart_required.

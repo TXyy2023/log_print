@@ -39,7 +39,7 @@ if(mode === 'public') {
  }
 } else {
  for(const section of ['public','local']) {
-  for(const src of walk(path.join(doc,section))) register(src,path.relative(doc,src).replace(/^public\//,'published/'));
+  for(const src of walk(path.join(doc,section))) register(src,path.relative(doc,src).replace(/^public\/zh\//,'zh/published/').replace(/^public\//,'published/'));
  }
  register(path.join(doc,'README.md'),'README.md');
 }
@@ -88,18 +88,32 @@ for(let i=0;i<queue.length;i++) {
  });
  write(rel,text);
 }
-if(mode==='local') write('index.md',`# log_print 文档库
+if(mode==='local') {
+ write('index.md',`# log_print documentation
 
-查阅当前 0.1.2 使用说明、开发文档和用户计划记录。
+English is the default language of the public manual. The local portal also includes private development notes in their original language.
+
+| Entry | Contents |
+|---|---|
+| [Public manual](/published/index.md) | English user guides and reference |
+| [简体中文手册](/zh/published/index.md) | Complete Chinese public manual |
+| [Local documentation (中文)](/local/index.md) | Architecture, protocol, components, plans and validation |
+| [Archive status (中文)](/local/archive/index.md) | Status of retired local material |
+
+Internal navigation follows the actual directory tree. Private notes and source snapshots are never included in the public build.
+`);
+ write('zh/index.md',`# log_print 文档库
+
+公开手册默认英语，可切换完整中文版本；本地开发资料保留原文。
 
 | 入口 | 内容 |
 |---|---|
-| [GitHub 文档](/published/index.md) | 公开使用手册，独立公开站的唯一正文来源 |
-| [本地文档站](/local/index.md) | 当前架构、协议、组件、计划与验证入口 |
-| [归档文档](/local/archive/index.md) | 清理状态；过期正文和附件已从站点移除 |
-
-内部导航按真实目录分组，页面名称只显示文件名，搜索只包含实际生成的页面。
+| [中文公开手册](/zh/published/index.md) | 使用指南与参考 |
+| [English manual](/published/index.md) | 默认英文公开手册 |
+| [本地文档站](/local/index.md) | 架构、协议、组件、计划与验证 |
+| [归档文档](/local/archive/index.md) | 过期资料清理状态 |
 `);
+}
 fs.mkdirSync(path.join(out,'.vitepress/theme'),{recursive:true});
 write('.vitepress/theme/index.js',fs.readFileSync(path.join(home,'theme.js')));
 write('.vitepress/theme/Mermaid.vue',fs.readFileSync(path.join(home,'Mermaid.vue')));
@@ -127,16 +141,32 @@ function sidebar(prefix) {
  const files=walk(out).filter(p=>p.endsWith('.md') && path.relative(out,p).startsWith(prefix));
  return files.map(p=>{const rel=path.relative(out,p).replaceAll(path.sep,'/');const title=rel.endsWith('/quickstart.md')||rel==='quickstart.md'?'快速开始':fs.readFileSync(p,'utf8').match(/^# (.+)$/m)?.[1]||path.basename(p,'.md'); return {text:title,link:'/'+rel.replace(/\.md$/,'')};});
 }
-const nav=mode==='local'?[{text:'GitHub 文档',link:'/published/index',activeMatch:'^/published/'},{text:'本地文档站',link:'/local/index',activeMatch:'^/local/(?!archive/)'},{text:'归档文档',link:'/local/archive/index',activeMatch:'^/local/archive/'}]:[{text:'使用说明',link:'/index'},{text:'GitHub',link:'https://github.com/TXyy2023/log_print'}];
-function publicSidebar(prefix) {
+function publicSidebar(prefix, language) {
  const groups=JSON.parse(fs.readFileSync(path.join(home,'public-navigation.json')));
- return groups.map(group=>({text:group.text,collapsed:group.text==='插件参考',items:group.items.map(item=>{
-   if(!allow.includes(item.page)) throw Error('Navigation page outside public allowlist: '+item.page);
-   return {text:item.text,link:'/'+prefix+item.page.replace(/\.md$/,'')};
+ return groups.map((group,index)=>({text:group.text[language],collapsed:index===3,items:group.items.map(item=>{
+   const source=(language==='zh'?'zh/':'')+item.page;
+   if(!allow.includes(source)) throw Error('Navigation page outside public allowlist: '+source);
+   return {text:item.text[language],link:'/'+prefix+item.page.replace(/(^|\/)index\.md$/,'$1').replace(/\.md$/,'')};
  })}));
 }
-const bars=mode==='public'?publicSidebar(''):{'/published/':publicSidebar('published/'),'/local/archive/':sidebar('local/archive/'),'/local/':localEntries(path.join(doc,'local')),'/source/':[{text:'本地文档站',link:'/local/index'}]};
-const config={base,head:[['link',{rel:'icon',href:'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%2328716b%22/%3E%3Ctext x=%2212%22 y=%2244%22 fill=%22white%22 font-size=%2238%22%3EL%3C/text%3E%3C/svg%3E'}]],lang:'zh-CN',title:mode==='local'?'log_print · 本地文档':'log_print',description:'日志采集与归档工具文档',outDir:path.join(home,'dist',mode),cleanUrls:false,themeConfig:{nav,sidebar:bars,outline:{level:[2,3],label:'本页目录'},docFooter:{prev:'上一页',next:'下一页'},search:{provider:'local',options:{locales:{root:{translations:{button:{buttonText:'搜索文档',buttonAriaLabel:'搜索文档'},modal:{noResultsText:'没有找到结果',resetButtonTitle:'清除搜索',footer:{selectText:'选择',navigateText:'切换',closeText:'关闭'}}}}}}}},vite:{publicDir:path.join(out,'.static'),server:{fs:{allow:[out,home]}}}};
+const internalBars=mode==='local'?{'/local/archive/':sidebar('local/archive/'),'/local/':localEntries(path.join(doc,'local')),'/source/':[{text:'Local documentation (中文)',link:'/local/index'}]}:{};
+const zhSearch={translations:{button:{buttonText:'搜索文档',buttonAriaLabel:'搜索文档'},modal:{displayDetails:'显示详细列表',resetButtonTitle:'清除搜索',backButtonTitle:'关闭搜索',noResultsText:'没有找到结果',footer:{selectText:'选择',selectKeyAriaLabel:'回车',navigateText:'切换',navigateUpKeyAriaLabel:'向上',navigateDownKeyAriaLabel:'向下',closeText:'关闭',closeKeyAriaLabel:'Esc'}}}};
+function locale(language) {
+ const zh=language==='zh';
+ const prefix=mode==='public'?(zh?'zh/':''):(zh?'zh/published/':'published/');
+ const nav=[{text:zh?'使用手册':'Manual',link:'/'+prefix}];
+ if(mode==='local') nav.push({text:zh?'本地文档站':'Local notes (中文)',link:'/local/index',activeMatch:'^/local/(?!archive/)'},{text:zh?'归档文档':'Archive (中文)',link:'/local/archive/index',activeMatch:'^/local/archive/'});
+ nav.push({text:'GitHub',link:'https://github.com/TXyy2023/log_print'});
+ return {label:zh?'简体中文':'English',lang:zh?'zh-CN':'en',description:zh?'本地日志采集、工作台与归档使用手册':'Local log collection, workbenches and archiving',themeConfig:{nav,sidebar:mode==='public'?publicSidebar(prefix,language):{...internalBars,'/published/':publicSidebar('published/','en'),'/zh/published/':publicSidebar('zh/published/','zh')},
+  // Local-only notes have no translated counterpart; the menu returns to each portal.
+  i18nRouting:mode==='public',
+  outline:{level:[2,3],label:zh?'本页目录':'On this page'},docFooter:{prev:zh?'上一页':'Previous page',next:zh?'下一页':'Next page'},
+  langMenuLabel:zh?'切换语言':'Change language',sidebarMenuLabel:zh?'菜单':'Menu',returnToTopLabel:zh?'返回顶部':'Return to top',skipToContentLabel:zh?'跳转到正文':'Skip to content',
+  darkModeSwitchLabel:zh?'外观':'Appearance',lightModeSwitchTitle:zh?'切换为浅色主题':'Switch to light theme',darkModeSwitchTitle:zh?'切换为深色主题':'Switch to dark theme',
+  notFound:zh?{title:'页面不存在',quote:'请检查地址或返回手册首页。',linkLabel:'返回首页',linkText:'返回首页'}:{title:'PAGE NOT FOUND',quote:'Check the address or return to the manual.',linkLabel:'Go to home',linkText:'Go to home'}
+ }};
+}
+const config={base,head:[['link',{rel:'icon',href:'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2212%22 fill=%22%2328716b%22/%3E%3Ctext x=%2212%22 y=%2244%22 fill=%22white%22 font-size=%2238%22%3EL%3C/text%3E%3C/svg%3E'}]],lang:'en',title:mode==='local'?'log_print · Local docs':'log_print',description:'Local log collection, workbenches and archiving',locales:{root:locale('en'),zh:locale('zh')},outDir:path.join(home,'dist',mode),cleanUrls:false,themeConfig:{search:{provider:'local',options:{locales:{zh:zhSearch}}}},vite:{publicDir:path.join(out,'.static'),server:{fs:{allow:[out,home]}}}};
 write('.vitepress/config.mjs',`import {defineConfig} from 'vitepress';\nimport fs from 'node:fs';\nimport path from 'node:path';\nconst config=${JSON.stringify(config,null,2)};\nconfig.themeConfig.search.options.miniSearch={options:{tokenize:(text)=>Array.from(new Intl.Segmenter('zh',{granularity:'word'}).segment(text),s=>s.segment).filter(s=>/\\p{L}|\\p{N}/u.test(s))},searchOptions:{prefix:true,fuzzy:0.2}};\nconfig.ignoreDeadLinks=[(url)=>fs.existsSync(path.join(config.vite.publicDir,url.replace(/^\\//,'')))];\nconfig.markdown={config(md){const fence=md.renderer.rules.fence;md.renderer.rules.fence=(tokens,idx,options,env,self)=>tokens[idx].info.trim()==='mermaid'?'<Mermaid code="'+md.utils.escapeHtml(tokens[idx].content)+'" />':(tokens[idx].info=tokens[idx].info.replace('rust,no_run','rust'),fence(tokens,idx,options,env,self));}};\nexport default defineConfig(config);\n`);
 write('build-inputs.json', JSON.stringify([...mapped.keys()].map(p=>path.relative(root,p)),null,2));
 for(const rel of previous) if(!generated.includes(rel)) fs.rmSync(path.join(out,rel),{force:true});

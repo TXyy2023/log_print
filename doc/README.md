@@ -1,8 +1,11 @@
-# log_print 文档入口
+# log_print documentation
 
-- [GitHub 文档](public/index.md)：面向公开使用者的手册，正文统一维护在 `doc/public/`。
-- [文档站维护](site/README.md)：本机预览、公开站构建和链接检查。
+English is the default public documentation language. Both versions cover the full public manual:
 
-内部开发资料与用户计划记录位于本地 `doc/local/`；`doc/local/archive/` 保留独立入口，过期正文与附件已从站点删除。这两个目录不随公开仓库分发。拥有这些资料的本地工作区可按实际文件夹层级浏览，公开使用者从上面的使用手册开始即可。
+- [English manual](public/index.md) — canonical source under `doc/public/`.
+- [简体中文手册](public/zh/index.md) — translations under `doc/public/zh/`.
+- [Site maintenance](site/README.md) — local preview, locale maintenance, public builds and checks.
 
-启动文档服务后，本机地址为 http://127.0.0.1:5173/ 。公开构建仅包含公开白名单，不包含内部和归档；网站部署需另行执行。
+Internal development material and user-owned plans remain in the local `doc/local/` directory, with archive status at `doc/local/archive/`. These directories are not distributed with the public repository. Local workspaces that contain them can browse their actual directory hierarchy; their original language and URLs are preserved.
+
+Start the local documentation service at http://127.0.0.1:5173/ using the maintenance guide. The public build includes only allowlisted public content. Only the `main` documentation workflow deploys it to GitHub Pages; local build output is not a deployment.

@@ -1,15 +1,17 @@
-# 静态文件快速导入
+<span id="静态文件快速导入"></span>
 
-0.1.2 将文件回放用途合并到 `input-file`，不再构建独立 `input-replay`。配置：
+# Import a static file
+
+Version 0.1.2 consolidates file replay into `input-file`; the separate `input-replay` executable is no longer built. Use this plugin declaration:
 
 ```json
 {"id":"import","role":"input","bin":"input-file",
- "streams":[{"id":"imported","description":"静态文件"}],
+ "streams":[{"id":"imported","description":"Static file"}],
  "config":{"path":"source.log","mode":"static"}}
 ```
 
-静态模式从字节 0 尽快读取，读完后插件退出，Core 流和剩余缓冲继续保留。它不模拟历史时间间隔，不提供速度倍率、时间戳解析或 SQLite 回放。
+Static mode reads from byte zero as quickly as possible. The plugin exits at EOF, while its Core stream and retained buffer remain. It does not reproduce historical timing, offer speed multipliers, parse timestamps or replay SQLite archives.
 
-源文件读取结束、Core 接受、Output 处理完是三个不同阶段。Core 不等待 Output，快速导入可能覆盖下游尚未读取的记录；需要检查各输出的实际结果，不能把成功退出解释成完整批处理。
+Finishing the source read, acceptance by Core, and completion by Outputs are separate events. Core does not wait for Outputs; a fast import can overwrite records before downstream consumers read them. Check each Output's results rather than interpreting a successful source exit as a complete batch import.
 
-[文件插件参数](../plugins/input-file.md) · [完整性边界](recovery.md)
+[File plugin reference](../plugins/input-file.md) · [Integrity limits](recovery.md)

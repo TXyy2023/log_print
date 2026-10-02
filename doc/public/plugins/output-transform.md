@@ -1,32 +1,36 @@
-# output-transform：加工与派生流
+<span id="output-transform-加工与派生流"></span>
 
-订阅原流，以 Output 身份向另一条单写入者派生流发布加工结果。原流 payload 与记录保持不变。使用教程见[转换日志](../guides/transform.md)。
+# output-transform: derived streams
+
+Reads source streams as an Output and publishes transformed records to a separate single-writer stream. Original payloads and records remain unchanged. See [Transform logs](../guides/transform.md).
 
 ```json
 {"streams":["source"],"output_stream":"derived","number":true,"timestamp":true,"reorder":true,"max_records":128,"max_bytes":4194304,"max_delay_ms":100,"max_channels":128}
 ```
 
-主配置须声明 `role:"output"`、授权 `reads` 和独立派生 `streams`。实际绑定 reads 优先于 config.streams。派生流不能是原流，也不能借知道 UUID 取得其它流的写入资格。
+The main configuration must declare `role:"output"`, authorized `reads` and a separate derived `streams` declaration. Actual read bindings override config.streams. The derived stream cannot be a source stream; knowing another UUID does not grant write access.
 
-| 字段 | 默认及行为 |
+| Field | Default and behavior |
 | --- | --- |
-| streams / output_stream | 可省略；使用注册时授权的读取流和派生流 UUID |
-| number | false；在记录前加 `[n=1] `，本次插件运行从 1 递增 |
-| timestamp | false；加 `[ts_ns=...] `，来源纳秒时间优先，否则 Core 观察时间 |
-| reorder | false；true 按来源序号有限等待重排 |
-| max_records | 128；缓冲总条数 1–4096 |
-| max_bytes | 4 MiB；缓冲序列化总大小，64 KiB–64 MiB |
-| max_delay_ms | 100；按最早待重排记录的接收时间设置到期触发，1–60000 ms |
-| max_channels | 128；来源状态和派生通道计数状态分别最多 1–4096 个，任何模式超限都明确失败 |
+| streams / output_stream | Optional; use the authorized read and derived stream UUIDs from registration |
+| number | false; prefix `[n=1] `, increasing from 1 within this plugin run |
+| timestamp | false; prefix `[ts_ns=...] `, preferring source nanoseconds, otherwise Core observation time |
+| reorder | false; true enables bounded source-sequence reordering |
+| max_records | 128; total reorder-buffer records 1–4096 |
+| max_bytes | 4 MiB; serialized reorder-buffer size 64 KiB–64 MiB |
+| max_delay_ms | 100; expiry based on the oldest pending record's receive time, 1–60000 ms |
+| max_channels | 128; source-state and derived-channel counters each limited to 1–4096; exceeding either fails explicitly in every mode |
 
-默认不启用加工时 payload 原样派生。开启编号/时间戳后仍是每条输入一条输出；结果超过协议 payload 上限明确失败，需减小输入块。不会隐式拆成多条或执行任意用户代码。
+With all transforms disabled, payloads are copied to the derived stream unchanged. Numbering and timestamps still produce one output per input record. Exceeding the protocol payload limit fails explicitly; reduce the input chunk size. The plugin neither splits records implicitly nor executes arbitrary user code.
 
-## 重排、重复与缺号
+<span id="重排、重复与缺号"></span>
 
-重排键为 `(stream,epoch,channel)`，每组期望 `source_seq` 从 1 开始。程序 stdout/stderr 各有独立来源序号，不假定两者原本存在共同顺序。没有 `source_seq` 的记录按到达顺序直接发布并计数。
+## Reordering, duplicates and missing sequences
 
-重复来源号保留第一条；已发布位置之前的迟到号丢弃。缺号时按待重排记录的实际到期时间唤醒，不按固定周期轮询；到期或缓冲预算将满时，发布相应组当前最小号和之后连续的记录，统计跳过的来源号。正常停止先结束接受，再排空已接受事件和待重排记录。到期是触发处理的时点，实际发布仍受进程调度和传输耗时影响。此策略不能恢复未到达或被 Core 覆盖的数据。
+The reorder key is `(stream,epoch,channel)`, with an expected `source_seq` starting at 1 per group. stdout/stderr have independent source sequences and are not assumed to share an original ordering. Records without `source_seq` are published immediately in arrival order and counted.
 
-每条派生记录的 `upstream` 只指向它实际来自的原流/Core 序号，不捏造其他流进度。派生记录保留 channel，并在每个输出 channel 内生成从 1 递增的 source_seq。编号前缀则是整个转换实例的发布编号。
+The first duplicate wins; late sequences before the published position are dropped. Missing numbers cause wakeup at the pending record's actual deadline, not periodic polling. On expiry or impending budget exhaustion, the smallest pending sequence and subsequent contiguous records are published, counting skipped numbers. Normal shutdown stops acceptance before draining accepted events and reorder buffers. Deadlines trigger processing; actual publication also depends on scheduling and transport. Missing or evicted data cannot be recovered.
 
-首次从当前缓冲最早保留记录订阅，读到末尾后持续等待。Input EOF 不是自动停止指令。配置只在主进程重启后更新；本版没有旧版编码、正则替换或动态配置能力。
+Each derived record's `upstream` points only to its actual source stream and Core sequence. It does not invent progress for other streams. The channel is preserved, with a new `source_seq` increasing from 1 per output channel. The numbering prefix counts publications across the entire transform instance.
+
+Subscriptions begin at the oldest retained record and keep waiting at the end. Input EOF is not an automatic shutdown request. Configuration changes require restarting the main program. Legacy encoding, regex replacement and dynamic configuration features are not available.

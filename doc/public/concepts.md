@@ -1,18 +1,20 @@
-# 流、传输与保存
+<span id="流、传输与保存"></span>
 
-每个 Input 实例一条流，Core 分配唯一 UUID，并维护可读说明。配置中的 `streams[].id` 是启动绑定别名；CLI 对流的操作使用返回的 UUID。说明只供辨认，不决定路由或写入权限。
+# Streams, transport and persistence
 
-一条流只有一个写入者，多 Output 各自接收同一流，消费进度互不竞争。默认订阅从内存中仍保留的最早记录开始，按 Core 实际接收顺序读取，末尾等待新数据。Input 离开不删流；停止 Core 后全部内存消失。
+Each Input instance has one stream with a UUID assigned by Core and a readable description. A configured `streams[].id` is a startup binding alias; runtime stream operations use the returned UUID. Descriptions help identify streams but do not determine routing or write permissions.
 
-Core 同时按记录数、字节数限制每条流，满时覆盖最早记录。慢 Output 不阻塞 Input 发布，也不能从 Core 补回已覆盖内容。配置预算不是无限资源保证。
+A stream has one writer. Multiple Outputs receive the same stream independently, without competing for a shared consumer cursor. Subscriptions begin at the oldest retained record, follow Core's receive order, and wait for new data at the end. An Input leaving does not delete its stream. Stopping Core discards all of its memory.
 
-| 层次 | 成功表示什么 |
+Core limits each stream by both record count and byte size, overwriting the oldest records when full. Slow Outputs do not block Input publication and cannot recover evicted data from Core. Configured budgets are not a promise of unlimited resources.
+
+| Event | What success means |
 | --- | --- |
-| TCP 发布 | Core 接受进内存，不表示 Output 已消费 |
-| UDP 发布 | 本地 socket 接受报文，不表示 Core 收到 |
-| Output 收到记录 | 尚不代表保存成功 |
-| output-file 停止完成 | 插件已处理其队列并检查提交/flush结果，仍以返回状态为准 |
+| TCP publish | Core accepted the record into memory; Outputs may not have consumed it yet |
+| UDP publish | The local socket accepted the datagram; Core may not have received it |
+| Output receives a record | Persistence is not yet confirmed |
+| output-file finishes shutdown | The plugin drained its accepted queue and checked commit/flush results; inspect the returned status |
 
-传输默认 TCP，可选 UDP。UDP 注册有应用层回复，数据不逐条确认或重传；没有额外 TCP 插件控制通道。超过编码报文上限直接拒绝，不自行分片。主程序的本机 CLI 管理端口是独立控制入口，不传送日志。
+TCP is the default transport; UDP is optional. UDP registration has an application-level reply, but records have no per-record acknowledgment or retransmission. There is no extra TCP control channel for UDP plugins. Oversized encoded messages are rejected, not fragmented. The local CLI management port is a separate control endpoint and does not carry log traffic.
 
-转换插件读取原流，向另一条派生流发布；原始内容不变。需要按来源序号排序时由转换插件处理，Core 本身不等待缺号或重排。
+A transformation plugin reads a source stream and publishes to a separate derived stream, preserving the original. Source-sequence reordering belongs to the transformation plugin; Core does not wait for missing sequence numbers or reorder records.

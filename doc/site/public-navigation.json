@@ -1,104 +1,179 @@
 [
   {
-    "text": "开始使用",
+    "text": {
+      "en": "Get started",
+      "zh": "开始使用"
+    },
     "items": [
       {
-        "text": "使用手册",
+        "text": {
+          "en": "Manual",
+          "zh": "使用手册"
+        },
         "page": "index.md"
       },
       {
-        "text": "安装与构建",
+        "text": {
+          "en": "Install and build",
+          "zh": "安装与构建"
+        },
         "page": "installation.md"
       },
       {
-        "text": "快速开始",
+        "text": {
+          "en": "Quick start",
+          "zh": "快速开始"
+        },
         "page": "quickstart.md"
       },
       {
-        "text": "流与保存边界",
+        "text": {
+          "en": "Streams and persistence",
+          "zh": "流与保存边界"
+        },
         "page": "concepts.md"
       }
     ]
   },
   {
-    "text": "使用指南",
+    "text": {
+      "en": "Guides",
+      "zh": "使用指南"
+    },
     "items": [
       {
-        "text": "采集程序输出",
+        "text": {
+          "en": "Capture program output",
+          "zh": "采集程序输出"
+        },
         "page": "guides/program.md"
       },
       {
-        "text": "跟随日志文件",
+        "text": {
+          "en": "Follow a log file",
+          "zh": "跟随日志文件"
+        },
         "page": "guides/file.md"
       },
       {
-        "text": "静态文件导入",
+        "text": {
+          "en": "Import a static file",
+          "zh": "静态文件导入"
+        },
         "page": "guides/replay.md"
       },
       {
-        "text": "读取与管理实例",
+        "text": {
+          "en": "Read and manage",
+          "zh": "读取与管理实例"
+        },
         "page": "guides/read.md"
       },
       {
-        "text": "转换日志",
+        "text": {
+          "en": "Transform logs",
+          "zh": "转换日志"
+        },
         "page": "guides/transform.md"
       },
       {
-        "text": "输出与归档",
+        "text": {
+          "en": "Display and archive",
+          "zh": "输出与归档"
+        },
         "page": "guides/archive.md"
       },
       {
-        "text": "完整性与迁移",
+        "text": {
+          "en": "Integrity and migration",
+          "zh": "完整性与迁移"
+        },
         "page": "guides/recovery.md"
       },
       {
-        "text": "排查常见问题",
+        "text": {
+          "en": "Troubleshooting",
+          "zh": "排查常见问题"
+        },
         "page": "troubleshooting.md"
       }
     ]
   },
   {
-    "text": "参考",
+    "text": {
+      "en": "Reference",
+      "zh": "参考"
+    },
     "items": [
       {
-        "text": "CLI",
+        "text": {
+          "en": "CLI",
+          "zh": "CLI"
+        },
         "page": "reference/cli.md"
       },
       {
-        "text": "配置文件",
+        "text": {
+          "en": "Configuration",
+          "zh": "配置文件"
+        },
         "page": "reference/configuration.md"
       }
     ]
   },
   {
-    "text": "插件参考",
+    "text": {
+      "en": "Plugins",
+      "zh": "插件参考"
+    },
     "items": [
       {
-        "text": "input-file：文件输入",
+        "text": {
+          "en": "input-file: files",
+          "zh": "input-file：文件输入"
+        },
         "page": "plugins/input-file.md"
       },
       {
-        "text": "input-program：程序输入",
+        "text": {
+          "en": "input-program: processes",
+          "zh": "input-program：程序输入"
+        },
         "page": "plugins/input-program.md"
       },
       {
-        "text": "output-raw：终端显示",
+        "text": {
+          "en": "output-raw: terminal output",
+          "zh": "output-raw：终端显示"
+        },
         "page": "plugins/output-raw.md"
       },
       {
-        "text": "output-transform：日志转换",
+        "text": {
+          "en": "output-transform: derived streams",
+          "zh": "output-transform：日志转换"
+        },
         "page": "plugins/output-transform.md"
       },
       {
-        "text": "output-file：持久归档",
+        "text": {
+          "en": "output-file: archiving",
+          "zh": "output-file：持久归档"
+        },
         "page": "plugins/output-file.md"
       },
       {
-        "text": "output-tui：终端工作台",
+        "text": {
+          "en": "output-tui: terminal workbench",
+          "zh": "output-tui：终端工作台"
+        },
         "page": "plugins/output-tui.md"
       },
       {
-        "text": "output-webui：页面与历史",
+        "text": {
+          "en": "output-webui: browser workbench",
+          "zh": "output-webui：页面与历史"
+        },
         "page": "plugins/output-webui.md"
       }
     ]

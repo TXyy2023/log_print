@@ -1,10 +1,14 @@
-# 安装与构建
+<span id="安装与构建"></span>
 
-本手册随当前源码维护，使用源码构建方式。构建结果包括主程序、Core 和五个官方插件。
+# Install and build
 
-## 准备环境
+This manual follows the current source tree. A workspace build produces the main CLI, Core and seven official plugins.
 
-需要 Git、Rust 1.92 或更新的兼容稳定工具链，以及所在系统的 Rust 编译和链接环境。快速开始还使用 Python 3 写入教学日志。
+<span id="准备环境"></span>
+
+## Prerequisites
+
+Install Git, Rust 1.92 or a newer compatible stable toolchain, and your platform's Rust compiler/linker prerequisites. The quick start also uses Python 3 to generate sample logs.
 
 ```sh
 rustc --version
@@ -12,9 +16,11 @@ cargo --version
 python3 --version
 ```
 
-Windows 下 Python 命令通常为 `python`。Python 只用于本手册中的输入生成、部分示例和测试，不是主程序的运行依赖。
+On Windows, the Python command is usually `python`. Python is used by these examples and tests; it is not a runtime dependency of the application. The WebUI assets are checked in and embedded in the Rust binary. Node.js and npm are needed only to rebuild the frontend or documentation, or to run the full validation suite; CI uses Node.js 24.
 
-## 获取并构建
+<span id="获取并构建"></span>
+
+## Clone and build
 
 ```sh
 git clone https://github.com/TXyy2023/log_print.git
@@ -23,21 +29,23 @@ cargo build --release --locked --workspace
 ./target/release/log-print --version
 ```
 
-已有工作区时直接在该工作区执行构建命令。当前 workspace 版本号为 `0.1.2`，CLI 接口已在本地源码中调整；旧 `ver-0.1.2` 标签不包含这些调整，不能仅根据版本号判断接口一致。阅读源码手册时应使用同一份源码构建；本地未提交改动不会自动出现在新克隆的仓库中。`--locked` 要求按仓库锁文件解析依赖；首次构建需要获取依赖，本文不将其作为离线安装流程。
+For an existing checkout, run the build command there. The workspace version is currently `0.1.2`, but `main` includes CLI, WebUI and TUI changes added after the original `ver-0.1.2` tag. A version string alone does not establish identical interfaces: use the manual and binaries from the same commit. Local uncommitted changes are not included in a fresh clone. `--locked` uses the committed dependency lockfile; the first build downloads dependencies and is not an offline installation procedure.
 
-构建结果位于 `target/release/`：
+The executables are in `target/release/`:
 
-- `log-print`：启动、管理和读取实例。
-- `log-print-core`：由主程序启动的 Core。
-- `input-program`、`input-file`：输入插件。
-- `output-raw`、`output-transform`、`output-file`、`output-webui`、`output-tui`：输出和转换插件。
+- `log-print`: start, manage and read an instance.
+- `log-print-core`: Core, launched by the main program.
+- `input-program`, `input-file`: input plugins.
+- `output-raw`, `output-transform`, `output-file`, `output-webui`, `output-tui`: display, transformation and archive plugins.
 
-主程序会查找配置声明的插件。按照本手册在仓库根目录运行，并保留上述可执行文件在构建目录中，不要只拷贝主程序后假定其余组件已安装。
+The CLI locates the configured plugins. Run the examples from the repository root and keep these executables together in the build directory; copying only `log-print` does not install the other components.
 
-## 命令约定
+<span id="命令约定"></span>
 
-后续命令默认在仓库根目录运行，使用 release 构建。Windows 将 `./target/release/log-print` 替换为 `target\release\log-print.exe`，将 `python3` 替换为可用的 `python`。
+## Command conventions
 
-配置中的相对文件路径以运行时工作目录为基准，不以 JSON 文件所在目录为基准。不同教程使用不同 `--state` 路径；操作某个实例时，始终使用它启动时的路径。
+Examples run from the repository root with a release build. On Windows, replace `./target/release/log-print` with `target\release\log-print.exe`, and `python3` with your available `python` command.
 
-下一步：[快速开始](quickstart.md)。
+Relative data paths in plugin configuration are resolved from the runtime working directory, not the JSON file's directory. Tutorials use separate `--state` paths; every command for an instance must use the path it was started with.
+
+Next: [Quick start](quickstart.md).

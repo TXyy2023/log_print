@@ -1,6 +1,8 @@
-# output-file：保存日志
+<span id="output-file-保存日志"></span>
 
-订阅并保存日志；不会向终端显示日志内容，也不改变 Core 的有界滚动内存行为。操作教程见[输出与归档](../guides/archive.md)。
+# output-file: archive logs
+
+Subscribes to and saves logs without displaying payloads or changing Core's bounded memory behavior. See [Display and archive](../guides/archive.md).
 
 ```json
 {
@@ -12,42 +14,50 @@
 }
 ```
 
-`file`、`sqlite` 至少选一个。每个流使用独立文件路径；路径、索引、检查点和锁不能互相别名。父目录须先创建。已有目标拒绝覆盖。CLI 绑定实际 UUID 后，单流配置仍沿用其唯一目标路径。
+Choose at least one of `file` and `sqlite`. Each file stream needs a distinct path; data, indexes, checkpoints and locks must not alias one another. Create parent directories first. Existing targets are never overwritten. After CLI binding to a UUID, a single-stream configuration retains its one destination path.
 
-| 配置 | 默认及范围 |
+| Field | Default and range |
 | --- | --- |
-| streams | 流 alias / UUID；实际授权 reads 优先 |
-| mode | 运行时仅支持 create；旧版 resume 不适用于当前 Core |
-| file.format | raw 或 jsonl |
-| fail_on_gap | true；观察到接收序号缺口后保存缺口并失败，false 则记录后继续 |
-| commit.max_records | 64；1–65536 |
-| commit.max_bytes | 4 MiB；1 字节–64 MiB |
-| commit.max_delay_ms | 100；1–60000 ms |
-| queue.max_records | 256；1–65536 |
-| queue.max_bytes | 16 MiB；1 MiB–1 GiB，按包含元数据的序列化大小计算 |
+| streams | Stream aliases/UUIDs; actual authorized reads take precedence |
+| mode | Live operation supports only create; legacy resume does not apply to current Core |
+| file.format | raw or jsonl |
+| fail_on_gap | true; record an observed receive-sequence gap and fail; false records it and continues |
+| commit.max_records | 64; 1–65536 |
+| commit.max_bytes | 4 MiB; 1 byte–64 MiB |
+| commit.max_delay_ms | 100; 1–60000 ms |
+| queue.max_records | 256; 1–65536 |
+| queue.max_bytes | 16 MiB; 1 MiB–1 GiB, measured as serialized size including metadata |
 
-## 格式与提交
+<span id="格式与提交"></span>
 
-`raw` 连续写 payload，不插入换行、前缀或记录边界；空 payload 仍保留在摘要索引中。`jsonl` 每行是 `{"format_version":2,"record":{...}}`，payload 为字节数组，可无损还原二进制。
+## Formats and commits
 
-SQLite schema 2 保存完整 Record。payload 使用 BLOB，64 位无符号序号和纳秒时间使用十进制 TEXT，派生关系使用 JSON，包含来源 `channel` 和 `source_seq`。Record 已不包含 Core 保存状态。唯一键为 `(stream,epoch,seq)`。
+`raw` concatenates payloads without adding newlines, prefixes or record boundaries. Empty payloads still appear in the digest index. Each `jsonl` line is `{"format_version":2,"record":{...}}`; the payload is a byte array, preserving binary data.
 
-收到、写入和提交确认不同。独立工作线程顺序处理归档，按条数、字节数或等待时间触发提交。文件先同步数据及索引，再原子替换检查点；SQLite 在 WAL + synchronous=FULL 下提交事务。文件和 SQLite 各自提交，双目标没有跨目标原子事务。100 ms 是触发等待上限，不是磁盘确认延迟保证。
+New SQLite archives use schema 3 and store complete Records, a stream directory, dynamic stream registrations, and numeric sequence/observation-time indexes. The shared HistoryReader uses an independent read-only WAL connection and also supports schema 2; existing databases are not automatically migrated. Payloads are BLOBs; unsigned 64-bit sequences and nanosecond times are stored as decimal TEXT with indexed representations for queries. Derived relationships use JSON. Records include source `channel` and `source_seq`, but no Core persistence state. The unique key is `(stream,epoch,seq)`.
 
-队列配额包含活动写入；SDK 另有固定事件队列和每订阅待处理帧，因此队列预算不等于整个进程 RSS 上限。下游处理变慢不会使 Input 等待它完成，Core 仍可覆盖旧记录。
+Receipt, writing and confirmed commit are separate stages. A dedicated worker serializes archive operations, committing by record count, bytes or elapsed wait. Files synchronize data and indexes before atomically replacing checkpoints; SQLite commits with WAL and synchronous=FULL. File and SQLite targets commit separately; dual-target writes are not an atomic transaction across both. A 100 ms threshold triggers a commit, not a guaranteed disk confirmation deadline.
 
-## 状态与停止
+Queue budgets include active writes. The SDK also has a fixed event queue and pending frames per subscription, so these budgets are not a process RSS ceiling. Slower downstream processing does not make Inputs wait; Core can still overwrite old records.
 
-`plugin call archive status.get` 返回队列、目标 written/confirmed 游标、缺口及错误。`common[UUID].next` 为所有目标均已确认之后的下一序号；同一 epoch 下达到源 `head + 1` 才表示追至这次快照，不能由队列为空单独推断。
+<span id="状态与停止"></span>
 
-`shutdown` 先关闭 SDK 接收并取消订阅，排空已接受事件和工作队列，提交目标并报告状态，然后回复 `stopped:true`。尚未进入 SDK 队列的数据不属于已接受集合。插件停止不等于 Input 完成或全流水线已排空。磁盘、同步、数据库、校验或连接错误不会返回完整成功。
+## Status and shutdown
 
-超时表示结果未知，插件可能仍在收尾。先检查进程与状态，勿立即另启进程写同一目标。
+`plugin call archive status.get` reports queues, per-target written/confirmed cursors, gaps and errors. `common[UUID].next` is the next sequence after all targets' confirmed prefix. Reaching the source's `head + 1` in the same epoch means it has caught up to that snapshot; an empty queue alone does not establish this.
 
-## 历史与版本边界
+`shutdown` closes SDK reception and cancels subscriptions, drains accepted events and the worker queue, commits targets and reports status before replying `stopped:true`. Data not yet in the SDK queue is outside the accepted set. Plugin shutdown does not imply Input completion or a fully drained pipeline. Disk, sync, database, validation or connection errors do not return complete success.
 
-首次订阅起点由 Core 原子确定为当前仍保留的最早记录；之后持续等待新记录。没有指定历史起点、自动重连或旧 epoch 补取。插件本地观察序号跳跃时记录缺口；没有观察到缺口也不证明全链路完整。
+A timeout means the result is unknown and cleanup may still be running. Check process and status before starting another writer for the same destination.
 
-内部归档库保留自身检查点校验和恢复能力及测试，但当前插件不开放 live resume。版本 2 不自动转换旧版归档；升级使用新目录，保留旧目标与旁文件。文件同步的断电效果依赖文件系统与硬件，本版测试不等于真实断电认证。
+<span id="历史与版本边界"></span>
 
-配置为主进程启动快照，修改须重启主进程。验证入口为 `cargo test -p output-file` 和 `python3 quality/tests/v2/outputs.py`；历史套件已归档，不用于本版验收。
+## History and version boundaries
+
+Core atomically selects the first subscription position as its oldest retained record; the subscription then waits continuously for new data. The live plugin has no arbitrary historical starting cursor, automatic reconnect or old-epoch recovery. Observed local sequence jumps are recorded as gaps. Absence of observed gaps is not proof of end-to-end completeness.
+
+With `read_all`, a SQLite archive can follow all current and newly derived streams. WebUI/TUI companion archives set `fail_on_gap=false` to continue after a gap; explicitly configured archives keep the user's setting. [WebUI history](output-webui.md) queries combine committed archive data and a fixed Core memory range while reporting actual coverage.
+
+The archive library retains checkpoint validation/recovery logic and tests, but the live plugin does not expose resume. Upgrades use new directories and preserve old files and sidecars. Power-loss behavior depends on the filesystem and hardware; these tests are not physical power-failure certification.
+
+Configuration is the main process's startup snapshot and changes require a main-process restart. Validate with `cargo test -p output-file` and `python3 quality/tests/v2/outputs.py`; retired historical suites are not current acceptance evidence.

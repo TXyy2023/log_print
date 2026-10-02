@@ -1,23 +1,33 @@
-# log_print 使用手册
+<span id="log-print-使用手册"></span>
 
-本手册对应 **0.1.2 / log-print/2**。日志从两个输入插件进入 Core 内存缓冲，再由四个输出插件分别显示、保存或加工。
+# log_print manual
 
-## 开始使用
+This manual follows the current source tree, version **0.1.2 / log-print/2**. Two input plugins feed Core's memory buffers; five output plugins display, archive or transform the streams. Build from the same source revision as this manual: the original `ver-0.1.2` release does not contain every feature now on `main`.
 
-- [安装与构建](installation.md)
-- [快速开始](quickstart.md)
-- [流、传输与保存的边界](concepts.md)
+<span id="开始使用"></span>
 
-## 按任务选择
+## Get started
 
-| 任务 | 指南 |
+- [Install and build](installation.md)
+- [Quick start](quickstart.md)
+- [Streams, transport and persistence](concepts.md)
+
+<span id="按任务选择"></span>
+
+## Choose a task
+
+| Task | Guide |
 | --- | --- |
-| 通过 CLI 启动程序，或接入已有 tmux 窗格 | [采集程序输出](guides/program.md) |
-| 持续跟随日志文件 | [文件输入](guides/file.md) |
-| 尽快读取静态文件 | [静态文件导入](guides/replay.md) |
-| 查看流 ID、读取与管理实例 | [读取与管理](guides/read.md) |
-| 加编号、时间戳，或按来源序号重排 | [转换日志](guides/transform.md) |
-| 显示日志或保存文件、JSONL、SQLite | [输出与保存](guides/archive.md) |
-| 判断保存与停止结果 | [完整性与迁移](guides/recovery.md) |
+| Launch a process or attach to an existing tmux pane | [Capture program output](guides/program.md) |
+| Follow a growing log file | [Read a log file](guides/file.md) |
+| Read a static file as quickly as possible | [Import a static file](guides/replay.md) |
+| Find stream IDs, read logs and manage an instance | [Read and manage](guides/read.md) |
+| Add numbering, timestamps or bounded source-sequence reordering | [Transform logs](guides/transform.md) |
+| Display logs or save raw files, JSONL and SQLite | [Display and archive](guides/archive.md) |
+| Arrange persistent log and chart panels in a browser | [WebUI workbench](plugins/output-webui.md) |
+| Use the same display and history engine in a terminal | [TUI workbench](plugins/output-tui.md) |
+| Check shutdown and persistence results | [Integrity and migration](guides/recovery.md) |
 
-具体命令和字段见 [CLI](reference/cli.md) 与 [配置](reference/configuration.md)。出现问题见 [排查](troubleshooting.md)。[终端工作台](plugins/output-tui.md) 与 WebUI 共用显示和历史引擎。串口输入不在本版范围，独立 input-replay 与 io-plugin-util、log-plot 已取消。
+See the [CLI reference](reference/cli.md), [configuration reference](reference/configuration.md) and [troubleshooting guide](troubleshooting.md). Serial input is outside the current workspace. The separate input-replay, io-plugin-util and log-plot components have been retired.
+
+English is the default documentation language. Use the language menu for the equivalent Simplified Chinese page, or open the [Chinese manual](zh/index.md).

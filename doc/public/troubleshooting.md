@@ -1,14 +1,18 @@
-# 排查常见问题
+<span id="排查常见问题"></span>
 
-| 现象 | 检查与处理 |
+# Troubleshooting
+
+| Symptom | Check and action |
 | --- | --- |
-| 配置提示 unknown field / role missing | 对照 [配置参考](reference/configuration.md) 迁移；旧 save 和多流 Input 不再接受 |
-| 找不到流 | 先 `streams` 取得当前 UUID；Core 重启后身份变化 |
-| 后启动 Output 缺少开头 | 有界缓冲已覆盖；Core 无磁盘历史可补取 |
-| UDP 已发送但没看到数据 | 本地发送不保证收到；检查注册、报文编码大小及插件错误 |
-| 修改 config 后没变化 | 运行期使用启动快照，需停止并重新启动主程序 |
-| Output 启动失败 | 检查 reads、UUID、输出路径和 `status` / stderr；目标存在不会覆盖 |
-| tmux 接入被拒绝 | 检查窗格是否已有 pipe-pane；不要抢占其采集管道 |
-| 插件停止 forced=true | 收尾未及时成功；检查错误及实际保存状态，不能视为完整保存 |
+| Configuration reports unknown field / missing role | Follow the [configuration reference](reference/configuration.md); old save fields and multi-stream Inputs are rejected |
+| Stream not found | Run `streams` for the current UUID; identities change after Core restarts |
+| A late Output misses the beginning | The bounded buffer may have overwritten it; Core has no disk history to recover |
+| UDP was sent but no data appears | Local send success does not guarantee reception; check registration, encoded packet size and plugin errors |
+| Editing config changes nothing | The running instance uses its startup snapshot; stop and restart the main program |
+| Output fails to start | Check reads, UUIDs, destination paths, `status` and stderr; existing archive targets are never overwritten |
+| tmux attachment is refused | Check for an existing pipe-pane; do not take over another collector's pipe |
+| Plugin shutdown reports forced=true | Cleanup did not finish normally; inspect errors and saved data before claiming completeness |
+| WebUI/TUI cannot find older records | Check archive coverage; without an archive, history is limited to retained Core memory |
+| A Page edit reports a revision conflict | Refresh committed state and retry the intended edit |
 
-`start` 返回 stdout/stderr 日志路径，`status` 返回进程与业务状态。状态文件含管理凭据，勿公开。不要删除正在运行实例的状态文件绕过冲突。
+`start` returns stdout/stderr log paths; `status` returns process and business state. State files contain management credentials: do not publish them or delete an active instance's file to bypass a conflict.

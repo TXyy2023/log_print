@@ -32,12 +32,14 @@ jobs:
         run: |
           npm run build:public --prefix doc/site
           python3 quality/tests/docs/verify_links.py doc/site/dist/public
+          node doc/site/verify-locales.mjs
       - name: Build and verify the Pages site path
         env:
           DOCS_BASE: /log_print/
         run: |
           npm run build:public --prefix doc/site
           python3 quality/tests/docs/verify_links.py doc/site/dist/public --base /log_print/
+          node doc/site/verify-locales.mjs doc/site/dist/public /log_print/
       - name: Upload public documentation
         uses: actions/upload-pages-artifact@v5
         with:

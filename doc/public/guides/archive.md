@@ -1,18 +1,22 @@
-# 输出与归档
+<span id="输出与归档"></span>
 
-终端展示使用 `output-raw`；保存文件或数据库使用 `output-file`。Core 只保留有界滚动内存，不为归档提供永久历史。
+# Display and archive
 
-## 创建新归档
+Use `output-raw` for terminal output and `output-file` for files or databases. Core retains only bounded rolling memory, not permanent archive history.
 
-仓库提供三份完整配置，输入均使用 `input-file` 静态读取示例文件。
+<span id="创建新归档"></span>
 
-| 目标 | 配置 |
+## Create a new archive
+
+The repository includes three complete configurations. Each reads a sample file in `input-file` static mode.
+
+| Target | Configuration |
 | --- | --- |
-| 原始文件 | `project/plugins/outputs/output-file/examples/file.json` |
+| Raw file | `project/plugins/outputs/output-file/examples/file.json` |
 | SQLite | `project/plugins/outputs/output-file/examples/sqlite.json` |
-| 文件和 SQLite | `project/plugins/outputs/output-file/examples/both.json` |
+| File and SQLite | `project/plugins/outputs/output-file/examples/both.json` |
 
-从仓库根目录执行，目标必须是未使用过的新目录：
+Run from the repository root with a fresh, previously unused destination:
 
 ```sh
 mkdir -p capture/both
@@ -21,11 +25,13 @@ mkdir -p capture/both
 ./target/release/log-print --state capture/both-state.json plugin call archive status.get
 ```
 
-示例保存到 `capture/both/replay.raw` 和 `capture/both/records.sqlite`，并维护索引、检查点与锁。已存在的文件会导致明确失败；保留旧文件，给新配置使用另一目录。
+This writes `capture/both/replay.raw` and `capture/both/records.sqlite`, plus indexes, checkpoints and locks. Existing targets cause an explicit failure. Preserve old files and choose a different directory for a new capture.
 
-## 确认提交再停止
+<span id="确认提交再停止"></span>
 
-先查看 source 的报告确认已到达此次源文件 EOF，再记录其流 UUID、epoch 和 head。检查归档 `common[UUID].next` 是否达到同一 epoch 的 `head + 1`，并确认无缺口或错误。这是对当前快照的核对，不是所有负载下完整交付的保证。
+## Confirm commits before stopping
+
+First check the source report for EOF. Record its stream UUID, epoch and head. Check that the archive's `common[UUID].next` reaches `head + 1` in the same epoch, with no gaps or errors. This verifies the current snapshot, not guaranteed delivery under every workload.
 
 ```sh
 ./target/release/log-print --state capture/both-state.json status
@@ -34,10 +40,14 @@ python3 -c "from pathlib import Path; assert Path('project/plugins/outputs/outpu
 ./target/release/log-print --state capture/both-state.json stop
 ```
 
-归档 shutdown 只有排空已接受记录并提交后才回复完成。队列为空、输入 EOF、插件接到停止请求，都不能单独替代这一步。这个例子的字节对比不等于断电持久性认证。
+Archive shutdown reports completion only after draining accepted records and committing. An empty queue, source EOF or receipt of a stop request cannot replace that confirmation. This byte comparison is not a power-loss durability certification.
 
-## 保存自己的流
+<span id="保存自己的流"></span>
 
-声明 `role:"output"` 的 output-file，配置 reads、目标路径及 `mode:"create"`。JSONL 保留完整 Record；raw 只连接 payload；SQLite 同时保留元数据和二进制。
+## Archive your streams
 
-后启动的 Output 可以通过 `plugin start <插件名> --stream <真实流UUID>` 关联已运行流，流 ID 可从 `streams` 获取。首次订阅只能得到当前内存仍保留的部分，已经覆盖的历史不会自动恢复。本版本不提供 live resume；完整参数见 [output-file](../plugins/output-file.md)。
+Declare output-file with `role:"output"`, authorized `reads`, target paths and `mode:"create"`. JSONL preserves full Records; raw concatenates payload bytes; SQLite preserves metadata and binary content.
+
+An Output started later can bind to a running stream with `plugin start <plugin> --stream <actual UUID>`. Find UUIDs with `streams`. Its first subscription includes only retained memory; already overwritten history cannot be restored. The live plugin does not support resume. See [output-file](../plugins/output-file.md).
+
+For searchable context in a browser or terminal, opt into a companion archive at startup with `--webui-archive` or `--tui-archive`. See the [WebUI](../plugins/output-webui.md) and [TUI](../plugins/output-tui.md) guides for archive coverage and query boundaries.

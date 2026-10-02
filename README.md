@@ -1,54 +1,65 @@
 <p align="center">
-  <img src="doc/public/assets/branding/log-print-banner.png" alt="log_print：汇聚日志流的终端标识" width="960">
+  <img src="doc/public/assets/branding/log-print-banner.png" alt="log_print: local logs, clear signals" width="960">
 </p>
 
 <h1 align="center">log_print</h1>
 
+<p align="center"><strong>English</strong> · <a href="README.zh-CN.md">简体中文</a></p>
+
 <p align="center">
   <a href="https://github.com/TXyy2023/log_print/actions/workflows/validate.yml"><img src="https://github.com/TXyy2023/log_print/actions/workflows/validate.yml/badge.svg?branch=main" alt="CI"></a>
-  <a href="https://txyy2023.github.io/log_print/"><img src="https://github.com/TXyy2023/log_print/actions/workflows/docs.yml/badge.svg?branch=main" alt="文档部署"></a>
+  <a href="https://txyy2023.github.io/log_print/"><img src="https://github.com/TXyy2023/log_print/actions/workflows/docs.yml/badge.svg?branch=main" alt="Documentation"></a>
   <a href="https://github.com/TXyy2023/log_print/releases/tag/ver-0.1.2"><img src="https://img.shields.io/badge/version-0.1.2-8574d8" alt="Version 0.1.2"></a>
-  <a href="Cargo.toml"><img src="https://img.shields.io/badge/Rust-%3E%3D1.92-dea584?logo=rust&amp;logoColor=white" alt="Rust 1.92 或更新"></a>
+  <a href="Cargo.toml"><img src="https://img.shields.io/badge/Rust-%3E%3D1.92-dea584?logo=rust&amp;logoColor=white" alt="Rust 1.92 or newer"></a>
   <a href="doc/public/concepts.md"><img src="https://img.shields.io/badge/protocol-log--print%2F2-64748b" alt="Protocol log-print/2"></a>
-  <a href="quality/release-0.1.2.md"><img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-64748b" alt="macOS、Linux、Windows"></a>
+  <a href="quality/release-0.1.2.md"><img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-64748b" alt="macOS, Linux, Windows"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-e6b950" alt="MIT License"></a>
 </p>
 
 <p align="center">
-  <strong>把文件和程序的日志，接入终端与 AI Agent。</strong><br>
-  <a href="#快速开始">快速开始</a> · <a href="#接入-ai-agent">Agent Skill</a> · <a href="https://TXyy2023.github.io/log_print/">在线文档</a> · <a href="doc/public/index.md">使用手册源码</a> · <a href="https://github.com/TXyy2023/log_print/releases/tag/ver-0.1.2">0.1.2 Release</a>
+  <strong>Local logs, in your terminal, browser and AI workflow.</strong><br>
+  <a href="#quick-start">Quick start</a> · <a href="#ai-agent-integration">Agent Skill</a> · <a href="https://TXyy2023.github.io/log_print/">Documentation</a> · <a href="doc/public/index.md">Manual source</a> · <a href="https://github.com/TXyy2023/log_print/releases/tag/ver-0.1.2">0.1.2 Release</a>
 </p>
 
-**log_print** 是一个用 Rust 编写的本地日志工具：采集文件、子程序或已有 tmux 窗格的输出，以独立日志流读取、显示、转换，并按需保存为原始文件、JSONL 或 SQLite。
+**log_print** is a local Rust toolkit for collecting, viewing, transforming and archiving logs from files, child processes and existing tmux panes. Use a CLI, a browser workbench or a terminal workbench, with the same stream identities and explicit persistence boundaries.
 
-**A local Rust CLI and Agent Skill for collecting, reading, transforming and archiving file, process and tmux logs.** 运行时不需要云服务或大模型；AI Agent 通过 CLI 与配套 Skill 使用它。
+No cloud service or language model is required at runtime. AI agents can use the CLI and the companion Skill to inspect logs and arrange workbench panels.
 
-## 可以用它做什么
+## What it does
 
-| 需求 | 对应能力 |
+| Task | Capability |
 | --- | --- |
-| 跟随服务写入的日志文件，或导入静态文件 | `input-file` 的 `follow` / `static` 模式 |
-| 启动一个程序并同时采集 stdout、stderr | `input-program`，两个通道保留各自身份 |
-| 读取已有 tmux 窗格输出 | `input-program` 的 tmux 来源；需要本机 tmux |
-| 让人或 Agent 查询当前日志 | `streams` 获取流 UUID，`read` 获取有界快照 |
-| 持续显示或保存日志 | `output-raw`；`output-file` 写原始文件、JSONL、SQLite |
-| 添加编号、时间戳或按来源序号重排 | `output-transform` 发布独立派生流，保留原流 |
+| Follow a growing file or import a static file | `input-file` follow/static modes |
+| Launch a program and collect stdout/stderr | `input-program`, preserving channel identity |
+| Capture new output from an existing tmux pane | `input-program` tmux mode on Unix |
+| Inspect current logs from a shell or agent | Stream discovery and bounded snapshot reads |
+| Arrange persistent Pages, log tables and curves | `output-webui` freeform canvas, synchronized through CLI |
+| Use the same workbench in a terminal | `output-tui`, including attachment to an existing WebUI |
+| Display or archive continuously | `output-raw`; `output-file` for raw files, JSONL and SQLite |
+| Add numbering, timestamps or source-sequence reordering | `output-transform`, publishing a separate derived stream |
 
-Core 只做内存缓冲与转发，默认使用 TCP，也可显式选择 UDP。Input 发布不等待 Output；慢消费者可能遇到缓冲覆盖。**发布成功不等于已保存**，持久化需要配置 `output-file` 并检查保存结果。Core 重启会丢失内存内容，`read` 也不是持久游标。完整约定见[流、传输与保存](doc/public/concepts.md)。
+![WebUI workbench with log tables and curves](doc/public/assets/webui/workbench.png)
 
-本地 WebUI 支持全部流、持久化 Page、可自由摆放和缩放的日志/曲线窗口、CLI 精确编排，以及可选的 SQLite 全量上下文查询，见 [output-webui](doc/public/plugins/output-webui.md)。同等显示与历史功能可在 [output-tui](doc/public/plugins/output-tui.md) 终端工作台使用，也可连接现有 WebUI 同步控制。串口输入插件不在当前版本范围。旧 `log-print/1` 配置和客户端不能直接用于 0.1.2，迁移说明见[完整性与迁移](doc/public/guides/recovery.md)。
+The workbench above uses synthetic data and CLI-arranged panels. [WebUI](doc/public/plugins/output-webui.md) and [TUI](doc/public/plugins/output-tui.md) share the Rust display/history engine. Optional SQLite archiving enables queries beyond Core's memory buffer.
 
-## 文档
+Core buffers and routes logs in memory, using TCP by default or optional UDP. Inputs do not wait for Outputs, and slow consumers can lose overwritten records. **Published does not mean persisted.** Configure `output-file` and inspect its commit results when you need storage. Core restarts discard its memory, and `read` is not a persistent cursor. See [streams and persistence](doc/public/concepts.md).
 
-[在线使用手册](https://txyy2023.github.io/log_print/)提供中文全文搜索，按入门、使用指南、参考和插件参考组织。可以从[快速开始](https://txyy2023.github.io/log_print/quickstart.html)入门，查阅 [CLI 命令](https://txyy2023.github.io/log_print/reference/cli.html)、[配置文件](https://txyy2023.github.io/log_print/reference/configuration.html)，或查看[常见问题](https://txyy2023.github.io/log_print/troubleshooting.html)。
+Serial input is outside the current workspace. Old `log-print/1` clients and configurations need [migration](doc/public/guides/recovery.md). The workspace version remains 0.1.2, but current `main` includes features added after the original release tag; build binaries from the same revision as the manual.
 
-手册正文维护在 [`doc/public/`](doc/public/index.md)，GitHub 中的 Markdown 与在线站点共用同一份内容。
+## Documentation
 
-## 快速开始
+**English is the default.** The complete public manual is available in both languages, with localized navigation and full-text search:
 
-需要 Git、**Rust 1.92+** 及系统编译/链接工具。示例用 Python 3 创建教学日志；Python 不是主程序的运行依赖。
+- [English manual](https://txyy2023.github.io/log_print/) · [简体中文手册](https://txyy2023.github.io/log_print/zh/)
+- [Quick start](https://txyy2023.github.io/log_print/quickstart.html) · [CLI](https://txyy2023.github.io/log_print/reference/cli.html) · [Configuration](https://txyy2023.github.io/log_print/reference/configuration.html) · [Troubleshooting](https://txyy2023.github.io/log_print/troubleshooting.html)
 
-### 1. 构建完整工作区
+The language menu switches to the corresponding page. Markdown in [`doc/public/`](doc/public/index.md) is the source for both GitHub and the site; Chinese translations live in [`doc/public/zh/`](doc/public/zh/index.md).
+
+## Quick start
+
+You need Git, **Rust 1.92+** and platform compiler/linker tools. Python 3 generates the sample log; it is not an application runtime dependency.
+
+### 1. Build the workspace
 
 ```sh
 git clone https://github.com/TXyy2023/log_print.git
@@ -57,11 +68,11 @@ cargo build --release --locked --workspace
 ./target/release/log-print --version
 ```
 
-构建目录中包含主程序、Core 和五个插件；请保留它们，不要只复制 `log-print` 一个文件。这里只从公开源码构建，不依赖同名的第三方安装包。更多环境说明见[安装与构建](doc/public/installation.md)。
+Keep the CLI, Core and all seven plugin executables together in the build directory. This builds the public source rather than installing a similarly named third-party package. See [installation](doc/public/installation.md).
 
-### 2. 跟随一个文件
+### 2. Follow a file
 
-以下命令从仓库根目录执行。先创建演示文件，再启动专用实例：
+From the repository root, create a sample file and start a dedicated instance:
 
 ```sh
 python3 -c "from pathlib import Path; Path('example.log').touch()"
@@ -70,7 +81,7 @@ python3 -c "open('example.log','ab').write(b'temperature=23.5\n')"
 ./target/release/log-print --state .log-print/quickstart.json streams
 ```
 
-把 `streams` 返回的真实流 UUID 替换到下面的 `STREAM_UUID`，即可读取当前保留的日志：
+Replace `STREAM_UUID` with the actual UUID returned by `streams`:
 
 ```sh
 ./target/release/log-print --state .log-print/quickstart.json read STREAM_UUID --wait-ms 1000
@@ -78,52 +89,68 @@ python3 -c "open('example.log','ab').write(b'temperature=23.5\n')"
 ./target/release/log-print --state .log-print/quickstart.json stop
 ```
 
-启动和操作均可直接使用命令行参数，结果显示为文本和表格。精确原始字节使用 `read --raw`；已有配置文件仍可通过 `--config FILE` 加载，完整参数见 [CLI 参考](doc/public/reference/cli.md)。停止的是本示例启动的实例；使用其他实例时沿用其实际 `--state` 路径。重复 `read` 可能返回重复记录。持续显示或保存请使用 Output，见[读取与管理](doc/public/guides/read.md)、[输出与保存](doc/public/guides/archive.md)。
+Commands return text and tables. Use `read --raw` for exact bytes, or `--config FILE` for an existing configuration. Always keep the same `--state` path when operating on an instance. Repeated reads may repeat records; use an Output for continuous display or archiving. See [reading](doc/public/guides/read.md) and [archiving](doc/public/guides/archive.md).
 
-Windows 将 `./target/release/log-print` 替换为 `target\release\log-print.exe`，将 `python3` 替换为可用的 `python`。tmux 接入适用于装有 tmux 的 Unix 环境。
+On Windows, use `target\release\log-print.exe` and your available `python` command. tmux attachment requires Unix and tmux.
 
-## 接入 AI Agent
+### 3. Open a workbench
 
-安装配套 [log-print Skill](project/skills/log-print/SKILL.md)：
+Start a new instance with a browser or terminal Output:
+
+```sh
+./target/release/log-print --state .log-print/workbench.json start \
+  --input-file source=./example.log --output-webui web
+./target/release/log-print --state .log-print/workbench.json webui web url
+# Optional: attach a terminal to that same workbench
+./target/release/log-print --state .log-print/workbench.json tui web attach
+# After exiting the terminal view, stop this instance when finished
+./target/release/log-print --state .log-print/workbench.json stop
+```
+
+For a terminal-only backend, use `--output-tui term` and `tui term attach`. History defaults to retained memory; add `--webui-archive web=./capture` or `--tui-archive term=./capture` at startup for a new companion archive. See the workbench guides for coverage, layout and CLI commands.
+
+## AI agent integration
+
+Install the companion [log-print Skill](project/skills/log-print/SKILL.md):
 
 ```sh
 npx skills add TXyy2023/log_print --skill log-print
 ```
 
-这条命令只安装 Skill。Skill 会先检查 `log-print --version` 和帮助，CLI 缺失时提供本仓库的构建步骤；命令已存在但启动失败时保留实际错误。默认按安装器提示选择 Agent，需全局安装到 Codex 时可加 `-g -a codex`。
+This installs the Skill, not the CLI. The Skill checks `log-print --version` and help first, provides source build instructions if missing, and preserves actual startup errors. Follow the installer's agent selection prompts; add `-g -a codex` for a global Codex installation.
 
-可以给 Agent 一条明确的任务：
+Example task:
 
-> 使用 log-print 采集我指定的日志文件。先核实 CLI 和已有实例，再启动一个独立实例，读取当前保留日志并给出摘要；如果有缓冲缺口请说明。完成后停止这次启动的实例。
+> Use log-print to collect the log file I specify. Check the CLI and existing instances first, then start a separate instance, read retained logs and summarize them. Report any buffer gaps. Stop only the instance you started when finished.
 
-Skill 覆盖实例选择、真实流 UUID、有限等待、输出保存与清理。它不会把安装 Skill 当作安装 CLI，也不会把日志内容当作可执行指令。项目不提供常驻 AI 监控或自动故障修复。
+The Skill covers instance selection, actual stream UUIDs, bounded waits, persistence and cleanup. Log content is treated as data, not executable instructions. The project does not provide a resident AI monitor or automatic fault repair.
 
-## 如何工作
+## How it works
 
 ```mermaid
 flowchart LR
-    A[文件 / 程序 / tmux] --> B[Input 插件]
-    B --> C[Core 有界内存流]
-    C --> D[CLI 快照读取]
-    C --> E[终端显示]
-    C --> F[文件 / JSONL / SQLite]
-    C --> G[转换插件]
-    G --> H[派生流]
+    A[Files / processes / tmux] --> B[Input plugins]
+    B --> C[Core bounded memory streams]
+    C --> D[CLI snapshots]
+    C --> E[WebUI / TUI / terminal output]
+    C --> F[Raw / JSONL / SQLite archives]
+    C --> G[Transform plugin]
+    G --> H[Derived stream]
     H --> C
 ```
 
-主程序组织实例与子进程；协议库约定 TCP/UDP 消息；SDK 帮助插件发布和订阅；Core 为每个流分配 UUID 并维护缓冲。配置在启动时读取，修改配置后需要重启，当前没有热更新。[使用手册](doc/public/index.md)按任务介绍细节。
+The main program supervises the instance and child processes. The protocol defines TCP/UDP messages; the Rust SDK supports publishing and subscribing; Core assigns UUIDs and maintains buffers. Startup configuration changes require restarting the instance. Workbench display state can be edited live through the shared backend and CLI.
 
-## 开发与验证
+## Development and validation
 
 ```sh
 python3 quality/run.py
 ```
 
-需要 Python 3.12+、Rust stable、rustfmt 和 Clippy。验收覆盖 Rust 测试，以及协议、CLI 生命周期、输入、转换、保存与异常退出的真实子进程场景。macOS、Linux、Windows 的 0.1.2 结果见[验收记录](quality/release-0.1.2.md)；本次展示与 Skill 的验证见[交付记录](quality/github-showcase-0.1.2.md)。CI 徽章显示当前 main 的最新状态。
+The full suite needs Python 3.12+, Node.js 24/npm, Rust stable, rustfmt and Clippy. It covers Rust tests and real subprocess scenarios for the protocol, CLI lifecycle, inputs, transformations, archives, WebUI/TUI and failures. GitHub CI runs Linux, macOS and Windows, including real PTY/ConPTY terminal interactions and Chromium workbench tests. See [validation instructions](quality/README.md); the CI badge reports current main status. The [original 0.1.2 report](quality/release-0.1.2.md) describes its release revision, not every later change.
 
-文档更新先提交到 `dev`，通过公开构建、内容隔离和链接检查后 merge 到 `main`，由 [Documentation 工作流](https://github.com/TXyy2023/log_print/actions/workflows/docs.yml)自动部署到 GitHub Pages。发布内容仅为公开使用手册；内部开发资料和归档保留在本地。构建、预览和部署细节见[文档站说明](doc/site/README.md)。
+Documentation changes must pass both root-path and GitHub Pages subpath builds, locale/link checks and public-content isolation. The [Documentation workflow](https://github.com/TXyy2023/log_print/actions/workflows/docs.yml) validates `dev` and `main`, and deploys `main` to GitHub Pages. Internal development notes remain local. See [site maintenance](doc/site/README.md).
 
-问题反馈请附版本、系统、脱敏后的配置与命令、实际结果和预期结果。欢迎从一个可复现的问题、插件改进或文档修正开始贡献，见[贡献指南](CONTRIBUTING.md)与 [Issues](https://github.com/TXyy2023/log_print/issues)。
+Report issues with the commit/version, OS, sanitized configuration, reproduction commands, actual results and expected behavior. See [Contributing](CONTRIBUTING.md) and [Issues](https://github.com/TXyy2023/log_print/issues).
 
-[项目源码](project/README.md) · [测试说明](quality/README.md) · [MIT License](LICENSE)
+[Source layout](project/README.md) · [MIT License](LICENSE)

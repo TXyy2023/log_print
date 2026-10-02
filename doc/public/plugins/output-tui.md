@@ -1,42 +1,49 @@
-# output-tui：终端工作台与历史上下文
+<span id="output-tui-终端工作台与历史上下文"></span>
 
-`output-tui` 是本地 Rust Output，使用 Ratatui 0.30.2 与 Crossterm 0.29.0 渲染。与 [output-webui](output-webui.md) 共用 `log-view` 配置、流缓存、分行、数值提取、历史查询及 revision 引擎。运行不需要 Node 或浏览器。
+# output-tui: terminal workbench and history
 
-## 启动与连接
+`output-tui` is a local Rust Output rendered with Ratatui 0.30.2 and Crossterm 0.29.0. It shares the `log-view` configuration, stream cache, line assembly, numeric extraction, history and revision engine with [output-webui](output-webui.md). Runtime needs neither Node.js nor a browser.
+
+<span id="启动与连接"></span>
+
+## Start and attach
 
 ```sh
-# 默认只提供实时缓存 / Core 当前保留范围
+# Default: live cache and Core's currently retained memory only
 log-print start --input-file source=./app.log --output-tui term
 log-print tui term attach
 
-# 新实例可创建本次运行的配套全流归档
+# A new instance can create a companion all-stream archive for this run
 log-print start --input-file source=./app.log --output-tui term \
   --tui-archive term=./capture
 
-# 或绑定同实例已配置的 SQLite output-file；与 --tui-archive 互斥
+# Or bind a configured SQLite output-file in the same instance
+# This is mutually exclusive with --tui-archive
 log-print start --input-file source=./app.log \
   --output-sqlite archive=./capture/run.sqlite \
   --output-tui term --tui-history term=archive
 ```
 
-supervisor 启动后台采集及 loopback API；`attach` 启动连接它的终端视图。`q` 或 Ctrl-C 只退出当前视图，采集、其他终端和后台查询继续。停止实例使用 `log-print stop`。终端进程关闭时恢复光标、鼠标捕获和原终端模式。
+The supervisor starts background collection and a loopback API; `attach` starts a terminal view connected to it. `q` or Ctrl-C exits only that view. Collection, other terminals and background queries continue. Stop the instance with `log-print stop`. Exiting the terminal view restores the cursor, mouse capture and original terminal mode.
 
 ```sh
-# 连接已有 WebUI 的同一个工作台，浏览器与终端同步
+# Share an existing WebUI backend with browsers
 log-print tui web attach
 
-# 自动化、管道或无 TTY 场景：输出一帧无 ANSI 文本
+# Automation, pipes or non-TTY use: one plain-text frame, without ANSI
 log-print tui term attach --snapshot --width 140 --height 36
 ```
 
-独立启动 WebUI 和 TUI 插件会获得各自的 Page 数据库。需要相同页面时，直接 attach 已有 WebUI。Page 数据库只能由一个后端打开，多视图连接后端，不直接打开 SQLite。
+Separately launched WebUI and TUI plugins have separate Page databases. Attach to an existing WebUI to share its Pages. Only one backend opens a Page database; multiple views connect to that backend rather than opening SQLite themselves.
 
-## 页面与 CLI
+<span id="页面与-cli"></span>
 
-所有 WebUI 命令均可将 `webui` 替换为 `tui`，包含 `url`、`streams`、`capabilities`、`page`、`panel`、`layout`、`series`、`history` 和 `query`。`plugin call` 仍可访问相同控制方法。
+## Pages and CLI
+
+Replace `webui` with `tui` in all workbench commands: `url`, `streams`, `capabilities`, `page`, `panel`, `layout`, `series`, `history` and `query`. `plugin call` still exposes the same control methods.
 
 ```sh
-log-print tui term page create --name monitor --title '运行监控' --theme dark
+log-print tui term page create --name monitor --title 'Runtime monitor' --theme dark
 log-print tui term page select --page monitor
 log-print tui term page set --sidebar-open false --view-x 0 --view-y 0
 log-print tui term panel add --kind log --title Logs --stream source \
@@ -49,49 +56,55 @@ log-print tui term history search --stream source --regex ERROR
 log-print tui term query get --query QUERY_UUID --offset 0 --limit 200
 ```
 
-终端 `:` 打开同一套命名参数命令面板，可输入 `panel set --format hex`、`series add --name Voltage --field voltage` 等，省略的页面/面板使用当前选择。命令按参数解析，不交给 shell 执行。编辑开始时捕获 revision，冲突时提示并保留后端较新状态。
+Replace placeholders with returned UUIDs. In the terminal, `:` opens the same named-parameter command palette. Enter commands such as `panel set --format hex` or `series add --name Voltage --field voltage`; omitted Page/panel targets use the current selection. Commands are parsed as arguments, never executed by a shell. Editing captures the starting revision, and conflicts retain the backend's newer state.
 
-| 操作 | 按键 |
+| Action | Keys |
 |---|---|
-| 页面列表；新增；复制；删除 | `p`，列表内 `n` / `c` / `d` |
-| 全部来源与身份；添加日志 | `s`，列表内 `i` / Enter |
-| 新增日志 / 曲线；选择面板 | `a` / `c`；Tab / Shift-Tab |
-| 面板 / 页面属性；完整命令 | `e` / `E`；`:` |
-| 曲线定义与图例选择 | `y`，列表内 `a` / `e` / `d` / Space |
-| 文本 / 正则过滤 | `/` / Ctrl-R |
-| 暂停 / 跟随；文本与 hex；元数据 | Space / `f`；`t`；`i` |
-| 历史 / 实时 / 全范围搜索 | `h` / `l` / Ctrl-F |
-| 历史上一页 / 下一页 | `[` / `]` 或 PgUp / PgDn |
-| 选择记录；上下文；完整元数据 | ↑↓；Enter；`I` |
-| 覆盖范围、缺口、查询状态 | `o` |
-| 移动 / 缩放窗口 | `m` / `r` 后方向键，Enter 保存，Esc 取消 |
-| 鼠标移动 / 缩放窗口 | 拖标题 / 右下角 |
-| 画布平移 / 缩放 / 全部适配 | Alt-方向键；`+` / `-` / `0` |
-| 曲线时间缩放 / 图例 | Ctrl-`+` / Ctrl-`-`；`g` |
-| 来源栏 / 缩略图 / 位置锁定 | `b` / `z` / `L` |
-| 帮助 / 退出当前终端 | `?` / `q` 或 Ctrl-C |
+| Page list; create; clone; delete | `p`, then `n` / `c` / `d` in the list |
+| All sources and identity; add a log | `s`, then `i` / Enter in the list |
+| Add log / curve; select panel | `a` / `c`; Tab / Shift-Tab |
+| Panel / Page properties; full command | `e` / `E`; `:` |
+| Curve definitions and legend selection | `y`, then `a` / `e` / `d` / Space |
+| Text / regex filter | `/` / Ctrl-R |
+| Pause / follow; text / hex; metadata | Space / `f`; `t`; `i` |
+| History / live / full-range search | `h` / `l` / Ctrl-F |
+| Previous / next history page | `[` / `]` or PgUp / PgDn |
+| Select record; context; full metadata | Up/Down; Enter; `I` |
+| Coverage, gaps and query status | `o` |
+| Move / resize a panel | `m` / `r`, then arrows; Enter saves, Esc cancels |
+| Mouse move / resize | Drag the title / bottom-right corner |
+| Canvas pan / zoom / fit all | Alt-arrows; `+` / `-` / `0` |
+| Curve time zoom / legend | Ctrl-`+` / Ctrl-`-`; `g` |
+| Source sidebar / minimap / position lock | `b` / `z` / `L` |
+| Help / exit this terminal view | `?` / `q` or Ctrl-C |
 
-## 显示映射与持久性
+<span id="显示映射与持久性"></span>
 
-Page 名称、主题、顺序、来源绑定、自由布局、过滤、列配置、曲线、历史定位、暂停及当前选择均由后端持久化；默认在实例状态目录下的 `.tui/`。JSON 配置字段与 WebUI 相同：`state_path`、`listen`、`archive_dir`、`history_plugin`。本次流 UUID/epoch 变化后，按 owner/alias 重新绑定来源；不会自动将旧运行归档当成本次历史。
+## Display mapping and persistence
 
-画布坐标保持 WebUI 的像素单位，100% 时按 **8 px/列、16 px/行** 映射。终端支持自由位置、大小、叠放、隐藏、锁定、平移和缩放；旧 12 列 GridStack 配置也能显示。终端不足 40×12 时提示扩大窗口。日志为有界表格；曲线以 Braille 字符绘制，缺口会断线。
+The backend persists Page names, themes, ordering, bindings, freeform layout, filters, columns, curves, history position, pause and selection. The default database directory is `.tui/` under the instance state directory. JSON fields match WebUI: `state_path`, `listen`, `archive_dir`, `history_plugin`. When stream UUID/epoch changes, bindings resolve again by owner/alias; archives from an old run are not automatically treated as current history.
 
-终端使用字符网格，字体大小由终端程序控制，无法逐面板设置物理字体大小或按像素绘制线宽；这些设置仍可通过 CLI 编辑、持久化，并在浏览器中生效。行高和列宽按字符网格换算。左右键横向浏览列，精确列宽、排序、图例及所有附加字段可以通过命令面板编辑。长命令支持 Unicode、方向键、Home/End 和安全粘贴。
+Canvas coordinates keep WebUI pixel units. At 100%, the mapping is **8 px per column and 16 px per row**. Panels support free positioning, resizing, stacking, hiding, locking, panning and zooming. Legacy 12-column GridStack layouts also render. Terminals smaller than 40×12 show a resize prompt. Logs use bounded tables; curves use Braille characters and break across gaps.
 
-## 历史、资源与故障
+Physical font size belongs to the terminal application, and per-panel pixel font sizes or line widths cannot be reproduced exactly. Those settings remain editable and persistent through CLI and take effect in browsers. Row and column dimensions map to the character grid. Left/right arrows scroll columns horizontally. Exact column widths, sorting, legend and additional fields can be edited through the command palette. Long commands support Unicode, arrows, Home/End and safe paste.
 
-与 WebUI 相同，历史每页默认 200 行，曲线最多 2000 点、保留极值和缺口，最多同时执行两个扫描任务，可取消。每次查询固定归档提交水位和 Core 读取边界，按 stream/epoch/seq 去重；记录保留字节偏移，可定位跨 Record 分行的上下文。没有归档时只报告内存范围。
+<span id="历史、资源与故障"></span>
 
-`o` 显示实际覆盖、未提交、缺口、归档写入故障；后端断连时保留最后一帧并显示 DISCONNECTED，恢复后自动重连。终端显示缓存最多 64 MiB，单个 HTTP 回复最多 4 MiB，最多并发读取四个面板，每 500 ms 刷新。暂停由后端冻结画面，采集继续。
+## History, resources and failures
 
-## 验证入口
+Like WebUI, history defaults to 200 rows per page, curves to at most 2000 points retaining extrema and gaps, and two concurrent cancellable scans. Queries fix archive commit and Core read boundaries, deduplicate by stream/epoch/seq and preserve byte offsets for context across Record boundaries. Without an archive, only memory coverage is reported.
+
+`o` shows actual coverage, uncommitted data, gaps and archive write failures. On backend disconnect, the last frame remains with DISCONNECTED status; the view reconnects after recovery. Display cache is limited to 64 MiB, individual HTTP responses to 4 MiB, and concurrent panel reads to four, refreshing every 500 ms. Backend pause freezes display while collection continues.
+
+<span id="验证入口"></span>
+
+## Validation
 
 ```sh
 python3 quality/run.py
-# 单独运行 TUI：先构建二进制和测试专用 PTY 驱动
+# TUI alone: first build binaries and the test PTY driver
 cargo build --workspace --bins --examples --locked
 python3 quality/ci/python-test.py quality/tests/v2/tui.py
 ```
 
-Linux/macOS 使用真实 PTY，Windows 使用 ConPTY，覆盖键盘、中文、鼠标拖拽、resize、并发 revision、双视图、退出清理、断连、无 TTY、快照和历史。相同的十项后端进程验收分别对 WebUI/TUI 执行。GitHub 三系统矩阵另跑真实 Chromium 的双浏览器、VueFlow/GridStack、AG Grid、ECharts 与布局恢复测试，保存截图和 trace。
+Linux/macOS use real PTYs; Windows uses ConPTY. Tests cover keys, Chinese input, mouse dragging, resize, concurrent revisions, two views, cleanup, disconnect, non-TTY snapshots and history. The same ten backend process scenarios run against both WebUI and TUI. The three-OS GitHub matrix also runs real Chromium checks for two synchronized browser views, Vue Flow/GridStack, AG Grid, ECharts and layout restoration, saving screenshots and traces.

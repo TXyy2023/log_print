@@ -1,10 +1,10 @@
-# 文档站维护
+# Documentation site maintenance
 
-站点使用仓库锁定的 VitePress 与 Mermaid 依赖。需要 Node.js 20.19+ 或兼容的更新 LTS、npm；服务仅监听 127.0.0.1。
+The site uses the locked VitePress and Mermaid dependencies. Use Node.js 20.19+ or a compatible newer LTS and npm; CI uses Node.js 24. Local services listen only on 127.0.0.1.
 
-## 启动与停止
+## Start and stop
 
-从仓库根目录运行：
+From the repository root:
 
 ```sh
 npm ci --prefix doc/site
@@ -13,51 +13,65 @@ npm run status --prefix doc/site
 npm run stop --prefix doc/site
 ```
 
-本机地址 http://127.0.0.1:5173/ 。后台服务退出终端后继续运行；重启电脑后需要重新 start。日志为 `doc/site/.cache/service.log`。端口已占用时拒绝启动，不更换端口或停止其他服务。
+The local portal is http://127.0.0.1:5173/. The background service survives closing the terminal; start it again after reboot. Logs are in `doc/site/.cache/service.log`. If the port is occupied, startup refuses without changing ports or stopping another service.
 
-前台运行用 `npm run dev:local --prefix doc/site`，Ctrl-C 停止。修改规范正文后自动更新网页；生成缓存与产物不可手工维护。
+Use `npm run dev:local --prefix doc/site` for a foreground service, stopped with Ctrl-C. Source edits regenerate pages automatically. Do not edit generated caches or build output.
 
-## 正文与入口
+## Sources and languages
 
-| 本机入口 | 正文位置 | 内容 |
+English is the default for the repository README, public manual and local portal. The public manual has a complete Simplified Chinese translation. English public URLs retain the existing root paths; Chinese pages live under `/zh/`. The VitePress language menu switches to the equivalent public page, without browser-language redirects.
+
+| Source | Public URL | Local portal URL |
 | --- | --- | --- |
-| GitHub 文档 | `doc/public/` | 公开使用手册、任务指南、CLI/配置和五个插件参考 |
-| 本地文档站 | `doc/local/` | 当前架构、协议、SDK、组件、用户计划记录与验证入口 |
-| 归档文档 | `doc/local/archive/index.md` | 清理状态入口；不再发布过期正文或附件 |
+| `doc/public/*.md` and subdirectories, excluding zh | `/` | `/published/` |
+| `doc/public/zh/` | `/zh/` | `/zh/published/` |
+| Shared public images in `doc/public/assets/` | `/assets/` | `/published/assets/` |
+| `doc/local/` | Never published | `/local/` |
+| `doc/local/archive/index.md` | Never published | `/local/archive/` |
 
-公开手册是使用参数与命令的单一来源，README 和内部开发页通过链接引用。内部技术文档按当前源码维护。`doc/local/plans/` 由用户维护，旧计划合理保留，不因版本变化删除、重写或合并。旧实现、被替代的方案和过期验收从站点删除，不靠历史警告继续展示。
+`README.md` is the English repository entry; `README.zh-CN.md` is its Chinese counterpart. Public manuals are the source of command and option documentation. Internal notes and user-owned plans keep their original language and paths. In the local portal, the language menu returns to the English or Chinese portal because private notes have no translated equivalents. Each portal links to its language's complete manual.
 
-内部导航按实际目录生成，一级菜单为文件夹名，文档名只显示文件名（不含目录前缀和 `.md` 后缀），链接仍使用真实相对路径。只将 Markdown 正文列入页面导航，空目录不生成菜单。旧链接映射只保留最终目标仍存在的条目。
+Public search uses separate English and Chinese indexes. Word segmentation supports both English and Chinese. Local search includes only generated pages and may also include original-language private notes. Mermaid diagrams render on demand in the browser.
 
-本机 URL 为 `/published/`、`/local/`、`/local/archive/`；`published` 避免与 VitePress 静态资源目录重名。两站提供中文全文搜索，Mermaid 在浏览器按需渲染。
+## Add or update a translation
 
-## 新增、删除与验证
+1. Update the English body under `doc/public/` and the matching relative path under `doc/public/zh/`. Preserve command names, option names and identifiers. Translate explanations and sample display labels; keep documented behavior consistent. Paired headings retain alias anchors from the other language so language switches and existing Chinese deep links keep working; preserve these aliases when editing.
+2. Add both Markdown files to `public-pages.json`. Shared assets are allowlisted once; Chinese pages use relative links to the shared assets.
+3. Add the page once to `public-navigation.json`, providing both `text.en` and `text.zh` labels. The generator builds each locale's navigation from that entry.
+4. Update both repository README entries if visible capabilities change. Update `public-sources.json` when a repository README should route to a manual page in the local build.
+5. Run all checks below. Remove obsolete references, mappings and unused attachments when removing a page.
 
-公开页面需要同时检查 `public-pages.json` 白名单和 `public-navigation.json` 导航。`public-sources.json` 将本机源码 README 链接路由到公开正文，不复制正文。
+For an additional language, add a matching source tree and allowlist entries, add navigation labels, define its VitePress locale/search translations in `prepare.mjs`, and extend `verify-locales.mjs` to verify the new page set and search results. Do not silently fall back to Chinese content at an English route.
 
-删除页面时同步清理正文引用、映射、导航和无用途附件，然后重新生成和构建。恢复快照放在 `quality/artifacts/`，不能再纳入站点正文或搜索。内部资料、依赖、缓存、产物和本地快照保持 Git 忽略范围。
+Internal navigation follows actual directories, with filenames as page labels and no empty-directory menus. `doc/local/plans/` is user-owned: do not rewrite or delete plans simply because implementation has changed. Keep temporary snapshots and capture artifacts under ignored `quality/artifacts/`, outside site sources and search.
+
+## Build and verify
 
 ```sh
 npm run build:local --prefix doc/site
-npm run build:public --prefix doc/site
 python3 quality/tests/docs/verify_links.py doc/site/dist/local
+npm run build:public --prefix doc/site
 python3 quality/tests/docs/verify_links.py doc/site/dist/public
+node doc/site/verify-locales.mjs
 ```
 
-本机产物 `doc/site/dist/local/` 包含内部资料，公开产物 `doc/site/dist/public/` 只接受公开白名单。公开构建拒绝越界链接、路径逃逸及软链接，并自动审查输入范围；不能将本机产物发布。两种模式有独立缓存、配置、搜索和产物。
+`dist/local/` includes private material; never publish it. `dist/public/` accepts only the explicit public allowlist. The public build rejects out-of-scope links, path escapes and symlinks, then audits input provenance and private-content markers. Hiding navigation is not content isolation.
 
-`prepare.mjs` 在缓存中复制正文、改写链接，必要时将当前源码呈现为代码页面。`--refresh` 删除已移除的生成输入；正式构建重新生成全部缓存和产物。不能手改 `.cache/` 或用隐藏导航代替公开内容隔离。
+`prepare.mjs` copies sources and rewrites links only in generated files. It renders local source snapshots as code pages when needed. `--refresh` deletes removed generated inputs; full builds regenerate all caches and output. Local and public modes have separate caches, configurations, indexes and artifacts.
+
+`verify_links.py` checks all rendered local links, assets and anchors. `verify-locales.mjs` verifies paired pages, English/Chinese HTML languages, corresponding-page links, locale-specific sidebars, search-index isolation and real search results. These are generated-site checks, not assertions against copied prose.
 
 ## GitHub Pages
 
-公开站：[在线使用手册](https://TXyy2023.github.io/log_print/)。部署配置见 `.github/workflows/docs.yml`：dev/main 推送和手动触发进行文档验证，仅 main 部署；本次本地整理不会自动提交或部署。
+[English manual](https://txyy2023.github.io/log_print/) · [中文手册](https://txyy2023.github.io/log_print/zh/)
 
-工作流以 `/log_print/` 为站点路径，本机内部站始终为 `/`。复现公开部署构建：
+`.github/workflows/docs.yml` validates pushes to `dev` and `main`, plus manual runs. Only `main` deploys. It tests both the root path and the `/log_print/` deployment base, including locale checks. Reproduce the deployment build with:
 
 ```sh
 DOCS_BASE=/log_print/ npm run build:public --prefix doc/site
 python3 quality/tests/docs/verify_links.py doc/site/dist/public --base /log_print/
+node doc/site/verify-locales.mjs doc/site/dist/public /log_print/
 npm run preview:public --prefix doc/site
 ```
 
-预览 http://127.0.0.1:5174/log_print/ 。恢复根路径预览需重新执行不带 DOCS_BASE 的公开构建。GitHub Pages 的构建和部署结果需从实际工作流确认，本地构建通过不表示线上已更新。
+Preview at http://127.0.0.1:5174/log_print/. Rebuild without DOCS_BASE to restore root-path preview. Confirm actual workflow build and deployment results before reporting that the online site is updated.
