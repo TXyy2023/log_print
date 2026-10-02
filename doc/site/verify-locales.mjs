@@ -55,7 +55,7 @@ for (const locale of ['root', 'zh']) {
   const expected = pages.map(p => base + route((locale === 'zh' ? 'zh/' : '') + p));
   assert.deepEqual([...new Set(ids.map(id => id.split('#')[0]))].sort(), expected.sort(), locale + ': search index missing pages or leaking another locale');
   const search = MiniSearch.loadJSON(json, {fields: ['title', 'titles', 'text'], storeFields: ['title', 'titles'], tokenize});
-  const cases = locale === 'zh' ? [['归档', 'plugins/output-file.html'], ['终端', 'plugins/output-tui.html']] : [['archive', 'plugins/output-file.html'], ['terminal', 'plugins/output-tui.html']];
+  const cases = locale === 'zh' ? [['归档', 'plugins/output-file.html'], ['终端', 'plugins/output-tui.html'], ['SDK', 'sdk/'], ['Rust', 'sdk/rust.html'], ['Python', 'sdk/python.html']] : [['archive', 'plugins/output-file.html'], ['terminal', 'plugins/output-tui.html'], ['SDK', 'sdk/'], ['Rust', 'sdk/rust.html'], ['Python', 'sdk/python.html']];
   for (const [query, target] of cases) {
     const results = search.search(query, {prefix: true, fuzzy: 0.2});
     assert.ok(results.some(r => r.id.split('#')[0] === base + (locale === 'zh' ? 'zh/' : '') + target), locale + ': search failed for ' + query);

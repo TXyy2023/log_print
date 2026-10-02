@@ -29,3 +29,5 @@
 具体命令和字段见 [CLI](reference/cli.md) 与 [配置](reference/configuration.md)。出现问题见 [排查](troubleshooting.md)。[终端工作台](plugins/output-tui.md) 与 WebUI 共用显示和历史引擎。串口输入不在本版范围，独立 input-replay 与 io-plugin-util、log-plot 已取消。
 
 文档默认语言是英语，可通过语言菜单切换当前页面的对应版本，或打开 [English manual](../index.md)。
+
+开发插件见 [SDK 总览](sdk/index.md)、[Rust SDK](sdk/rust.md)与 [Python SDK](sdk/python.md)（功能分支版本）。

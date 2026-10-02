@@ -44,5 +44,11 @@
   "zh/plugins/output-file.md",
   "zh/plugins/output-webui.md",
   "zh/plugins/output-tui.md",
-  "zh/assets/branding/SOURCE.md"
+  "zh/assets/branding/SOURCE.md",
+  "sdk/index.md",
+  "sdk/rust.md",
+  "sdk/python.md",
+  "zh/sdk/index.md",
+  "zh/sdk/rust.md",
+  "zh/sdk/python.md"
 ]

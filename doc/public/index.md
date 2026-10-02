@@ -31,3 +31,5 @@ This manual follows the current source tree, version **0.1.3 / log-print/2**. Tw
 See the [CLI reference](reference/cli.md), [configuration reference](reference/configuration.md) and [troubleshooting guide](troubleshooting.md). Serial input is outside the current workspace. The separate input-replay, io-plugin-util and log-plot components have been retired.
 
 English is the default documentation language. Use the language menu for the equivalent Simplified Chinese page, or open the [Chinese manual](zh/index.md).
+
+For plugin development, see the [SDK overview](sdk/index.md), [Rust SDK](sdk/rust.md) and [Python SDK](sdk/python.md) (feature-branch version).

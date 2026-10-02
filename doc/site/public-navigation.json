@@ -177,5 +177,34 @@
         "page": "plugins/output-webui.md"
       }
     ]
+  },
+  {
+    "text": {
+      "en": "SDK development",
+      "zh": "SDK 开发"
+    },
+    "items": [
+      {
+        "text": {
+          "en": "SDK overview",
+          "zh": "SDK 总览"
+        },
+        "page": "sdk/index.md"
+      },
+      {
+        "text": {
+          "en": "Rust SDK",
+          "zh": "Rust SDK"
+        },
+        "page": "sdk/rust.md"
+      },
+      {
+        "text": {
+          "en": "Python SDK",
+          "zh": "Python SDK"
+        },
+        "page": "sdk/python.md"
+      }
+    ]
   }
 ]

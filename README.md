@@ -48,6 +48,8 @@ Serial input is outside the current workspace. Old `log-print/1` clients and con
 
 ## Documentation
 
+Plugin development: [SDK overview](doc/public/sdk/index.md), [Rust SDK](doc/public/sdk/rust.md), [Python SDK](doc/public/sdk/python.md). Python is available from the documented feature branch, not bundled in main / ver-0.1.3.
+
 **English is the default.** The complete public manual is available in both languages, with localized navigation and full-text search:
 
 - [English manual](https://txyy2023.github.io/log_print/) · [简体中文手册](https://txyy2023.github.io/log_print/zh/)

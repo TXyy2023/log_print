@@ -42,6 +42,8 @@ Core 只做内存缓冲与转发，默认使用 TCP，也可显式选择 UDP。I
 
 ## 文档
 
+插件开发：[SDK 总览](doc/public/zh/sdk/index.md)、[Rust SDK](doc/public/zh/sdk/rust.md)、[Python SDK](doc/public/zh/sdk/python.md)。Python 请按文档从功能分支获取，尚未包含在 main / ver-0.1.3。
+
 [在线使用手册](https://txyy2023.github.io/log_print/zh/)默认英语，提供完整中文版本和分语言全文搜索，按入门、使用指南、参考和插件参考组织。可以从[快速开始](https://txyy2023.github.io/log_print/zh/quickstart.html)入门，查阅 [CLI 命令](https://txyy2023.github.io/log_print/zh/reference/cli.html)、[配置文件](https://txyy2023.github.io/log_print/zh/reference/configuration.html)，或查看[常见问题](https://txyy2023.github.io/log_print/zh/troubleshooting.html)。
 
 手册正文维护在 [`doc/public/zh/`](doc/public/zh/index.md)，GitHub 中的 Markdown 与在线站点共用同一份内容。
