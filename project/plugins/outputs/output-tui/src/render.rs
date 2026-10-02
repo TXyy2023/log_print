@@ -400,7 +400,15 @@ fn draw_log(
             .collect()
     };
     if p["metadata"] == true {
-        for k in ["seq", "offset", "epoch", "source"] {
+        for k in [
+            "seq",
+            "offset",
+            "epoch",
+            "source_ts_ns",
+            "source_seq",
+            "upstream",
+            "upstream_epochs",
+        ] {
             if !columns.iter().any(|c| c.0 == k) {
                 columns.push((k.into(), 12));
             }

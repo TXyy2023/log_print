@@ -997,7 +997,12 @@ impl App {
                                 .as_array()
                                 .into_iter()
                                 .flatten()
-                                .map(|x| x.as_str().unwrap_or_default())
+                                .map(|x| {
+                                    x.as_str()
+                                        .or_else(|| x["alias"].as_str())
+                                        .or_else(|| x["stream"].as_str())
+                                        .unwrap_or_default()
+                                })
                                 .collect::<Vec<_>>()
                                 .join(",")
                         } else if v[*k].is_null() {
