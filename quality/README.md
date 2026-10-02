@@ -17,6 +17,7 @@ python3 quality/run.py --list
 | `tests/v2/cli.py` | 无配置文件启动、文本结果、命名参数、二进制原始读取、转换和归档读回 |
 | `tests/v2/inputs.py` | 静态文件、跟随/截断/替换、双通道程序、异常退出、进程树、隔离tmux |
 | `tests/v2/outputs.py` | 显示与保存读回、转换派生流、停止与错误 |
+| `tests/python_sdk.py` | Python SDK wheel 构建、干净环境安装、真实 Core/插件互通与故障测试；独立 Python SDK CI 覆盖三平台及 Python 3.12/3.14 |
 | `tests/webui_frontend.py` | 锁文件安装、许可证生成、Vue 类型检查与 Vite 构建 |
 | `tests/v2/webui.py` | HTTP/SSE、Page/CLI 恢复、实时与 SQLite 归档衔接、动态流、上下文与曲线、后台任务和帧预算 |
 | `tests/docs/verify_links.py` | 文档站链接与附件 |

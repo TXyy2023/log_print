@@ -8,6 +8,7 @@
 | `plugins/inputs/` | input-file、input-program 两个输入 |
 | `plugins/outputs/` | output-raw、output-file、output-transform、output-webui 四个输出 |
 | `examples/` | 使用示例 |
+| `sdks/python/` | Python 原生异步 SDK：[接入、输出与本地安装](sdks/python/README.md) |
 | `skills/` | 项目 Agent 使用指南 |
 | `workloads/` | 外部真实软件日志工作负载，区别于测试生成输入 |
 

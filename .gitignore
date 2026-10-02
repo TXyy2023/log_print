@@ -38,3 +38,8 @@
 /project/plugins/outputs/output-webui/frontend/node_modules/
 /project/plugins/outputs/output-webui/evidence/
 /.webui/
+
+# Python SDK local build products.
+/project/sdks/python/build/
+/project/sdks/python/dist/
+/project/sdks/python/src/*.egg-info/

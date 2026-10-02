@@ -1,0 +1,47 @@
+name: Python SDK
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: python-sdk-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  sdk:
+    name: ${{ matrix.os }} / Python ${{ matrix.python }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ['3.12', '3.14']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Build real Core and Rust plugins for interoperability
+        run: cargo build --locked --workspace
+      - name: Build wheel, install in clean venv, run contract and process tests
+        run: python quality/tests/python_sdk.py
+        env:
+          PYTHONUTF8: '1'
+          PYTHONIOENCODING: utf-8
+          PYTHONASYNCIODEBUG: '1'
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: python-sdk-${{ matrix.os }}-${{ matrix.python }}
+          path: quality/artifacts/python-sdk/
+          if-no-files-found: error
+          retention-days: 14
