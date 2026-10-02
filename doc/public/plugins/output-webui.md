@@ -76,3 +76,7 @@ log-print webui web query cancel --query QUERY_UUID
 默认每流缓存 4096 Records 或 4 MiB，总记录缓存 64 MiB。浏览器只保留有限结果页；暂停显示仍继续采集。查询临时文件与 Page 数据库分开，重启清除临时定位。
 
 完整命令见 [CLI 参考](../reference/cli.md)，JSON 字段见 [配置参考](../reference/configuration.md)，归档原有设置见 [output-file](output-file.md)。
+
+## 与终端同步
+
+使用 `log-print tui web attach` 可直接连接同一个后端，浏览器和终端共享 Page、配置和历史定位。WebUI/TUI 的状态与历史引擎在 `project/crates/log-view`，Core 凭据只留在 Output 后端。终端字体和曲线笔画按字符网格显示。

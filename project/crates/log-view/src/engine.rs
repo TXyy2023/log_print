@@ -171,7 +171,7 @@ impl Engine {
                 budget,
             ),
             "capabilities" => Ok(
-                json!({"panels":["log","curve"],"layouts":["canvas","grid"],"canvas":{"coordinates":"pixels","zoom":[0.2,2.0],"panel_width":[320,4000],"panel_height":[220,4000],"shared_viewport":true},"page_size":200,"curve_points":2000,"scans":2,"history":if self.config["history_path"].is_string(){"sqlite+memory"}else{"memory_only"},"methods":["page.list","page.get","page.create","page.set","page.clone","page.delete","page.select","panel.add","panel.get","panel.set","panel.clone","panel.remove","series.add","series.set","series.remove","layout.set","history.read","history.search","history.context","history.curve","query.get","query.cancel"]}),
+                json!({"surface":self.config["surface"],"panels":["log","curve"],"layouts":["canvas","grid"],"canvas":{"coordinates":"pixels","zoom":[0.2,2.0],"panel_width":[320,4000],"panel_height":[220,4000],"shared_viewport":true},"page_size":200,"curve_points":2000,"scans":2,"history":if self.config["history_path"].is_string(){"sqlite+memory"}else{"memory_only"},"methods":["page.list","page.get","page.create","page.set","page.clone","page.delete","page.select","panel.add","panel.get","panel.set","panel.clone","panel.remove","series.add","series.set","series.remove","layout.set","history.read","history.search","history.context","history.curve","query.get","query.cancel"]}),
             ),
             "state.get" | "status.get" => Ok(self.state()),
             "query.get" => self.query(&args, budget),

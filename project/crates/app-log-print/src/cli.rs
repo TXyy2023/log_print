@@ -58,6 +58,12 @@ pub enum Action {
         #[command(subcommand)]
         command: Box<crate::webui_cli::WebuiAction>,
     },
+    /// Terminal display commands, or attach an interactive terminal viewer.
+    Tui {
+        id: String,
+        #[command(subcommand)]
+        command: Box<TuiAction>,
+    },
     Plugin {
         #[command(subcommand)]
         command: PluginAction,
@@ -70,6 +76,22 @@ pub enum Action {
     },
     /// Stop this instance and wait for complete cleanup.
     Stop,
+}
+
+#[derive(clap::Subcommand)]
+pub enum TuiAction {
+    /// Attach to a running TUI or WebUI display; q detaches without stopping capture.
+    Attach {
+        /// Render one plain-text frame without requiring a terminal.
+        #[arg(long)]
+        snapshot: bool,
+        #[arg(long, default_value_t = 120, value_parser = clap::value_parser!(u16).range(20..=400))]
+        width: u16,
+        #[arg(long, default_value_t = 36, value_parser = clap::value_parser!(u16).range(8..=150))]
+        height: u16,
+    },
+    #[command(flatten)]
+    Control(Box<log_view::cli::ViewAction>),
 }
 
 #[derive(Subcommand)]
@@ -218,6 +240,12 @@ pub struct Launch {
     output_sqlite: Vec<String>,
     #[arg(long, value_name = "ID")]
     output_webui: Vec<String>,
+    #[arg(long, value_name = "ID")]
+    output_tui: Vec<String>,
+    #[arg(long, value_name = "TUI=DIRECTORY")]
+    tui_archive: Vec<String>,
+    #[arg(long, value_name = "TUI=ARCHIVE_PLUGIN")]
+    tui_history: Vec<String>,
     #[arg(long, value_name = "WEB=DIRECTORY")]
     webui_archive: Vec<String>,
     #[arg(long, value_name = "WEB=ARCHIVE_PLUGIN")]
@@ -254,7 +282,7 @@ pub struct Launch {
 }
 
 impl Launch {
-    fn fields(&self) -> [(&str, &Vec<String>); 21] {
+    fn fields(&self) -> [(&str, &Vec<String>); 24] {
         [
             ("--input-file", &self.input_file),
             ("--input-program", &self.input_program),
@@ -264,6 +292,9 @@ impl Launch {
             ("--output-file", &self.output_file),
             ("--output-sqlite", &self.output_sqlite),
             ("--output-webui", &self.output_webui),
+            ("--output-tui", &self.output_tui),
+            ("--tui-archive", &self.tui_archive),
+            ("--tui-history", &self.tui_history),
             ("--webui-archive", &self.webui_archive),
             ("--webui-history", &self.webui_history),
             ("--input", &self.input),
@@ -372,6 +403,7 @@ impl Launch {
         }
         for (items, bin) in [
             (&self.output_webui, "output-webui"),
+            (&self.output_tui, "output-tui"),
             (&self.output_raw, "output-raw"),
             (&self.output_transform, "output-transform"),
         ] {
@@ -380,19 +412,21 @@ impl Launch {
             }
         }
         for plugin in plugins.values_mut() {
-            if plugin.bin == "output-webui" {
+            if matches!(plugin.bin.as_str(), "output-webui" | "output-tui") {
                 plugin.read_all = true;
             }
         }
-        for (items, key) in [
-            (&self.webui_archive, "archive_dir"),
-            (&self.webui_history, "history_plugin"),
+        for (items, key, bin) in [
+            (&self.webui_archive, "archive_dir", "output-webui"),
+            (&self.webui_history, "history_plugin", "output-webui"),
+            (&self.tui_archive, "archive_dir", "output-tui"),
+            (&self.tui_history, "history_plugin", "output-tui"),
         ] {
             for item in items {
                 let (id, value) = assignment(item)?;
-                let plugin = plugins.get_mut(id).context("unknown WebUI")?;
-                if plugin.bin != "output-webui" || value.is_empty() {
-                    bail!("archive/history flag requires a WebUI and nonempty value");
+                let plugin = plugins.get_mut(id).context("unknown display plugin")?;
+                if plugin.bin != bin || value.is_empty() {
+                    bail!("archive/history flag requires the matching display type and nonempty value");
                 }
                 plugin.config[key] = json!(value);
             }

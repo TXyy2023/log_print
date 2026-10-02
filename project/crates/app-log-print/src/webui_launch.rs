@@ -18,11 +18,15 @@ pub fn prepare(config: &mut Config, base: &Path, instance: &Path) -> Result<()> 
         if Path::new(&config.plugins[index].bin)
             .file_stem()
             .and_then(|v| v.to_str())
-            != Some("output-webui")
+            .is_none_or(|name| !matches!(name, "output-webui" | "output-tui"))
         {
             continue;
         }
         let web = config.plugins[index].id.clone();
+        let terminal = Path::new(&config.plugins[index].bin)
+            .file_stem()
+            .and_then(|v| v.to_str())
+            == Some("output-tui");
         let archive_dir = config.plugins[index].config["archive_dir"]
             .as_str()
             .map(str::to_owned);
@@ -64,8 +68,10 @@ pub fn prepare(config: &mut Config, base: &Path, instance: &Path) -> Result<()> 
         spec.read_all = true;
         spec.reads.clear();
         if spec.config.get("state_path").is_none() {
-            spec.config["state_path"] =
-                json!(instance.join(".webui").join(&web).join("pages.sqlite3"));
+            spec.config["state_path"] = json!(instance
+                .join(if terminal { ".tui" } else { ".webui" })
+                .join(&web)
+                .join("pages.sqlite3"));
         } else if let Some(p) = spec.config["state_path"].as_str() {
             spec.config["state_path"] = json!(path(p));
         }

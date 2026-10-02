@@ -15,6 +15,9 @@ from support import Core, RPC, eventually
 from outputs import Output
 from cli import NativeApp
 
+# Executed unchanged against both independent Output adapters.
+KIND = "webui"
+
 
 def request(url, method=None, args=None, origin=True):
     data=json.dumps({'method':method,'args':args or {}}).encode() if method else None
@@ -52,7 +55,7 @@ def all_rows(url, identity, timeout=15):
 def base(web_config, archive=None):
     plugins=[{'id':'source','role':'input','bin':'unused','streams':[{'id':'raw'}]},
              {'id':'derive','role':'output','bin':'unused','reads':['raw']},
-             {'id':'web','role':'output','bin':'output-webui','read_all':True,'config':web_config}]
+             {'id':'web','role':'output','bin':f'output-{KIND}','read_all':True,'config':web_config}]
     if archive:plugins.append(archive)
     return plugins
 
@@ -66,7 +69,7 @@ class WebUI(unittest.TestCase):
                 url=web.ready('serving')['url']
                 eventually(lambda:len(request(url)['streams'])==1)
                 with urllib.request.urlopen(url) as response:
-                    html=response.read().decode();self.assertIn('/assets/',html);self.assertNotIn('cdn',html)
+                    html=response.read().decode();self.assertIn('/assets/' if KIND=='webui' else 'output-tui: attach',html);self.assertNotIn('cdn',html)
                 with urllib.request.urlopen(url+'/api/events',timeout=5) as sse:
                     self.assertIn(b'event: state',sse.readline())
                     self.assertIn(b'pages',sse.readline())
@@ -289,21 +292,21 @@ class WebUI(unittest.TestCase):
                 file.stop()
 
     def test_canvas_cli_atomic_layout_revision_and_restart(self):
-        with NativeApp('--output-webui','web') as app:
+        with NativeApp(f'--output-{KIND}','web') as app:
             def control(method,**args):
                 state=json.loads(app.state.read_text())
                 with RPC(state['address'],'__manager__',state['token']) as manager:
                     return manager.call('core.call',op='control',args={'target':'web','method':method,'args':args})
             url=control('url')['url']
-            app.cli('webui','web','page','create','--name','canvas','--layout-mode','canvas','--theme','light')
-            app.cli('webui','web','page','select','--page','canvas')
-            app.cli('webui','web','panel','add','--title','Console','--left','-24.5','--top','32','--panel-width','760','--panel-height','480')
+            app.cli(KIND,'web','page','create','--name','canvas','--layout-mode','canvas','--theme','light')
+            app.cli(KIND,'web','page','select','--page','canvas')
+            app.cli(KIND,'web','panel','add','--title','Console','--left','-24.5','--top','32','--panel-width','760','--panel-height','480')
             first=control('page.get')['page']['panels'][0]['id']
-            app.cli('webui','web','panel','clone','--panel',first,'--title','Second')
+            app.cli(KIND,'web','panel','clone','--panel',first,'--title','Second')
             second=control('page.get')['page']['panels'][1]['id']
-            app.cli('webui','web','layout','set','--place',f'{first}=0,0,760,480','--place',f'{second}=800,0,520,360')
-            app.cli('webui','web','panel','set','--panel',second,'--hidden','true','--locked','true','--font-size','14','--row-height','32','--z-index','2')
-            app.cli('webui','web','page','set','--view-x','-80','--view-y','24','--view-zoom','0.75','--show-minimap','true','--show-grid','false','--snap','false','--sidebar-open','false','--inspector-open','true','--active-panel',first,'--tool','pan')
+            app.cli(KIND,'web','layout','set','--place',f'{first}=0,0,760,480','--place',f'{second}=800,0,520,360')
+            app.cli(KIND,'web','panel','set','--panel',second,'--hidden','true','--locked','true','--font-size','14','--row-height','32','--z-index','2')
+            app.cli(KIND,'web','page','set','--view-x','-80','--view-y','24','--view-zoom','0.75','--show-minimap','true','--show-grid','false','--snap','false','--sidebar-open','false','--inspector-open','true','--active-panel',first,'--tool','pan')
             before=control('page.get')['page']
             self.assertEqual(before['layout_mode'],'canvas');self.assertEqual(before['view_zoom'],.75)
             self.assertEqual(before['panels'][1]['left'],800);self.assertTrue(before['panels'][1]['hidden'])
@@ -312,41 +315,41 @@ class WebUI(unittest.TestCase):
                 event=json.loads(sse.readline().decode().removeprefix('data: '))
                 self.assertEqual(next(p for p in event['pages'] if p['id']==event['selected']),before)
             revision=request(url)['revision']
-            bad=app.cli('webui','web','layout','set','--place',f'{first}=40,40,760,480','--place','missing=0,0,500,300',ok=False)
+            bad=app.cli(KIND,'web','layout','set','--place',f'{first}=40,40,760,480','--place','missing=0,0,500,300',ok=False)
             self.assertNotEqual(bad.returncode,0)
             self.assertEqual(control('page.get')['page'],before)
             self.assertEqual(request(url)['revision'],revision)
-            app.cli('webui','web','page','set','--view-zoom','0.8')
-            self.assertNotEqual(app.cli('webui','web','page','set','--revision',str(revision),'--view-zoom','1',ok=False).returncode,0)
+            app.cli(KIND,'web','page','set','--view-zoom','0.8')
+            self.assertNotEqual(app.cli(KIND,'web','page','set','--revision',str(revision),'--view-zoom','1',ok=False).returncode,0)
             expected=control('page.get')['page']
             app.cli('plugin','restart','web')
             self.assertEqual(control('page.get')['page'],expected)
             app.cli('stop');app.started=False;app.start()
             self.assertEqual(control('page.get')['page'],expected)
-            app.cli('webui','web','panel','remove','--panel',first)
+            app.cli(KIND,'web','panel','remove','--panel',first)
             self.assertIsNone(control('page.get')['page']['active_panel'])
 
     def test_cli_pages_restore_launch_modes_and_archive_flags(self):
         with tempfile.TemporaryDirectory() as td:
             source=Path(td)/'app.log';source.write_text('')
-            options=('--input-file',f'source={source}','--output-webui','web','--webui-archive',f'web={td}/capture')
+            options=('--input-file',f'source={source}',f'--output-{KIND}','web',f'--{KIND}-archive',f'web={td}/capture')
             with NativeApp(*options) as app:
                 def control(method,**args):
                     state=json.loads(app.state.read_text())
                     with RPC(state['address'],'__manager__',state['token']) as manager:
                         return manager.call('core.call',op='control',args={'target':'web','method':method,'args':args})
                 url=control('url')['url']
-                app.cli('webui','web','page','create','--name','dashboard','--title','监控')
-                app.cli('webui','web','page','select','--page','dashboard')
-                app.cli('webui','web','panel','add','--page','dashboard','--title','Logs','--kind','log','--h','7','--stream','raw-waiting')
+                app.cli(KIND,'web','page','create','--name','dashboard','--title','监控')
+                app.cli(KIND,'web','page','select','--page','dashboard')
+                app.cli(KIND,'web','panel','add','--page','dashboard','--title','Logs','--kind','log','--h','7','--stream','raw-waiting')
                 state=request(url);panel=state['pages'][-1]['panels'][0]['id']
-                app.cli('webui','web','panel','set','--panel',panel,'--text','saved-filter','--paused','true','--format','hex','--x','1','--w','11')
-                app.cli('webui','web','panel','set','--panel',panel,'--column','time','--column','seq','--column','text','--column-width','text=650','--sort-column','seq','--sort-order','desc')
+                app.cli(KIND,'web','panel','set','--panel',panel,'--text','saved-filter','--paused','true','--format','hex','--x','1','--w','11')
+                app.cli(KIND,'web','panel','set','--panel',panel,'--column','time','--column','seq','--column','text','--column-width','text=650','--sort-column','seq','--sort-order','desc')
                 saved=control('panel.get',panel=panel)['panel']
                 self.assertEqual(next(c['width'] for c in saved['column_state'] if c['colId']=='text'),650)
                 self.assertEqual(next(c['sort'] for c in saved['column_state'] if c['colId']=='seq'),'desc')
-                app.cli('webui','web','page','clone','--page','dashboard','--name','copy')
-                app.cli('webui','web','page','delete','--page','copy')
+                app.cli(KIND,'web','page','clone','--page','dashboard','--name','copy')
+                app.cli(KIND,'web','page','delete','--page','copy')
                 before=control('page.get',page='dashboard')['page']
                 app.cli('plugin','restart','web');url=control('url')['url']
                 self.assertEqual(control('page.get',page='dashboard')['page'],before)
@@ -357,9 +360,9 @@ class WebUI(unittest.TestCase):
                 archives=list((Path(td)/'capture').glob('run-*.sqlite'));self.assertEqual(len(archives),2)
                 with closing(sqlite3.connect(archives[0])) as db:
                     self.assertEqual(db.execute("SELECT value FROM metadata WHERE key='schema_version'").fetchone()[0],'3')
-            with NativeApp('--input-file',f'source={source}','--output-sqlite',f'archive={td}/explicit.sqlite','--output-webui','web','--webui-history','web=archive') as app:
+            with NativeApp('--input-file',f'source={source}','--output-sqlite',f'archive={td}/explicit.sqlite',f'--output-{KIND}','web',f'--{KIND}-history','web=archive') as app:
                 status=app.inspect('status');self.assertIn('archive',str(status));self.assertTrue((Path(td)/'explicit.sqlite').exists())
-            invalid=NativeApp('--output-webui','web','--webui-archive',f'web={td}/a','--webui-history','web=archive')
+            invalid=NativeApp(f'--output-{KIND}','web',f'--{KIND}-archive',f'web={td}/a',f'--{KIND}-history','web=archive')
             self.assertNotEqual(invalid.cli('start',*invalid.options,ok=False).returncode,0)
             invalid.temp.cleanup()
 

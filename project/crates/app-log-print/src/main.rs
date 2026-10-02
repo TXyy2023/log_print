@@ -1174,6 +1174,44 @@ async fn main() -> Result<()> {
             PluginAction::Restart { id } => ("plugin.restart".into(), json!({"id":id})),
             PluginAction::Call { id, method, args } => control(id, &method, args.parse()?),
         },
+        Action::Tui { id, command } => match *command {
+            cli::TuiAction::Control(command) => {
+                let (method, args) = command.request()?;
+                control(id, &method, args)
+            }
+            cli::TuiAction::Attach {
+                snapshot,
+                width,
+                height,
+            } => {
+                let (op, args) = control(id, "url", json!({}));
+                let result = manager(&state, &op, args).await?;
+                let url = result["url"].as_str().context("display URL missing")?;
+                let binary = resolve_binary("output-tui", &std::env::current_dir()?)?;
+                let mut child = Command::new(binary);
+                child
+                    .arg("--attach")
+                    .arg(url)
+                    .arg("--width")
+                    .arg(width.to_string())
+                    .arg("--height")
+                    .arg(height.to_string());
+                if snapshot {
+                    child.arg("--snapshot");
+                }
+                let status = child
+                    .stdin(Stdio::inherit())
+                    .stdout(Stdio::inherit())
+                    .stderr(Stdio::inherit())
+                    .kill_on_drop(true)
+                    .status()
+                    .await?;
+                if !status.success() {
+                    bail!("terminal viewer exited with {status}");
+                }
+                return Ok(());
+            }
+        },
         Action::Webui { id, command } => {
             let (method, args) = (*command).request()?;
             control(id, &method, args)

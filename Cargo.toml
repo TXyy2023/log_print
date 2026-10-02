@@ -5,16 +5,17 @@ members = [
     "project/crates/log-core",
     "project/crates/log-proto",
     "project/crates/log-plugin-sdk",
+    "project/crates/log-view",
     "project/plugins/inputs/input-file",
     "project/plugins/inputs/input-program",
     "project/plugins/outputs/output-raw",
     "project/plugins/outputs/output-transform",
     "project/plugins/outputs/output-file",
     "project/plugins/outputs/output-webui",
+    "project/plugins/outputs/output-tui",
 ]
 exclude = [
     "project/plugins/inputs/input-serial",
-    "project/plugins/outputs/output-tui",
 ]
 
 [workspace.package]

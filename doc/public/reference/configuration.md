@@ -51,3 +51,7 @@ app-log-print 启动时解析命令行设置或读取配置文件一次，保存
 插件字段 `read_all` 默认 false，仅允许没有自有流、没有显式 reads 的 Output 使用；该消费者不能创建或发布流。WebUI 与其配套归档启用此权限，其他插件配置保持原语义。
 
 WebUI `config.archive_dir` 对应 `--webui-archive`，`config.history_plugin` 对应 `--webui-history`，二者互斥。`config.state_path` 指定独立 Page SQLite 配置数据库；`config.listen` 默认 `127.0.0.1:0`，只允许 loopback。supervisor 为每次运行生成归档路径与 runtime_id；冷启动只恢复配置，重新绑定本次流。
+
+## 终端显示配置
+
+`output-tui` 与 `output-webui` 使用相同的 Output 配置字段与 `read_all` 约束。将 `bin` 设为 `output-tui` 即可；`config` 可设置 `archive_dir` 或 `history_plugin`、`state_path` 与 loopback `listen`。默认 Page 路径位于实例状态目录的 `.tui/`，配置数据库不承担日志归档。见 [终端工作台](../plugins/output-tui.md)。

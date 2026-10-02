@@ -263,6 +263,9 @@ impl Store {
                             ],
                         );
                     }
+                    if let Some(active) = args.get("active_panel") {
+                        pages[i]["active_panel"] = active.clone();
+                    }
                 }
                 _ => bail!("unsupported control {method}"),
             }
@@ -576,6 +579,20 @@ mod canvas_tests {
             .command("panel.set", &json!({"panel":panel,"panel_width":100}))
             .is_err());
         assert_eq!(before, store.state);
+        assert!(store
+            .command(
+                "layout.set",
+                &json!({"active_panel":"unknown","layout":[{"id":panel,"left":400}]})
+            )
+            .is_err());
+        assert_eq!(before, store.state);
+        store
+            .command(
+                "layout.set",
+                &json!({"active_panel":panel,"layout":[{"id":panel,"left":-24.5}]}),
+            )
+            .unwrap();
+        assert_eq!(store.state["pages"][0]["active_panel"], panel);
         let copy = store
             .command("panel.clone", &json!({"panel":panel}))
             .unwrap()["result"]

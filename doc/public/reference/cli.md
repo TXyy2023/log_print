@@ -114,3 +114,7 @@ log-print webui WEB query get|cancel
 使用 `--page`、`--panel`、`--series`、`--query` 指定对象，所有设置使用命名参数。页面/面板/曲线命令修改后端配置，浏览器同步。`--revision` 可防止覆盖并发修改。历史命令返回固定水位的任务 ID，`query get --query UUID --offset 0 --limit 200` 分页；`history context` 支持 `--seq`、`--byte-offset`、`--before`、`--after`。曲线支持 `--regex` 命名捕获组 value 或 `--field` JSON 字段。时间范围是 Unix 纳秒。完整字段通过每层 `--help` 查看，示例见 [WebUI](../plugins/output-webui.md)。
 
 Core `read.range` 使用 stream、epoch、from、end、limit，只读取对应 epoch 内仍保留的内存，并返回实际 oldest/head/end/next/uncovered_before。现有 read 保持原行为。
+
+## 终端工作台
+
+`--output-tui TERM`、`--tui-archive TERM=DIRECTORY`、`--tui-history TERM=ARCHIVE_PLUGIN` 与 WebUI 对应参数等价，后两者互斥。`log-print tui TERM` 提供与 `webui` 完全相同的控制命令，并增加 `attach [--snapshot] [--width 120] [--height 36]`。attach 也能连接 WebUI ID；退出视图不停止后台采集。详细说明见 [output-tui](../plugins/output-tui.md)。

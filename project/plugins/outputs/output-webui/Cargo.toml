@@ -8,15 +8,6 @@ rust-version.workspace = true
 [dependencies]
 anyhow.workspace = true
 tokio.workspace = true
-serde.workspace = true
-serde_json.workspace = true
-uuid.workspace = true
-log-proto.workspace = true
-log-plugin-sdk.workspace = true
-output-file = { path = "../output-file" }
+log-view = { path = "../../../crates/log-view" }
 axum = "0.8.9"
-async-stream = "0.3"
-regex = "1"
-rusqlite = { version = "0.37", features = ["bundled"] }
-fs2 = "0.4"
 include_dir = "0.7"

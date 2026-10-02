@@ -20,7 +20,6 @@
 !/doc/site/
 # Deferred plugins remain on this machine, outside the 0.1.0 workspace.
 /project/plugins/inputs/input-serial/
-/project/plugins/outputs/output-tui/
 # Local deferred dashboard example.
 /project/examples/dashboard.json
 # Example archive outputs and Core history.
@@ -38,3 +37,5 @@
 /project/plugins/outputs/output-webui/frontend/node_modules/
 /project/plugins/outputs/output-webui/evidence/
 /.webui/
+
+/.tui/

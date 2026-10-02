@@ -100,3 +100,7 @@ python3 quality/run.py
 ```
 
 `assets/` 已提交并嵌入二进制；最终用户运行无需 Node、CDN 或互联网。前端源码与 package-lock 提交到 Git。固定 Vue 3.5.43、Element Plus 2.14.7、Vue Flow Core 1.48.2 / NodeResizer 1.5.1 / MiniMap 1.5.4、Element Plus Icons 2.3.2、GridStack 14.0.0 官方 Vue 集成、AG Grid Community/Vue 36.2.0、ECharts 6.1.0；许可证文本见 `frontend/public/THIRD_PARTY_LICENSES.md`（随前端产物一起打包）。详细验收记录见 [VERIFICATION.md](VERIFICATION.md)。
+
+## 与终端同步
+
+使用 `log-print tui web attach` 可直接连接同一个后端，浏览器和终端共享 Page、配置和历史定位。WebUI/TUI 的状态与历史引擎在 `project/crates/log-view`，Core 凭据只留在 Output 后端。终端字体和曲线笔画按字符网格显示。

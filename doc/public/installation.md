@@ -30,7 +30,7 @@ cargo build --release --locked --workspace
 - `log-print`：启动、管理和读取实例。
 - `log-print-core`：由主程序启动的 Core。
 - `input-program`、`input-file`：输入插件。
-- `output-raw`、`output-transform`、`output-file`、`output-webui`：输出和转换插件。
+- `output-raw`、`output-transform`、`output-file`、`output-webui`、`output-tui`：输出和转换插件。
 
 主程序会查找配置声明的插件。按照本手册在仓库根目录运行，并保留上述可执行文件在构建目录中，不要只拷贝主程序后假定其余组件已安装。
 

@@ -17,7 +17,7 @@ import sys
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
-PROCESS_STEPS = {'protocol-v2', 'supervisor-v2', 'supervisor-failures-v2', 'cli-v2', 'inputs-v2', 'outputs-v2', 'webui-v2'}
+PROCESS_STEPS = {'protocol-v2', 'supervisor-v2', 'supervisor-failures-v2', 'cli-v2', 'inputs-v2', 'outputs-v2', 'webui-v2', 'tui-v2'}
 
 
 def redact_console(text):
@@ -149,7 +149,7 @@ def main():
         ('fmt', ['cargo', 'fmt', '--all', '--check']),
         ('clippy', ['cargo', 'clippy', '--workspace', '--all-targets', '--locked', '--', '-D', 'warnings']),
         ('rust-tests', ['cargo', 'test', '--workspace', '--locked']),
-        ('build', ['cargo', 'build', '--workspace', '--locked']),
+        ('build', ['cargo', 'build', '--workspace', '--examples', '--bins', '--locked']),
         ('protocol-v2', python_test('quality/tests/v2/protocol.py')),
         ('supervisor-v2', python_test('quality/tests/v2/supervisor.py')),
         ('supervisor-failures-v2', python_test('quality/tests/v2/supervisor_failures.py')),
@@ -157,6 +157,7 @@ def main():
         ('inputs-v2', python_test('quality/tests/v2/inputs.py')),
         ('outputs-v2', python_test('quality/tests/v2/outputs.py')),
         ('webui-v2', python_test('quality/tests/v2/webui.py')),
+        ('tui-v2', python_test('quality/tests/v2/tui.py')),
     ]
     optional = []
     if args.list:
