@@ -5,6 +5,7 @@
 - `log-print-icon.svg`: an SVG viewport of the same embedded PNG, showing only the LP emblem. No pixels were regenerated or retouched.
 - Used by both READMEs, the documentation homepage/navigation/favicon, and the WebUI header/favicon.
 - Generated with the built-in imagegen tool; no specific model is asserted.
+- README transparent variants: `log-print-logo-transparent-light.svg` and `log-print-logo-transparent-dark.svg`. Both embed the unchanged original image and use the same luminance-based SVG alpha mask. The canvas has compact padding; foreground color switches with the viewer theme. White background and LP negative spaces become transparent. Raster imagegen cutouts were evaluated but rejected due to mask artifacts.
 - The earlier banner below remains as a historical asset.
 
 ## Selected logo prompt {#selected-logo-prompt}

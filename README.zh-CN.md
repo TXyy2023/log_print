@@ -1,5 +1,9 @@
 <p align="center">
-  <img src="doc/public/assets/branding/log-print-logo.png" alt="log_print LP 标识" width="360">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="doc/public/assets/branding/log-print-logo-transparent-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="doc/public/assets/branding/log-print-logo-transparent-light.svg">
+    <img src="doc/public/assets/branding/log-print-logo-transparent-light.svg" alt="log_print LP 标识" width="240">
+  </picture>
 </p>
 
 <h1 align="center">log_print</h1>
