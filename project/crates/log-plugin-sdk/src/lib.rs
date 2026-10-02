@@ -360,7 +360,51 @@ impl Client {
         })?
     }
     pub async fn streams(&self) -> Result<Value> {
-        self.request("streams", json!({})).await
+        let mut offset = 0usize;
+        let mut all = Vec::new();
+        loop {
+            let page = self
+                .request("streams", json!({"offset":offset,"limit":64}))
+                .await?;
+            // Older log-print/2 Core versions return the original array.
+            if page.is_array() {
+                return Ok(page);
+            }
+            all.extend(
+                page["streams"]
+                    .as_array()
+                    .context("catalog page")?
+                    .iter()
+                    .cloned(),
+            );
+            let next = page["next"].as_u64().context("catalog cursor")? as usize;
+            if next >= page["total"].as_u64().context("catalog size")? as usize {
+                break;
+            }
+            if next <= offset {
+                bail!("catalog cursor did not advance");
+            }
+            offset = next;
+        }
+        let mut seen = std::collections::BTreeSet::new();
+        all.retain(|s| seen.insert(s["id"].as_str().unwrap_or("").to_owned()));
+        Ok(Value::Array(all))
+    }
+    /// Read a fixed range from this epoch, reporting any evicted prefix.
+    pub async fn read_range(
+        &self,
+        stream: &str,
+        epoch: &str,
+        from: u64,
+        end: u64,
+        limit: usize,
+    ) -> Result<Value> {
+        let stream = self.resolve_stream(stream).await?;
+        self.request(
+            "read.range",
+            json!({"stream":stream,"epoch":epoch,"from":from,"end":end,"limit":limit}),
+        )
+        .await
     }
     pub async fn stream(&self, id: &str) -> Result<Value> {
         self.request("stream.get", json!({"stream":id})).await

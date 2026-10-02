@@ -86,37 +86,41 @@ for(let i=0;i<queue.length;i++) {
   const dest=destination(abs);
   return begin+'/'+dest+(hash?'#'+hash:'')+end;
  });
- // Vue must not interpret generic type placeholders in prose; code fences remain untouched.
- if(mode==='local' && rel.startsWith('local/') && !rel.endsWith('/index.md')) {
-  const historical = /(?:archive\/|reference\/|design\/|evidence\/)/.test(rel) && !rel.includes('/0.1.0/') && rel !== 'local/design/architecture.md' && !rel.startsWith('local/design/modules/');
-  if(historical) text='::: warning 历史资料与版本边界\n正文按原记录保留，可能包含旧 1.0.0、串口、TUI 或 WebUI 范围。当前公开版本为 0.1.2；请勿将这里的计划、设计或历史验收当成当前能力。\n:::\n\n'+text;
- }
  write(rel,text);
 }
-if(mode==='local') write('index.md',`# log_print 文档库\n\n在本机查阅公开使用说明、内部研发资料及历史归档。\n\n| 入口 | 内容 |\n|---|---|\n| [GitHub 文档](/published/index.md) | 面向使用者的 0.1.2 说明，作为独立公开站的唯一内容来源 |\n| [本地文档站](/local/index.md) | 按实际目录层级与相对路径浏览内部开发资料 |\n| [归档文档](/local/archive/index.md) | 历史计划与交付记录，完整保留 |\n\n搜索支持中文；顶部导航切换范围。历史文档的版本提示优先于正文中的“当前”等措辞。\n`);
+if(mode==='local') write('index.md',`# log_print 文档库
+
+查阅当前 0.1.2 使用说明、开发文档和用户计划记录。
+
+| 入口 | 内容 |
+|---|---|
+| [GitHub 文档](/published/index.md) | 公开使用手册，独立公开站的唯一正文来源 |
+| [本地文档站](/local/index.md) | 当前架构、协议、组件、计划与验证入口 |
+| [归档文档](/local/archive/index.md) | 清理状态；过期正文和附件已从站点移除 |
+
+内部导航按真实目录分组，页面名称只显示文件名，搜索只包含实际生成的页面。
+`);
 fs.mkdirSync(path.join(out,'.vitepress/theme'),{recursive:true});
 write('.vitepress/theme/index.js',fs.readFileSync(path.join(home,'theme.js')));
 write('.vitepress/theme/Mermaid.vue',fs.readFileSync(path.join(home,'Mermaid.vue')));
 write('.vitepress/theme/style.css',fs.readFileSync(path.join(home,'style.css')));
 function localEntries(directory, base=path.join(doc,'local')) {
- const agentToolsDirectory=path.join(base,'research','log-print-agent-tools');
  return fs.readdirSync(directory,{withFileTypes:true})
-  .filter(e=>e.name!=='.DS_Store' && !(directory===base && e.name==='archive') && !(directory===agentToolsDirectory && e.name==='README.md'))
+  .filter(e=>(e.isDirectory() ? walk(path.join(directory,e.name)).some(p=>p.endsWith('.md')) : e.name.endsWith('.md')) && !(directory===base && e.name==='archive'))
   .sort((a,b)=>Number(b.isDirectory())-Number(a.isDirectory()) || a.name.localeCompare(b.name,'en'))
   .map(e=>{
     const full=path.join(directory,e.name), rel=path.relative(base,full).replaceAll(path.sep,'/');
     if(e.isDirectory()) return {text:e.name,collapsed:true,items:localEntries(full,base)};
-    return {text:e.name,link:'/local/'+rel.replace(/\.md$/,'')};
+    return {text:path.basename(e.name,'.md'),link:'/local/'+rel.replace(/\.md$/,'')};
   });
 }
 function directoryMarkdown(directory, base=directory, depth=0) {
- const agentToolsDirectory=path.join(base,'research','log-print-agent-tools');
  return fs.readdirSync(directory,{withFileTypes:true})
-  .filter(e=>e.name!=='.DS_Store' && !(directory===base && ['archive','index.md'].includes(e.name)) && !(directory===agentToolsDirectory && e.name==='README.md'))
+  .filter(e=>(e.isDirectory() ? walk(path.join(directory,e.name)).some(p=>p.endsWith('.md')) : e.name.endsWith('.md')) && !(directory===base && ['archive','index.md'].includes(e.name)))
   .sort((a,b)=>Number(b.isDirectory())-Number(a.isDirectory()) || a.name.localeCompare(b.name,'en'))
   .map(e=>{
    const full=path.join(directory,e.name), rel=path.relative(base,full).replaceAll(path.sep,'/');
-   return '  '.repeat(depth)+'- '+(e.isDirectory()?'**'+e.name+'**\n'+directoryMarkdown(full,base,depth+1):'['+rel+']('+rel+')');
+   return '  '.repeat(depth)+'- '+(e.isDirectory()?'**'+e.name+'**\n'+directoryMarkdown(full,base,depth+1):'['+path.basename(e.name,'.md')+']('+rel+')');
   }).join('\n');
 }
 function sidebar(prefix) {

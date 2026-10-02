@@ -19,3 +19,9 @@
 插件本地观察到 Core 接收序号跳跃时会记录缺口，默认 `fail_on_gap:true` 停止；设为 false 时记录缺口后继续。未观察到缺口不证明全流水线完整，Core 覆盖和 UDP 丢包仍可能发生，插件停止也不代表 Input 已结束。
 
 路径必须预先具备父目录，已有文件不覆盖。每个文件会产生索引、检查点、锁等旁文件。版本 2 不自动修改旧版归档；升级后请使用新目录。
+
+## SQLite 历史联动
+
+新建 SQLite 归档使用 schema 3，增加流目录、动态注册、数值序号和观测时间索引；raw/JSONL/checkpoint 仍是格式 2，已有文件不自动迁移。库内的 `HistoryReader` 独立打开只读 WAL 连接，兼容 SQLite schema 2/3，提供 archive_id、实际起点、固定提交水位、缺口与分批 Record 查询。只读查询不会进入归档写线程。
+
+SQLite-only 配置可使用 `discover_streams:true` 动态订阅本实例全部流，并配合纯 Output 的 `read_all:true` 权限。`streams` 可为空，新增流以实际订阅 epoch/from 注册；初始遗漏不冒充完整覆盖。WebUI 的配套归档默认继续记录缺口后的数据；显式 output-file 的 `fail_on_gap` 默认仍为 true。

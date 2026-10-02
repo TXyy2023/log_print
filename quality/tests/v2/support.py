@@ -37,6 +37,8 @@ class RPC:
         self.file = None
         host, port = address.rsplit(':', 1)
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM if transport == 'udp' else socket.SOCK_STREAM)
+        if transport == 'udp':
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 256 * 1024)
         self.socket.settimeout(4)
         self.socket.connect((host, int(port)))
         if transport == 'tcp':
@@ -69,7 +71,7 @@ class RPC:
             raise RemoteError(message['error'])
         return message.get('result')
 
-    def call(self, op, **args):
+    def call(self, op, /, **args):
         self.seq += 1
         self.send({'id':self.seq,'op':op,'args':args})
         message = self.receive()
@@ -176,13 +178,30 @@ class App:
             raise AssertionError(f'{args}: code={r.returncode}\n{r.stdout}\n{r.stderr}\n{logs[-8000:]}')
         return r
 
-    def json(self,*args):
-        return json.loads(self.cli(*args).stdout)
+    def inspect(self, command, *args):
+        """Read precise protocol state independently of human CLI formatting."""
+        state = json.loads(self.state.read_text())
+        with RPC(state['address'], '__manager__', state['token']) as manager:
+            if command in ('status', 'streams', 'config'):
+                values = {'plugin':args[1]} if command == 'config' and args else {}
+                return manager.call(command, **values)
+            if command in ('stream', 'read'):
+                return manager.call('core.call', op='stream.get' if command == 'stream' else 'read',
+                                    args={'stream':args[0]})
+        raise AssertionError(f'unsupported fixture inspection: {command}')
+
+    def plugin_start(self, identity, *args):
+        result = self.cli('plugin', 'start', identity, *args)
+        assert 'streams:' in result.stdout, result.stdout
+        streams = [s for s in self.inspect('streams') if s['owner'] == identity]
+        assert all(s['id'] in result.stdout for s in streams), result.stdout
+        return {'streams':streams}
 
     def start(self):
-        result = self.json('start','--config',self.config)
+        result = self.cli('start','--config',self.config)
         self.started = True
-        return result
+        assert result.stdout.startswith('Started.\n'), result.stdout
+        return self.inspect('status')
 
     def __enter__(self):
         self.start()

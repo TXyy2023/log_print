@@ -84,10 +84,10 @@ class OwnedProcess:
 class SupervisorTests(unittest.TestCase):
     def test_starts_empty_and_stays_running_until_manual_stop(self):
         with App({'plugins':[]}) as app:
-            self.assertEqual(app.json('streams'),[])
+            self.assertEqual(app.inspect('streams'),[])
             time.sleep(.15)
-            self.assertEqual(app.json('streams'),[])
-            self.assertIn('supervisor',app.json('status'))
+            self.assertEqual(app.inspect('streams'),[])
+            self.assertIn('supervisor',app.inspect('status'))
             self.assertFalse(app.cli('config','set','x','--json','{}',ok=False).returncode==0)
             self.assertFalse(app.cli('session','list','x',ok=False).returncode==0)
 
@@ -102,18 +102,18 @@ class SupervisorTests(unittest.TestCase):
                 # Changed disk file is valid but must not be consulted by late children.
                 config['plugins'][0]['config']['path'] = str(replacement)
                 app.config.write_text(json.dumps(config))
-                started = app.json('plugin','start','source')
+                started = app.plugin_start('source')
                 self.assertTrue(started['streams'])
                 stream = started['streams'][0]['id']
-                data = eventually(lambda: app.json('read',stream)['records'])
-                eventually(lambda: next(p for p in app.json('status')['plugin_processes'] if p['id']=='source')['state']=='stopped')
-                data = app.json('read',stream)['records']
+                data = eventually(lambda: app.inspect('read',stream)['records'])
+                eventually(lambda: next(p for p in app.inspect('status')['plugin_processes'] if p['id']=='source')['state']=='stopped')
+                data = app.inspect('read',stream)['records']
                 self.assertEqual(bytes(x for r in data for x in r['payload']),b'original\n')
-                self.assertEqual(app.json('stream',stream)['description'],'fixture bytes')
-                self.assertEqual(app.json('config')['config']['plugins'][0]['config']['path'],str(source))
-                app.json('plugin','restart','source')
-                eventually(lambda: len(app.json('read',stream)['records'])>=6)
-                self.assertEqual(bytes(x for r in app.json('read',stream)['records'] for x in r['payload']),b'original\noriginal\n')
+                self.assertEqual(app.inspect('stream',stream)['description'],'fixture bytes')
+                self.assertEqual(app.inspect('config')['config']['plugins'][0]['config']['path'],str(source))
+                app.cli('plugin','restart','source')
+                eventually(lambda: len(app.inspect('read',stream)['records'])>=6)
+                self.assertEqual(bytes(x for r in app.inspect('read',stream)['records'] for x in r['payload']),b'original\noriginal\n')
 
     def test_runtime_output_binding_uses_real_stream_id(self):
         with tempfile.TemporaryDirectory() as td:
@@ -121,15 +121,15 @@ class SupervisorTests(unittest.TestCase):
             source.write_bytes(b'bound-by-UUID\n')
             config = {'plugins':[file_plugin(source),{'id':'screen','role':'output','bin':'output-raw','autostart':False,'config':{}}]}
             with App(config) as app:
-                started = app.json('plugin','start','source')
+                started = app.plugin_start('source')
                 stream = started['streams'][0]['id']
-                app.json('plugin','start','screen','--stream',stream)
+                app.plugin_start('screen','--stream',stream)
                 stdout = app.path/'state.json.stdout.log'
                 eventually(lambda: stdout.exists() and b'bound-by-UUID\n' in stdout.read_bytes())
-                result = app.json('plugin','stop','screen')
-                self.assertFalse(result['forced'])
-                self.assertTrue(result['success'])
-                self.assertTrue(app.json('read',stream)['records'])
+                result = app.cli('plugin','stop','screen')
+                self.assertIn('forced: no', result.stdout)
+                self.assertIn('success: yes', result.stdout)
+                self.assertTrue(app.inspect('read',stream)['records'])
 
     def test_start_failure_cleans_its_state(self):
         with tempfile.TemporaryDirectory():
@@ -170,7 +170,7 @@ class SupervisorTests(unittest.TestCase):
                         except (OSError, ValueError):
                             return None
                     pids = eventually(source_pids)
-                    snapshot = app.json('status')
+                    snapshot = app.inspect('status')
                     state = json.loads(app.state.read_text())
                     wrapper_pid = next(p['pid'] for p in snapshot['plugin_processes'] if p['id']=='source')
                     for pid in [state['core_pid'], state['pid'], wrapper_pid, *pids]:
@@ -216,17 +216,17 @@ class SupervisorTests(unittest.TestCase):
             result = app.cli('start','--config',app.config,ok=False)
             self.assertNotEqual(result.returncode,0)
             self.assertEqual(app.state.read_bytes(),before)
-            self.assertIn('supervisor',app.json('status'))
+            self.assertIn('supervisor',app.inspect('status'))
 
     def test_udp_configuration_and_actual_file_input(self):
         with tempfile.TemporaryDirectory() as td:
             source = Path(td)/'source.log'
             source.write_bytes(b'udp')
             with App({'core':{'transport':'udp'},'plugins':[file_plugin(source,True)]}) as app:
-                stream = app.json('streams')[0]['id']
-                records = eventually(lambda:app.json('read',stream)['records'])
+                stream = app.inspect('streams')[0]['id']
+                records = eventually(lambda:app.inspect('read',stream)['records'])
                 self.assertEqual(bytes(x for r in records for x in r['payload']),b'udp')
-                self.assertEqual(app.json('config')['config']['core']['transport'],'udp')
+                self.assertEqual(app.inspect('config')['config']['core']['transport'],'udp')
 
 
 if __name__=='__main__':

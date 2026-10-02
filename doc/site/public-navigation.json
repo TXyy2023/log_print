@@ -92,6 +92,10 @@
       {
         "text": "output-file：持久归档",
         "page": "plugins/output-file.md"
+      },
+      {
+        "text": "output-webui：页面与历史",
+        "page": "plugins/output-webui.md"
       }
     ]
   }

@@ -9,3 +9,4 @@ serde.workspace = true
 serde_json.workspace = true
 tokio.workspace = true
 anyhow.workspace = true
+socket2 = "0.6"

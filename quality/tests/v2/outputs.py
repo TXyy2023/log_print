@@ -35,7 +35,7 @@ class Output:
 
     def report(self):
         with self.core.rpc() as admin:
-            return next(p.get('report') or {} for p in admin.call('status')['plugins'] if p['id']==self.plugin['id'])
+            return admin.call('plugin.status',plugin=self.plugin['id']).get('report') or {}
 
     def ready(self, state):
         def check():

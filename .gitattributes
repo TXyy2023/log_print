@@ -1,0 +1,3 @@
+# Bundled upstream code includes intentional spaces in multiline string literals.
+project/plugins/outputs/output-webui/assets/assets/*.js linguist-generated=true whitespace=-blank-at-eol
+project/plugins/outputs/output-webui/assets/assets/*.css linguist-generated=true

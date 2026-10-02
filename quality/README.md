@@ -7,15 +7,18 @@ python3 quality/run.py
 python3 quality/run.py --list
 ```
 
-需要 Python 3.12+、Rust stable（rustfmt / Clippy）。入口执行格式、Clippy、全部 Rust 测试、构建，以及真实进程协议、CLI 生命周期、输入和输出验收。测试生成的数据均为明确标注的 fixture，不冒充真实软件日志。
+需要 Python 3.12+、Rust stable（rustfmt / Clippy）、Node.js 22.12+ 与 npm。入口先按锁文件构建离线 WebUI 资源，再执行格式、Clippy、全部 Rust 测试、构建，以及真实进程协议、CLI 生命周期、输入和输出验收。测试生成的数据均为明确标注的 fixture，不冒充真实软件日志。
 
 | 位置 | 验收范围 |
 | --- | --- |
 | 各 crate 的 Rust 测试 | 协议限额、权限/缓冲、SDK、输入配置、输出文件/SQLite事务及转换窗口 |
 | `tests/v2/protocol.py` | TCP/UDP、独立多流/多订阅、覆盖、慢消费者、非法身份和Core重启 |
 | `tests/v2/supervisor.py` | CLI真实管道、配置快照、后启动/重启、UUID绑定、拒绝旧配置及清理 |
+| `tests/v2/cli.py` | 无配置文件启动、文本结果、命名参数、二进制原始读取、转换和归档读回 |
 | `tests/v2/inputs.py` | 静态文件、跟随/截断/替换、双通道程序、异常退出、进程树、隔离tmux |
 | `tests/v2/outputs.py` | 显示与保存读回、转换派生流、停止与错误 |
+| `tests/webui_frontend.py` | 锁文件安装、许可证生成、Vue 类型检查与 Vite 构建 |
+| `tests/v2/webui.py` | HTTP/SSE、Page/CLI 恢复、实时与 SQLite 归档衔接、动态流、上下文与曲线、后台任务和帧预算 |
 | `tests/docs/verify_links.py` | 文档站链接与附件 |
 | `archive/v1/` | 旧组件/旧协议验收，保留溯源、不作为本版通过证据 |
 | `artifacts/` | 本地忽略的报告、完整日志及备份 |

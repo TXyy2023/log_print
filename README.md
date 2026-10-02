@@ -36,7 +36,7 @@
 
 Core 只做内存缓冲与转发，默认使用 TCP，也可显式选择 UDP。Input 发布不等待 Output；慢消费者可能遇到缓冲覆盖。**发布成功不等于已保存**，持久化需要配置 `output-file` 并检查保存结果。Core 重启会丢失内存内容，`read` 也不是持久游标。完整约定见[流、传输与保存](doc/public/concepts.md)。
 
-串口、TUI 和 WebUI 不在当前版本范围。旧 `log-print/1` 配置和客户端不能直接用于 0.1.2，迁移说明见[完整性与迁移](doc/public/guides/recovery.md)。
+本地 WebUI 支持全部流、持久化 Page、CLI 编排以及可选的 SQLite 全量上下文查询，见 [output-webui](doc/public/plugins/output-webui.md)。串口、TUI 不在当前版本范围。旧 `log-print/1` 配置和客户端不能直接用于 0.1.2，迁移说明见[完整性与迁移](doc/public/guides/recovery.md)。
 
 ## 文档
 
@@ -65,7 +65,7 @@ cargo build --release --locked --workspace
 
 ```sh
 python3 -c "from pathlib import Path; Path('example.log').touch()"
-./target/release/log-print --state .log-print/quickstart.json start --config project/examples/basic.json
+./target/release/log-print --state .log-print/quickstart.json start --input-file source=./example.log
 python3 -c "open('example.log','ab').write(b'temperature=23.5\n')"
 ./target/release/log-print --state .log-print/quickstart.json streams
 ```
@@ -73,12 +73,12 @@ python3 -c "open('example.log','ab').write(b'temperature=23.5\n')"
 把 `streams` 返回的真实流 UUID 替换到下面的 `STREAM_UUID`，即可读取当前保留的日志：
 
 ```sh
-./target/release/log-print --state .log-print/quickstart.json read STREAM_UUID --raw --wait-ms 1000
+./target/release/log-print --state .log-print/quickstart.json read STREAM_UUID --wait-ms 1000
 ./target/release/log-print --state .log-print/quickstart.json status
 ./target/release/log-print --state .log-print/quickstart.json stop
 ```
 
-停止的是本示例启动的实例；使用其他实例时沿用其实际 `--state` 路径。重复 `read` 可能返回重复记录。持续显示或保存请使用 Output，见[读取与管理](doc/public/guides/read.md)、[输出与保存](doc/public/guides/archive.md)。
+启动和操作均可直接使用命令行参数，结果显示为文本和表格。精确原始字节使用 `read --raw`；已有配置文件仍可通过 `--config FILE` 加载，完整参数见 [CLI 参考](doc/public/reference/cli.md)。停止的是本示例启动的实例；使用其他实例时沿用其实际 `--state` 路径。重复 `read` 可能返回重复记录。持续显示或保存请使用 Output，见[读取与管理](doc/public/guides/read.md)、[输出与保存](doc/public/guides/archive.md)。
 
 Windows 将 `./target/release/log-print` 替换为 `target\release\log-print.exe`，将 `python3` 替换为可用的 `python`。tmux 接入适用于装有 tmux 的 Unix 环境。
 

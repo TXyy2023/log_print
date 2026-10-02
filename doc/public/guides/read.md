@@ -18,4 +18,4 @@ log-print plugin stop screen
 
 独立 Output 从最早保留记录开始，读到末尾等新数据。停止一个 Output 不关闭整条流，也不停止 Input。Input 自身退出后缓冲仍保留。`status` 同时提供插件业务报告与实际子进程状态；停止请求被接受不等于进程已完成。
 
-AI Agent 应保留结构化结果中的流 ID、来源序号和通道信息；不要从 UDP 本地发送或 Core 内存接受推断日志已持久保存。详见 [CLI](../reference/cli.md)。
+查询结果以表格和缩进文本显示，`read` 同时显示元数据与日志内容；二进制 payload 显示为十六进制。AI Agent 应保留文本结果中的流 ID、来源序号和通道信息；不要从 UDP 本地发送或 Core 内存接受推断日志已持久保存。详见 [CLI](../reference/cli.md)。

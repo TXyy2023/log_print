@@ -62,6 +62,9 @@ pub fn validate(config: &Config) -> Result<()> {
         if !valid_id(&p.id) || p.id == "__admin__" || !ids.insert(&p.id) {
             bail!("invalid or duplicate plugin id: {}", p.id)
         };
+        if p.read_all && (p.role != Role::Output || !p.streams.is_empty() || !p.reads.is_empty()) {
+            bail!("read_all requires a read-only Output without owned streams or explicit reads")
+        }
         if p.streams.len() > 1 {
             bail!("each plugin may own at most one stream")
         };
@@ -387,7 +390,7 @@ impl Core {
             .unwrap_or_else(|| p.reads.clone());
         if p.role != Role::Output
             || s.owner == plugin
-            || !reads.iter().any(|r| r == id || s.alias.as_ref() == Some(r))
+            || (!p.read_all && !reads.iter().any(|r| r == id || s.alias.as_ref() == Some(r)))
         {
             return Err(fault(
                 "permission_denied",
@@ -396,7 +399,17 @@ impl Core {
         };
         Ok(())
     }
+    fn reads_all(&self, plugin: &str) -> bool {
+        self.runtime
+            .config
+            .plugins
+            .iter()
+            .any(|p| p.id == plugin && p.read_all)
+    }
     fn read_streams(&self, plugin: &str) -> Vec<String> {
+        if self.reads_all(plugin) {
+            return self.streams.read().unwrap().keys().cloned().collect();
+        }
         let reads = self
             .attachments
             .read()
@@ -518,6 +531,12 @@ impl Core {
         parents: Vec<String>,
     ) -> Result<Value> {
         let role = self.role(plugin)?;
+        if self.reads_all(plugin) {
+            return Err(fault(
+                "permission_denied",
+                "read_all consumers cannot create streams",
+            ));
+        }
         if description.len() > 4096
             || parents.len() > 32
             || parents.iter().collect::<BTreeSet<_>>().len() != parents.len()
@@ -618,6 +637,63 @@ impl Core {
         notify.notify_waiters();
         Ok(serde_json::to_value(record)?)
     }
+    fn read_range(&self, plugin: &str, args: Value) -> Result<Value> {
+        let id = args["stream"].as_str().context("stream required")?;
+        let epoch = args["epoch"].as_str().context("epoch required")?;
+        let from = args["from"].as_u64().context("from required")?;
+        let limit = args["limit"].as_u64().unwrap_or(64);
+        if from == 0 || limit == 0 || limit > 64 {
+            return Err(fault(
+                "limit",
+                "from must be positive and limit must be 1..64",
+            ));
+        }
+        self.can_read(plugin, id)?;
+        let stream = self.stream(id)?;
+        let s = stream.lock().unwrap();
+        if s.epoch != epoch {
+            return Err(fault(
+                "epoch_mismatch",
+                "range belongs to a different stream epoch",
+            ));
+        }
+        let end = args["end"].as_u64().unwrap_or(s.head).min(s.head);
+        let budget = if self.runtime.config.core.transport == TransportKind::Udp {
+            MAX_DATAGRAM - 1024
+        } else {
+            512 * 1024
+        };
+        let oldest = s
+            .buffer
+            .front()
+            .map(|r| r.0.seq)
+            .unwrap_or(s.head.saturating_add(1));
+        let mut value = if from <= end {
+            s.batch(from, limit as usize, budget)?
+        } else {
+            json!({"records":[], "next":from})
+        };
+        let rows = value["records"].as_array_mut().context("batch records")?;
+        rows.retain(|r| r["seq"].as_u64().is_some_and(|seq| seq <= end));
+        let next = rows
+            .last()
+            .and_then(|r| r["seq"].as_u64())
+            .map(|seq| seq.saturating_add(1))
+            .unwrap_or(from.max(oldest).min(end.saturating_add(1)));
+        value["stream"] = json!(id);
+        value["epoch"] = json!(epoch);
+        value["from"] = json!(from);
+        value["end"] = json!(end);
+        value["oldest"] = json!(oldest);
+        value["head"] = json!(s.head);
+        value["next"] = json!(next);
+        value["uncovered_before"] = if from < oldest && from <= end {
+            json!({"first":from,"last":end.min(oldest-1)})
+        } else {
+            Value::Null
+        };
+        Ok(value)
+    }
     fn read(&self, plugin: &str, args: Value) -> Result<Value> {
         let r: Read = serde_json::from_value(args)?;
         self.can_read(plugin, &r.stream)?;
@@ -661,14 +737,49 @@ impl Core {
                     json!({"pid":std::process::id(),"protocol":PROTOCOL,"streams":states,"plugins":plugins,"config":self.runtime.config,"effective_core":self.runtime.config.core}),
                 )
             }
-            "streams" => Ok(Value::Array(
-                self.streams
+            "plugin.status" => {
+                let id = args["plugin"].as_str().context("plugin required")?;
+                if !self.runtime.config.plugins.iter().any(|p| p.id == id) {
+                    return Err(fault("not_found", "plugin"));
+                }
+                Ok(
+                    json!({"plugin":id,"connected":self.connections.lock().unwrap().contains_key(id),"report":self.reports.lock().unwrap().get(id)}),
+                )
+            }
+            "streams" => {
+                let catalog: Vec<_> = self
+                    .streams
                     .read()
                     .unwrap()
                     .values()
                     .map(|s| s.lock().unwrap().status())
-                    .collect(),
-            )),
+                    .collect();
+                if args.get("offset").is_none() {
+                    return Ok(Value::Array(catalog));
+                }
+                let offset = args["offset"].as_u64().context("offset")? as usize;
+                let limit = args["limit"].as_u64().unwrap_or(64).clamp(1, 200) as usize;
+                let budget = if self.runtime.config.core.transport == TransportKind::Udp {
+                    MAX_DATAGRAM - 1024
+                } else {
+                    log_proto::MAX_WIRE - 2048
+                };
+                let total = catalog.len();
+                let mut rows = Vec::new();
+                let mut bytes = 512usize;
+                for row in catalog.into_iter().skip(offset).take(limit) {
+                    let size = serde_json::to_vec(&row)?.len() + 1;
+                    if bytes.saturating_add(size) > budget {
+                        break;
+                    }
+                    bytes += size;
+                    rows.push(row);
+                }
+                if rows.is_empty() && offset < total {
+                    return Err(fault("limit", "catalog item exceeds transport budget"));
+                }
+                Ok(json!({"next":offset+rows.len(),"total":total,"streams":rows}))
+            }
             "stream.get" => {
                 let id = args["stream"].as_str().context("stream required")?;
                 Ok(self.stream(id)?.lock().unwrap().status())
@@ -734,6 +845,7 @@ impl Core {
                 Ok(s.status())
             }
             "read" => self.read(plugin, args),
+            "read.range" => self.read_range(plugin, args),
             "publish" => self.publish(plugin, generation, args),
             "config.patch" => Err(fault(
                 "restart_required",
@@ -1043,6 +1155,7 @@ mod tests {
             args: vec![],
             autostart: false,
             reads: reads.iter().map(|s| s.to_string()).collect(),
+            read_all: false,
             streams: alias
                 .into_iter()
                 .map(|alias| StreamSpec {
@@ -1096,6 +1209,63 @@ mod tests {
             generation,
             json!({"stream":id,"key":"same opaque key","source_seq":source_seq,"payload":payload}),
         )
+    }
+    #[test]
+    fn read_all_follows_dynamic_streams_but_cannot_publish() {
+        let mut rt = runtime(TransportKind::Tcp);
+        let p = rt
+            .config
+            .plugins
+            .iter_mut()
+            .find(|p| p.id == "out")
+            .unwrap();
+        p.reads.clear();
+        p.read_all = true;
+        let core = Core::new(rt.clone()).unwrap();
+        let alpha = claim(&core, "a", 1);
+        assert!(core.can_read("out", &alpha).is_ok());
+        let created = core
+            .create("derive", 1, "derived".into(), vec![alpha])
+            .unwrap();
+        let id = created["id"].as_str().unwrap();
+        assert!(core.read_streams("out").contains(&id.to_owned()));
+        assert!(core.can_read("out", id).is_ok());
+        assert!(core.create("out", 1, "".into(), vec![]).is_err());
+        rt.config
+            .plugins
+            .iter_mut()
+            .find(|p| p.id == "out")
+            .unwrap()
+            .role = Role::Input;
+        assert!(validate(&rt.config).is_err());
+    }
+    #[test]
+    fn range_reports_eviction_and_rejects_wrong_epoch() {
+        let mut rt = runtime(TransportKind::Tcp);
+        rt.config.core.buffer_records = 2;
+        let core = Core::new(rt).unwrap();
+        let id = claim(&core, "a", 1);
+        for n in 1..=4 {
+            publish(&core, "a", 1, &id, n, b"x").unwrap();
+        }
+        let epoch = core.stream(&id).unwrap().lock().unwrap().epoch.clone();
+        let value = core
+            .read_range("out", json!({"stream":id,"epoch":epoch,"from":1,"end":3}))
+            .unwrap();
+        assert_eq!(value["uncovered_before"], json!({"first":1,"last":2}));
+        assert_eq!(value["records"].as_array().unwrap().len(), 1);
+        assert_eq!(value["records"][0]["seq"], 3);
+        assert_eq!(value["next"], 4);
+        assert!(core
+            .read_range("out", json!({"stream":id,"epoch":"other","from":1}))
+            .is_err());
+        assert_eq!(
+            core.read("out", json!({"stream":id})).unwrap()["records"]
+                .as_array()
+                .unwrap()
+                .len(),
+            2
+        );
     }
     #[test]
     fn uuid_identity_and_receive_order_are_independent_of_alias_source_sequence_and_key() {

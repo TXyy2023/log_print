@@ -1,6 +1,11 @@
 //! Local supervisor and user CLI. Core and plugins are direct children.
+mod webui_cli;
+mod webui_launch;
 use anyhow::{bail, Context, Result};
-use clap::{Parser, Subcommand};
+mod cli;
+mod output;
+use clap::Parser;
+use cli::{Action, Cli, Launch, PluginAction};
 use log_proto::{
     read_json, write_json, Config, Fault, Hello, PluginSpec, Request, RuntimeConfig, ServerMessage,
     PROTOCOL,
@@ -20,85 +25,6 @@ use tokio::sync::{mpsc, oneshot};
 use tokio::task::JoinSet;
 use uuid::Uuid;
 
-#[derive(Parser)]
-#[command(
-    name = "log-print",
-    version,
-    about = "Memory log streams and independent input/output plugins"
-)]
-struct Cli {
-    #[arg(long, global = true, default_value = ".log-print/state.json")]
-    state: PathBuf,
-    #[command(subcommand)]
-    command: Action,
-}
-#[derive(Subcommand)]
-enum Action {
-    /// Run the supervisor in the foreground; Ctrl-C shuts down its children.
-    Run {
-        #[arg(long)]
-        config: PathBuf,
-    },
-    /// Start a background supervisor and wait for Core readiness.
-    Start {
-        #[arg(long)]
-        config: PathBuf,
-    },
-    Status,
-    Streams,
-    /// Inspect a stream using its Core-assigned UUID.
-    Stream {
-        id: String,
-    },
-    Read {
-        stream: String,
-        #[arg(long, default_value_t = 64)]
-        limit: usize,
-        /// Wait for a nonempty page or gap, up to this many milliseconds (0 = snapshot).
-        #[arg(long, default_value_t = 0, value_parser = clap::value_parser!(u64).range(0..=60_000))]
-        wait_ms: u64,
-        /// Write only record payload bytes; refuse pages that report gaps.
-        #[arg(long)]
-        raw: bool,
-    },
-    Config {
-        #[arg(long)]
-        plugin: Option<String>,
-    },
-    Plugin {
-        #[command(subcommand)]
-        command: PluginAction,
-    },
-    /// Call any Core RPC with a JSON argument object.
-    Call {
-        op: String,
-        #[arg(long, default_value = "{}")]
-        json: String,
-    },
-    /// Stop this instance and wait for its state file to be removed.
-    Stop,
-}
-#[derive(Subcommand)]
-enum PluginAction {
-    Start {
-        id: String,
-        /// Associate an offline Output with a Core-assigned stream UUID.
-        #[arg(long)]
-        stream: Option<String>,
-    },
-    Stop {
-        id: String,
-    },
-    Restart {
-        id: String,
-    },
-    Call {
-        id: String,
-        method: String,
-        #[arg(long, default_value = "{}")]
-        json: String,
-    },
-}
 #[derive(Clone, Serialize, Deserialize)]
 struct State {
     protocol: String,
@@ -206,13 +132,6 @@ fn log_path(state: &Path, extension: &str) -> PathBuf {
     let mut name = state.as_os_str().to_os_string();
     name.push(extension);
     PathBuf::from(name)
-}
-fn parse_args(text: &str) -> Result<Value> {
-    let value: Value = serde_json::from_str(text).context("invalid --json")?;
-    if !value.is_object() {
-        bail!("--json must be a JSON object")
-    }
-    Ok(value)
 }
 fn resolve_binary(name: &str, config_dir: &Path) -> Result<PathBuf> {
     let path = Path::new(name);
@@ -450,7 +369,10 @@ impl Supervisor {
                     .context("Core status missing configured plugin")?;
                 let report = plugin["report"]["state"].as_str();
                 if report == Some("failed") {
-                    bail!("plugin {id} initialization failed: {}", plugin["report"])
+                    bail!(
+                        "plugin {id} initialization failed:\n{}",
+                        output::details(&plugin["report"])
+                    )
                 }
                 if plugin["connected"] == true && report.is_some() {
                     continue;
@@ -585,7 +507,10 @@ impl Supervisor {
                 let id = plugin_id()?;
                 let stopped = self.stop_plugin(&id, true).await?;
                 if stopped["success"] != true || stopped["forced"] == true {
-                    bail!("plugin stop failed; restart was not attempted: {stopped}");
+                    bail!(
+                        "plugin stop failed; restart was not attempted:\n{}",
+                        output::details(&stopped)
+                    );
                 }
                 let started = self.start_plugin(&id).await?;
                 if let Err(error) = self.wait_plugins(std::slice::from_ref(&id)).await {
@@ -630,7 +555,7 @@ impl Supervisor {
                 Ok(value) => value,
                 Err(e) => json!({"success":false,"error":e.to_string(),"state":"cleanup_failed"}),
             };
-            eprintln!("[supervisor] shutdown {value}");
+            eprintln!("[supervisor] shutdown\n{}", output::details(&value));
             results.push(value);
         }
         drop(self.core_stdin.take());
@@ -833,18 +758,14 @@ fn stop_signal() -> Result<impl std::future::Future<Output = Result<()>>> {
     }
 }
 
-async fn run(config_path: PathBuf, state_path: PathBuf) -> Result<()> {
+async fn run(launch: Launch, state_path: PathBuf) -> Result<()> {
     let stop = stop_signal()?;
     tokio::pin!(stop);
-    let config_path = std::fs::canonicalize(config_path).context("config file unavailable")?;
-    let bytes = std::fs::read(&config_path)?;
-    if bytes.len() > log_proto::MAX_WIRE {
-        bail!("configuration exceeds 1 MiB")
-    }
-    let config: Config = serde_json::from_slice(&bytes).context("invalid configuration")?;
+    let (mut config, config_dir, config_source) = launch.load()?;
     let state_path = absolute(&state_path)?;
     let parent = state_path.parent().context("state parent")?;
     private_directory(parent)?;
+    webui_launch::prepare(&mut config, &config_dir, parent)?;
     let state_file = private_file(&state_path, true, false).context("state already exists or cannot be reserved; stop its instance first; inspect a stale state before removing it")?;
     let directory = parent.join(format!(".log-print-runtime-{}", Uuid::new_v4()));
     let mut files = Files {
@@ -876,7 +797,6 @@ async fn run(config_path: PathBuf, state_path: PathBuf) -> Result<()> {
     let runtime_path = directory.join("config.json");
     save_json(&mut private_file(&runtime_path, true, false)?, &runtime)?;
     let ready_path = directory.join("core-ready.json");
-    let config_dir = config_path.parent().context("config parent")?.to_path_buf();
     let core_binary = resolve_binary("log-print-core", &config_dir)?;
     let mut core = Command::new(core_binary)
         .arg("--runtime-config")
@@ -918,7 +838,7 @@ async fn run(config_path: PathBuf, state_path: PathBuf) -> Result<()> {
         core_pid: ready.pid,
         core_address: ready.address,
         transport: config.core.transport,
-        config: config_path.display().to_string(),
+        config: config_source,
         runtime_directory: directory.display().to_string(),
     };
     let core_stdin = core.stdin.take();
@@ -953,7 +873,22 @@ async fn run(config_path: PathBuf, state_path: PathBuf) -> Result<()> {
         .filter(|(_, p)| p.spec.autostart)
         .map(|(id, _)| id.clone())
         .collect();
-    for id in &autostart {
+    let consumers: Vec<String> = autostart
+        .iter()
+        .filter(|id| supervisor.plugins[*id].spec.role == log_proto::Role::Output)
+        .cloned()
+        .collect();
+    for id in &consumers {
+        if let Err(error) = supervisor.start_plugin(id).await {
+            supervisor.cleanup(true).await;
+            return Err(error);
+        }
+    }
+    if let Err(error) = supervisor.wait_plugins(&consumers).await {
+        supervisor.cleanup(true).await;
+        return Err(error);
+    }
+    for id in autostart.iter().filter(|id| !consumers.contains(id)) {
         if let Err(error) = supervisor.start_plugin(id).await {
             supervisor.cleanup(true).await;
             return Err(error);
@@ -1059,7 +994,7 @@ fn prevent_inherited_caller_stdio() -> Result<()> {
     Ok(())
 }
 
-async fn start(config: PathBuf, state: PathBuf) -> Result<()> {
+async fn start(launch: Launch, state: PathBuf) -> Result<()> {
     // Windows ordinary spawn inherits all inheritable handles, not only hStd*.
     // Keep the CLI's caller pipes out of the detached tree. Rust duplicates the
     // explicitly selected log/NUL handles for the child's own standard streams.
@@ -1072,6 +1007,8 @@ async fn start(config: PathBuf, state: PathBuf) -> Result<()> {
             state.display()
         )
     }
+    launch.load()?;
+    let arguments = launch.child_args()?;
     private_directory(state.parent().context("state parent")?)?;
     let stdout_path = log_path(&state, ".stdout.log");
     let stderr_path = log_path(&state, ".stderr.log");
@@ -1082,8 +1019,7 @@ async fn start(config: PathBuf, state: PathBuf) -> Result<()> {
         .arg("--state")
         .arg(&state)
         .arg("run")
-        .arg("--config")
-        .arg(absolute(&config)?)
+        .args(arguments)
         .stdin(Stdio::null())
         .stdout(Stdio::from(stdout))
         .stderr(Stdio::from(stderr));
@@ -1102,11 +1038,16 @@ async fn start(config: PathBuf, state: PathBuf) -> Result<()> {
                 if child.id() != Some(saved.pid) {
                     bail!("another supervisor acquired the state file")
                 }
-                println!(
+                println!("Started.");
+                print!(
                     "{}",
-                    serde_json::to_string_pretty(
-                        &json!({"started":true,"pid":saved.pid,"core_pid":saved.core_pid,"state":state,"stdout":stdout_path,"stderr":stderr_path,"streams":manager(&saved,"streams",json!({})).await?})
-                    )?
+                    output::details(
+                        &json!({"pid":saved.pid,"core_pid":saved.core_pid,"state":state,"stdout":stdout_path,"stderr":stderr_path})
+                    )
+                );
+                print!(
+                    "{}",
+                    output::streams(&manager(&saved, "streams", json!({})).await?)?
                 );
                 return Ok(());
             }
@@ -1178,8 +1119,8 @@ fn control(plugin: String, method: &str, args: Value) -> (String, Value) {
 async fn main() -> Result<()> {
     let cli = Cli::parse();
     match cli.command {
-        Action::Run { config } => return run(config, cli.state).await,
-        Action::Start { config } => return start(config, cli.state).await,
+        Action::Run(launch) => return run(launch, cli.state).await,
+        Action::Start(launch) => return start(launch, cli.state).await,
         _ => (),
     }
     let state: State = serde_json::from_slice(&std::fs::read(&cli.state).with_context(|| {
@@ -1193,6 +1134,7 @@ async fn main() -> Result<()> {
         bail!("incompatible state protocol: {}", state.protocol)
     }
     let is_stop = matches!(cli.command, Action::Stop);
+    let is_streams = matches!(cli.command, Action::Streams);
     let mut raw = false;
     let mut read_wait = None;
     let (op, args) = match cli.command {
@@ -1201,6 +1143,17 @@ async fn main() -> Result<()> {
         Action::Stream { id } => (
             "core.call".into(),
             json!({"op":"stream.get","args":{"stream":id}}),
+        ),
+        Action::Describe {
+            stream,
+            description,
+        } => (
+            "core.call".into(),
+            json!({"op":"stream.describe","args":{"stream":stream,"description":description}}),
+        ),
+        Action::Resolve { alias } => (
+            "core.call".into(),
+            json!({"op":"stream.resolve","args":{"alias":alias}}),
         ),
         Action::Read {
             stream,
@@ -1219,12 +1172,13 @@ async fn main() -> Result<()> {
             }
             PluginAction::Stop { id } => ("plugin.stop".into(), json!({"id":id})),
             PluginAction::Restart { id } => ("plugin.restart".into(), json!({"id":id})),
-            PluginAction::Call { id, method, json } => control(id, &method, parse_args(&json)?),
+            PluginAction::Call { id, method, args } => control(id, &method, args.parse()?),
         },
-        Action::Call { op, json } => (
-            "core.call".into(),
-            json!({"op":op,"args":parse_args(&json)?}),
-        ),
+        Action::Webui { id, command } => {
+            let (method, args) = (*command).request()?;
+            control(id, &method, args)
+        }
+        Action::Call { op, args } => ("core.call".into(), json!({"op":op,"args":args.parse()?})),
         Action::Stop => ("stop".into(), json!({})),
         _ => unreachable!(),
     };
@@ -1235,7 +1189,9 @@ async fn main() -> Result<()> {
     };
     if raw {
         if read_has_gap(&result) {
-            bail!("read reports a gap; inspect JSON output before extracting bytes")
+            bail!(
+                "read reports a gap; inspect the text output without --raw before extracting bytes"
+            )
         }
         let records = result["records"]
             .as_array()
@@ -1247,7 +1203,14 @@ async fn main() -> Result<()> {
         }
         out.flush()?;
     } else {
-        println!("{}", serde_json::to_string_pretty(&result)?);
+        let rendered = if is_streams {
+            output::streams(&result)?
+        } else if read_wait.is_some() {
+            output::read(&result)?
+        } else {
+            output::details(&result)
+        };
+        print!("{rendered}");
     }
     if is_stop {
         let deadline = tokio::time::Instant::now() + Duration::from_secs(15);

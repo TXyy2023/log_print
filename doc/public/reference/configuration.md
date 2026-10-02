@@ -1,6 +1,8 @@
 # 配置参考
 
-app-log-print 启动时读取 JSON 一次，保存本运行快照并交接 Core 和插件。后启动或重启子插件使用同一份；只有整个实例停止再启动才重读磁盘。未知字段直接报错。
+可以使用 [CLI 启动参数](cli.md)直接声明来源、输出和字段，无需配置文件。以下 JSON 文件格式作为可选的批量配置方式，通过 `--config FILE` 加载。
+
+app-log-print 启动时解析命令行设置或读取配置文件一次，保存本运行快照并交接 Core 和插件。后启动或重启子插件使用同一份；只有整个实例停止再启动才采用新设置。未知字段直接报错。
 
 ```json
 {
@@ -43,3 +45,9 @@ app-log-print 启动时读取 JSON 一次，保存本运行快照并交接 Core 
 一个 Input 只有一条 Core 分配的流；没有声明时在注册时分配。Output 转换时可以拥有另一条派生流。Core 校验单写入者、禁止自订阅和配置反馈环。128 个预配置插件、每插件最多 128 个预配置订阅是资源预算，不是日志分发轮流抢占规则。
 
 `save`、旧存储配置、动态 `config.patch` 均不再有效。`input-replay` 改用 input-file 的 `mode:static`。详情见 [迁移边界](../guides/recovery.md) 及对应插件参考。
+
+## 全流只读 Output 与 WebUI
+
+插件字段 `read_all` 默认 false，仅允许没有自有流、没有显式 reads 的 Output 使用；该消费者不能创建或发布流。WebUI 与其配套归档启用此权限，其他插件配置保持原语义。
+
+WebUI `config.archive_dir` 对应 `--webui-archive`，`config.history_plugin` 对应 `--webui-history`，二者互斥。`config.state_path` 指定独立 Page SQLite 配置数据库；`config.listen` 默认 `127.0.0.1:0`，只允许 loopback。supervisor 为每次运行生成归档路径与 runtime_id；冷启动只恢复配置，重新绑定本次流。

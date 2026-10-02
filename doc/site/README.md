@@ -1,56 +1,58 @@
-# log_print 文档网站
+# 文档站维护
 
-VitePress 1.6.4；Node.js 20.19+ 或受支持的更新 LTS、npm。本机站点仅监听 127.0.0.1，不需要数据库或远端服务。
+站点使用仓库锁定的 VitePress 与 Mermaid 依赖。需要 Node.js 20.19+ 或兼容的更新 LTS、npm；服务仅监听 127.0.0.1。
 
-在仓库根目录运行：
+## 启动与停止
+
+从仓库根目录运行：
 
 ```sh
 npm ci --prefix doc/site
 npm start --prefix doc/site
 npm run status --prefix doc/site
-# 停止本工具启动的文档进程
 npm run stop --prefix doc/site
 ```
 
-打开 http://127.0.0.1:5173/ 。后台服务退出当前终端后继续运行；重启电脑后需要重新 start。日志在 `doc/site/.cache/service.log`。端口占用时拒绝启动，不切换或停止其他服务。
+本机地址 http://127.0.0.1:5173/ 。后台服务退出终端后继续运行；重启电脑后需要重新 start。日志为 `doc/site/.cache/service.log`。端口已占用时拒绝启动，不更换端口或停止其他服务。
 
-前台运行：`npm run dev:local --prefix doc/site`，Ctrl-C 停止。修改 `doc/public/`、`doc/local/` 下正文后自动更新网页；正文扫描和递归监听不包含 `doc/site/`，避免读入依赖、缓存和产物。生成目录不可手工维护。
+前台运行用 `npm run dev:local --prefix doc/site`，Ctrl-C 停止。修改规范正文后自动更新网页；生成缓存与产物不可手工维护。
 
-## 单一正文来源与三个入口
+## 正文与入口
 
-| 本机入口 | 编辑位置 | 页面范围 |
-|---|---|---|
-| 公开文档 | `doc/public/` | 入门、任务指南、CLI/配置及五个插件参考 |
-| 内部开发文档 | `doc/local/`（归档子目录以外） | 参考、设计、计划、研究、验收和图表 |
-| 归档文档 | `doc/local/archive/` | 旧计划、历史发布和交付记录 |
+| 本机入口 | 正文位置 | 内容 |
+| --- | --- | --- |
+| GitHub 文档 | `doc/public/` | 公开使用手册、任务指南、CLI/配置和五个插件参考 |
+| 本地文档站 | `doc/local/` | 当前架构、协议、SDK、组件、用户计划记录与验证入口 |
+| 归档文档 | `doc/local/archive/index.md` | 清理状态入口；不再发布过期正文或附件 |
 
-公开手册正文统一维护在 `doc/public/`，两站均读取此处。根 README 和五个插件 README 提供概览、常用示例及手册入口，完整命令与参数以公开手册为准。`public-sources.json` 仅用于本机旧源码链接的路由映射，不是内容同步清单。`public-navigation.json` 显式维护侧栏顺序，`public-pages.json` 维护公开构建白名单；新增页面同步更新二者。内部与归档目录仅在拥有本地资料的工作区存在，不随公开仓库分发。
+公开手册是使用参数与命令的单一来源，README 和内部开发页通过链接引用。内部技术文档按当前源码维护。`doc/local/plans/` 由用户维护，旧计划合理保留，不因版本变化删除、重写或合并。旧实现、被替代的方案和过期验收从站点删除，不靠历史警告继续展示。
 
-本机 URL 使用 `/published/`（避免与 VitePress 的保留静态资源目录 `public` 混淆）、`/local/`、`/local/archive/`。内部混合资料保留原分类并提示版本边界，不因存在未来设计就整体移入归档。旧 1.0.0 叙述不表示当前 0.1.2 能力。
+内部导航按实际目录生成，一级菜单为文件夹名，文档名只显示文件名（不含目录前缀和 `.md` 后缀），链接仍使用真实相对路径。只将 Markdown 正文列入页面导航，空目录不生成菜单。旧链接映射只保留最终目标仍存在的条目。
 
-## 构建与隔离
+本机 URL 为 `/published/`、`/local/`、`/local/archive/`；`published` 避免与 VitePress 静态资源目录重名。两站提供中文全文搜索，Mermaid 在浏览器按需渲染。
+
+## 新增、删除与验证
+
+公开页面需要同时检查 `public-pages.json` 白名单和 `public-navigation.json` 导航。`public-sources.json` 将本机源码 README 链接路由到公开正文，不复制正文。
+
+删除页面时同步清理正文引用、映射、导航和无用途附件，然后重新生成和构建。恢复快照放在 `quality/artifacts/`，不能再纳入站点正文或搜索。内部资料、依赖、缓存、产物和本地快照保持 Git 忽略范围。
 
 ```sh
 npm run build:local --prefix doc/site
 npm run build:public --prefix doc/site
-npm run preview:public --prefix doc/site
+python3 quality/tests/docs/verify_links.py doc/site/dist/local
+python3 quality/tests/docs/verify_links.py doc/site/dist/public
 ```
 
-本机产物 `doc/site/dist/local/` 含内部资料，不能发布。公开产物 `doc/site/dist/public/` 只来自 `public-pages.json` 显式清单；新增公开文档或资源须更新清单。构建拒绝越界引用、路径逃逸和软链接指向内部。公开构建后自动审查输入列表及内部文件名标记。两种构建有独立缓存、配置、搜索索引和产物。
+本机产物 `doc/site/dist/local/` 包含内部资料，公开产物 `doc/site/dist/public/` 只接受公开白名单。公开构建拒绝越界链接、路径逃逸及软链接，并自动审查输入范围；不能将本机产物发布。两种模式有独立缓存、配置、搜索和产物。
 
-`prepare.mjs` 将规范源复制到独立缓存并改写站内链接，原文不受这些构建适配影响。内部站源码引用会呈现为带代码块的页面，原始数据和 SVG 作为本机静态附件；已有 AGENTS.md 删除保持，只给缺失引用提示。目录迁移前的旧引用使用 `legacy-paths.json` 解析。
+`prepare.mjs` 在缓存中复制正文、改写链接，必要时将当前源码呈现为代码页面。`--refresh` 删除已移除的生成输入；正式构建重新生成全部缓存和产物。不能手改 `.cache/` 或用隐藏导航代替公开内容隔离。
 
-两个站都使用中文分词的本地全文搜索。Mermaid 按需在浏览器渲染；原有 19 张 SVG 和 Markdown 中的 Mermaid 源码均保留。代码块、图表及下载附件依然属于原文件所写的历史环境。
+## GitHub Pages
 
-当前 Git 跟踪 `doc/README.md`、`doc/public/` 的公开正文及 `doc/site/` 的工具源码；内部资料 `doc/local/`、依赖、缓存和产物仍忽略。新增公开文件需逐项检查范围，不能整体强制加入 doc。本机构建不会自动创建仓库或部署。
+公开站：[在线使用手册](https://TXyy2023.github.io/log_print/)。部署配置见 `.github/workflows/docs.yml`：dev/main 推送和手动触发进行文档验证，仅 main 部署；本次本地整理不会自动提交或部署。
 
-## GitHub Pages 部署
-
-在线文档：https://TXyy2023.github.io/log_print/ 。公开手册仍在 `doc/public/` 编辑；新增页面或资源同步更新公开白名单和导航。
-
-`.github/workflows/docs.yml` 在 `dev`、`main` 推送及手动触发时构建并检查默认路径和 Pages 路径，只允许 `main` 部署。发布更新先在 `dev` 验证，再 merge 到 `main`。首次配置需在仓库 Settings → Pages → Source 选择 GitHub Actions；之后每次推送 `main` 自动更新站点。
-
-`DOCS_BASE` 控制公开构建的站点路径，默认 `/`；工作流设置为 `/log_print/`。内部本机站始终使用 `/`。本地复现 Pages 构建：
+工作流以 `/log_print/` 为站点路径，本机内部站始终为 `/`。复现公开部署构建：
 
 ```sh
 DOCS_BASE=/log_print/ npm run build:public --prefix doc/site
@@ -58,34 +60,4 @@ python3 quality/tests/docs/verify_links.py doc/site/dist/public --base /log_prin
 npm run preview:public --prefix doc/site
 ```
 
-打开 http://127.0.0.1:5174/log_print/ 。恢复根路径预览时重新执行不带 `DOCS_BASE` 的公开构建。链接检查的 `--base` 默认 `/`，原有命令无需修改。工作流只上传 `doc/site/dist/public/`，内部文档和归档不进入部署产物；运行状态见仓库 Actions 的 Documentation 工作流。
-
-## 历史整理记录：2026-09-19
-
-以下保留当时的整理范围、快照路径和迁移记录，便于本地溯源。快照与内部资料未随公开仓库分发；当时的“未提交、未发布”状态不代表当前仓库状态。
-
-### 备份和回滚
-
-- 初次整理前：`quality/artifacts/doc-reorganization-2026-09-19/original-doc/`，103 文件，与同目录 `source-manifest.json` SHA-256 全部相符。
-- 当时明确批准实施前：`quality/artifacts/vitepress-approved-20260919-224610/`，含当时 doc、脚手架配置和 `.gitignore`。
-- 早期接手快照：`quality/artifacts/vitepress-2026-09-19/`。
-
-回滚前先停止本站，再另存当前整个 doc、doc/site（依赖可排除）和 .gitignore，之后选择对应快照恢复。不要直接覆盖后续新增正文。初次整理的旧 rollback.py 有哈希保护，会拒绝覆盖后续改动；这是预期行为。备份含内部资料，仅本地保存。
-
-### 公开手册整理
-
-公开侧栏按入门、使用指南、参考、插件参考组织，共20页；内部入口与侧栏按真实目录嵌套，一级菜单为文件夹名，文档显示相对于 `doc/local/` 的实际路径，归档独立。修改前快照位于 `quality/artifacts/public-manual-20260919-225737/`，包括旧公开正文、README、站点配置及内部入口。其他内部正文未作改写。
-
-当时将源码 README 改为指向单一正文的入口，并记录了后续提交时须同时纳入入口及其引用正文的要求。该次整理没有执行提交或网站部署；公开正文现已纳入仓库，网站部署仍是独立操作。
-
-### 三入口与移除文档
-
-当时将本机顶部整理为“GitHub 文档 / 本地文档站 / 归档文档”。GitHub 文档是公开手册的本机入口，不表示已部署 GitHub Pages。本地导航由磁盘目录生成，归档不混入内部菜单。`doc/local/index.md` 的目录标记在生成时展开，新增、移动文档后自动更新。
-
-2026-09-19 的移除资料存入 `doc/local/archive/removed-2026-09-19/`，清单记录来源和哈希。移动后的旧链接由 `legacy-paths.json` 转到新位置；归档原文的相对链接根据 `archive-origins.json` 按原位置解析，保留原文字节。今后移除资料应先移入归档并登记原路径，不直接删除。
-
-### 项目目录迁移
-
-站点工具已从 `docs-site/` 移到 `doc/site/`。源码及测试旧路径由 `repository-paths.json` 映射；`repository-origins.json` 为完整保留的插件历史报告指定原始链接基准目录。这些映射仅用于本地站，公开构建仍只接受公开白名单。
-
-链接检查现位于 `quality/tests/docs/verify_links.py`，可分别传入 `doc/site/dist/local` 和 `doc/site/dist/public`。构建与验收命令见 [测试说明](../../quality/README.md)。
+预览 http://127.0.0.1:5174/log_print/ 。恢复根路径预览需重新执行不带 DOCS_BASE 的公开构建。GitHub Pages 的构建和部署结果需从实际工作流确认，本地构建通过不表示线上已更新。

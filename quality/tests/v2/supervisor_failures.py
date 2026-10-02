@@ -81,12 +81,11 @@ class SupervisorFailureTests(unittest.TestCase):
             with FailureApp(config(marker)) as app:
                 result = app.cli('plugin', 'stop', 'probe', ok=False)
                 self.assertNotEqual(result.returncode, 0, result.stdout)
-                report = json.loads(result.stdout)
-                self.assertFalse(report['success'])
-                self.assertIn('7', report['exit'])
-                self.assertFalse(report['forced'])
+                self.assertIn('success: no', result.stdout)
+                self.assertIn('7', result.stdout)
+                self.assertIn('forced: no', result.stdout)
                 self.assertEqual(len(marker.read_text().splitlines()), 1)
-                self.assertEqual(app.json('status')['plugin_processes'][0]['state'], 'stopped')
+                self.assertEqual(app.inspect('status')['plugin_processes'][0]['state'], 'stopped')
 
     def test_restart_does_not_launch_after_failed_shutdown(self):
         with tempfile.TemporaryDirectory() as td:
@@ -96,7 +95,7 @@ class SupervisorFailureTests(unittest.TestCase):
                 self.assertNotEqual(result.returncode, 0, result.stdout)
                 self.assertEqual(len(marker.read_text().splitlines()), 1,
                                  'restart launched a new process after a failed stop')
-                self.assertEqual(app.json('status')['plugin_processes'][0]['state'], 'stopped')
+                self.assertEqual(app.inspect('status')['plugin_processes'][0]['state'], 'stopped')
 
     def test_instance_stop_returns_cleanup_failure_and_removes_owned_state(self):
         with tempfile.TemporaryDirectory() as td:
@@ -120,11 +119,11 @@ class SupervisorFailureTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             marker = Path(td)/'runs.txt'
             with App(config(marker, terminal_once=True)) as app:
-                eventually(lambda:app.json('status')['plugin_processes'][0]['state']=='stopped')
+                eventually(lambda:app.inspect('status')['plugin_processes'][0]['state']=='stopped')
                 result = app.cli('plugin', 'restart', 'probe', ok=False)
                 self.assertNotEqual(result.returncode, 0, result.stdout)
                 self.assertEqual(len(marker.read_text().splitlines()), 2)
-                status = app.json('status')
+                status = app.inspect('status')
                 self.assertFalse(status['plugins'][0]['connected'])
                 self.assertEqual(status['plugin_processes'][0]['state'], 'stopped')
 

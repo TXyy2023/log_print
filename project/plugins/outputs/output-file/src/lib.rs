@@ -1,5 +1,7 @@
 pub mod checkpoint;
 pub mod config;
+pub mod history;
+pub use history::{HistoryReader, HistorySnapshot};
 pub mod file_sink;
 pub mod sqlite_sink;
 pub mod worker;
@@ -98,6 +100,74 @@ mod tests {
     fn resume(mut config: Config) -> Config {
         config.mode = Mode::Resume;
         config
+    }
+    #[test]
+    fn history_reader_pins_commits_and_reads_schema_two_without_migration() {
+        let temp = Temp::new();
+        let config = temp.config("sqlite");
+        let path = &config.sqlite.as_ref().unwrap().path;
+        let mut archive = Archive::open(&config, initial(1)).unwrap();
+        let reader = HistoryReader::open(path).unwrap();
+        let empty = reader.snapshot().unwrap();
+        archive.accept(&record(1, b"early\n")).unwrap();
+        assert!(reader.read(&empty, "s", "e", 1, 9, 64).unwrap().is_empty());
+        assert_eq!(reader.snapshot().unwrap().committed["s"].next, 1);
+        archive.commit().unwrap();
+        let pinned = reader.snapshot().unwrap();
+        archive.accept(&record(2, b"later\n")).unwrap();
+        archive.commit().unwrap();
+        assert_eq!(reader.read(&pinned, "s", "e", 1, 9, 64).unwrap().len(), 1);
+        assert!(reader.read(&pinned, "s", "wrong", 1, 9, 64).is_err());
+        drop(archive);
+        let db = rusqlite::Connection::open(path).unwrap();
+        db.execute(
+            "UPDATE metadata SET value='2' WHERE key='schema_version'",
+            [],
+        )
+        .unwrap();
+        db.execute("DROP TABLE streams", []).unwrap();
+        drop(db);
+        let old = HistoryReader::open(path).unwrap();
+        assert_eq!(old.snapshot().unwrap().schema_version, 2);
+        assert_eq!(
+            old.read(&old.snapshot().unwrap(), "s", "e", 1, 9, 64)
+                .unwrap()
+                .len(),
+            2
+        );
+    }
+    #[test]
+    fn dynamic_catalog_and_large_numeric_sequence() {
+        let temp = Temp::new();
+        let mut config = temp.config("sqlite");
+        config.discover_streams = true;
+        config.streams.clear();
+        let mut archive = Archive::open(&config, BTreeMap::new()).unwrap();
+        let start = u64::MAX - 3;
+        archive
+            .register_stream(
+                "s",
+                &Cursor {
+                    epoch: "e".into(),
+                    next: start,
+                },
+                &json!({"owner":"input","alias":"raw"}),
+            )
+            .unwrap();
+        for seq in start..=start + 1 {
+            archive.accept(&record(seq, b"x")).unwrap();
+        }
+        archive.commit().unwrap();
+        let reader = HistoryReader::open(&config.sqlite.unwrap().path).unwrap();
+        let snapshot = reader.snapshot().unwrap();
+        let rows = reader
+            .read(&snapshot, "s", "e", start, start + 1, 64)
+            .unwrap();
+        assert_eq!(
+            rows.iter().map(|r| r.seq).collect::<Vec<_>>(),
+            [start, start + 1]
+        );
+        assert_eq!(snapshot.initial["s"].next, start);
     }
     #[test]
     fn all_targets_roundtrip_exact_record_and_empty_payload() {

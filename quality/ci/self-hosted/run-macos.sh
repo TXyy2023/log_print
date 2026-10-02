@@ -15,5 +15,9 @@ command -v "$ci_python"
 "$ci_python" --version
 command -v cargo
 cargo --version
+command -v node
+node --version
+command -v npm
+npm --version
 cd "$ci_root"
 exec "$ci_python" quality/run.py "$@"

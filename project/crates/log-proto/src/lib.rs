@@ -138,10 +138,16 @@ pub struct PluginSpec {
     pub autostart: bool,
     #[serde(default)]
     pub reads: Vec<String>,
+    /// Read-only consumers may follow all current and future streams.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub read_all: bool,
     #[serde(default)]
     pub streams: Vec<StreamSpec>,
     #[serde(default)]
     pub config: Value,
+}
+fn is_false(value: &bool) -> bool {
+    !value
 }
 fn yes() -> bool {
     true
@@ -281,6 +287,8 @@ impl ClientConnection {
                     })
                     .await?,
                 );
+                // macOS defaults to a send buffer smaller than our frame budget.
+                socket2::SockRef::from(socket.as_ref()).set_send_buffer_size(MAX_DATAGRAM * 4)?;
                 socket.connect(addr).await?;
                 socket.send(&datagram(hello)?).await?;
                 Ok((ClientReader::Udp(socket.clone()), ClientWriter::Udp(socket)))
@@ -463,6 +471,7 @@ impl ServerListener {
             }
             TransportKind::Udp => {
                 let socket = Arc::new(UdpSocket::bind(addr).await?);
+                socket2::SockRef::from(socket.as_ref()).set_send_buffer_size(MAX_DATAGRAM * 4)?;
                 let address = socket.local_addr()?;
                 let task = tokio::spawn(async move {
                     let mut sessions = BTreeMap::<SocketAddr, UdpSession>::new();

@@ -1,6 +1,6 @@
 # 正式验证入口
 
-macOS、Linux、Windows 均从仓库根运行 `python3 quality/run.py`（Windows 可用 `python`）。要求 Python 3.12+、Rust stable、rustfmt、Clippy。
+macOS、Linux、Windows 均从仓库根运行 `python3 quality/run.py`（Windows 可用 `python`）。要求 Python 3.12+、Rust stable、rustfmt、Clippy、Node.js 22.12+ 与 npm。Node 仅在构建时使用，发布后的 WebUI 二进制包含本地资源。
 
 入口执行格式、workspace Clippy、Rust测试、构建，以及 `quality/tests/v2/` 的真实进程验收。构建失败后不接受旧二进制；任何必需脚本缺失都失败。旧 log-print/1 测试已保留于 `quality/archive/v1/`，其存储/回放保证不能套用本版。
 

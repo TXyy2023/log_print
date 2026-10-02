@@ -1,5 +1,5 @@
 use crate::{
-    checkpoint::{hex_hash, sync_parent, Cursor, Gap, SCHEMA_VERSION},
+    checkpoint::{hex_hash, sync_parent, Cursor, Gap},
     config::{Config, Mode},
     failpoint,
 };
@@ -7,6 +7,8 @@ use anyhow::{bail, Context, Result};
 use log_proto::Record;
 use rusqlite::{params, Connection, OpenFlags, OptionalExtension};
 use std::{collections::BTreeMap, path::PathBuf};
+
+pub const SCHEMA_VERSION: u32 = 3;
 
 pub struct SqliteSink {
     connection: Connection,
@@ -80,6 +82,9 @@ impl SqliteSink {
             connection.execute_batch("BEGIN IMMEDIATE;
 CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT NOT NULL);
 CREATE TABLE records(stream TEXT NOT NULL,epoch TEXT NOT NULL,seq TEXT NOT NULL,key TEXT NOT NULL,payload BLOB NOT NULL,source_ts_ns TEXT,observed_ts_ns TEXT NOT NULL,upstream TEXT NOT NULL,upstream_epochs TEXT NOT NULL,channel TEXT,source_seq TEXT,record_sha256 TEXT NOT NULL,PRIMARY KEY(stream,epoch,seq));
+CREATE INDEX records_sequence ON records(stream,epoch,length(seq),seq);
+CREATE INDEX records_time ON records(stream,epoch,length(observed_ts_ns),observed_ts_ns);
+CREATE TABLE streams(stream TEXT PRIMARY KEY,epoch TEXT NOT NULL,owner TEXT,alias TEXT,description TEXT NOT NULL DEFAULT '',first TEXT NOT NULL);
 CREATE TABLE checkpoints(stream TEXT PRIMARY KEY,epoch TEXT NOT NULL,next TEXT NOT NULL);
 CREATE TABLE gaps(id INTEGER PRIMARY KEY,stream TEXT NOT NULL,epoch TEXT NOT NULL,first TEXT NOT NULL,last TEXT NOT NULL,reason TEXT NOT NULL,advances INTEGER NOT NULL,coverage_first TEXT NOT NULL);")?;
             for (key, value) in [
@@ -91,6 +96,10 @@ CREATE TABLE gaps(id INTEGER PRIMARY KEY,stream TEXT NOT NULL,epoch TEXT NOT NUL
                 connection.execute("INSERT INTO metadata VALUES(?1,?2)", params![key, value])?;
             }
             for (stream, cursor) in initial {
+                connection.execute(
+                    "INSERT INTO streams(stream,epoch,first) VALUES(?1,?2,?3)",
+                    params![stream, cursor.epoch, cursor.next.to_string()],
+                )?;
                 connection.execute(
                     "INSERT INTO checkpoints VALUES(?1,?2,?3)",
                     params![stream, cursor.epoch, cursor.next.to_string()],
@@ -145,6 +154,56 @@ CREATE TABLE gaps(id INTEGER PRIMARY KEY,stream TEXT NOT NULL,epoch TEXT NOT NUL
             confirmed_gaps,
             last_gap: None,
         })
+    }
+    pub fn register(
+        &mut self,
+        stream: &str,
+        cursor: &Cursor,
+        metadata: &serde_json::Value,
+    ) -> Result<()> {
+        self.commit()?;
+        if let Some(old) = self.confirmed.get(stream) {
+            if old.epoch != cursor.epoch {
+                bail!("registered epoch mismatch");
+            }
+        } else {
+            if cursor.next == 0 || cursor.epoch.is_empty() {
+                bail!("invalid registration cursor");
+            }
+            let initial: String = self.connection.query_row(
+                "SELECT value FROM metadata WHERE key='initial'",
+                [],
+                |r| r.get(0),
+            )?;
+            let mut initial: BTreeMap<String, Cursor> = serde_json::from_str(&initial)?;
+            initial.insert(stream.into(), cursor.clone());
+            let tx = self.connection.transaction()?;
+            tx.execute(
+                "INSERT INTO checkpoints VALUES(?1,?2,?3)",
+                params![stream, cursor.epoch, cursor.next.to_string()],
+            )?;
+            tx.execute(
+                "INSERT INTO streams(stream,epoch,first) VALUES(?1,?2,?3)",
+                params![stream, cursor.epoch, cursor.next.to_string()],
+            )?;
+            tx.execute(
+                "UPDATE metadata SET value=?1 WHERE key='initial'",
+                [serde_json::to_string(&initial)?],
+            )?;
+            tx.commit()?;
+            self.confirmed.insert(stream.into(), cursor.clone());
+            self.pending.insert(stream.into(), cursor.clone());
+        }
+        self.connection.execute(
+            "UPDATE streams SET owner=?1,alias=?2,description=?3 WHERE stream=?4",
+            params![
+                metadata["owner"].as_str(),
+                metadata["alias"].as_str(),
+                metadata["description"].as_str().unwrap_or(""),
+                stream
+            ],
+        )?;
+        Ok(())
     }
     pub fn cursors(&self) -> BTreeMap<String, Cursor> {
         self.confirmed.clone()

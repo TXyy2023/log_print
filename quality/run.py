@@ -17,7 +17,7 @@ import sys
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
-PROCESS_STEPS = {'protocol-v2', 'supervisor-v2', 'supervisor-failures-v2', 'inputs-v2', 'outputs-v2'}
+PROCESS_STEPS = {'protocol-v2', 'supervisor-v2', 'supervisor-failures-v2', 'cli-v2', 'inputs-v2', 'outputs-v2', 'webui-v2'}
 
 
 def redact_console(text):
@@ -145,6 +145,7 @@ def main():
     def python_test(path, *arguments):
         return [sys.executable, str(ROOT / 'quality/ci/python-test.py'), str(ROOT / path), *arguments]
     steps = [
+        ('frontend', [sys.executable, str(ROOT / 'quality/tests/webui_frontend.py')]),
         ('fmt', ['cargo', 'fmt', '--all', '--check']),
         ('clippy', ['cargo', 'clippy', '--workspace', '--all-targets', '--locked', '--', '-D', 'warnings']),
         ('rust-tests', ['cargo', 'test', '--workspace', '--locked']),
@@ -152,8 +153,10 @@ def main():
         ('protocol-v2', python_test('quality/tests/v2/protocol.py')),
         ('supervisor-v2', python_test('quality/tests/v2/supervisor.py')),
         ('supervisor-failures-v2', python_test('quality/tests/v2/supervisor_failures.py')),
+        ('cli-v2', python_test('quality/tests/v2/cli.py')),
         ('inputs-v2', python_test('quality/tests/v2/inputs.py')),
         ('outputs-v2', python_test('quality/tests/v2/outputs.py')),
+        ('webui-v2', python_test('quality/tests/v2/webui.py')),
     ]
     optional = []
     if args.list:

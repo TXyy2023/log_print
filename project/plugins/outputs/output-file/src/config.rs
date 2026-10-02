@@ -64,7 +64,10 @@ fn yes() -> bool {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Config {
+    #[serde(default)]
     pub streams: Vec<String>,
+    #[serde(default)]
+    pub discover_streams: bool,
     pub mode: Mode,
     pub file: Option<FileConfig>,
     pub sqlite: Option<SqliteConfig>,
@@ -83,11 +86,14 @@ impl Config {
     }
     pub fn validate(&self) -> Result<()> {
         let streams: BTreeSet<_> = self.streams.iter().collect();
-        if streams.is_empty()
+        if (streams.is_empty() && !self.discover_streams)
             || streams.len() != self.streams.len()
             || self.streams.iter().any(|s| s.is_empty())
         {
             bail!("streams must be nonempty, unique nonempty names");
+        }
+        if self.discover_streams && (self.file.is_some() || self.sqlite.is_none()) {
+            bail!("discover_streams requires a SQLite-only archive");
         }
         if self.file.is_none() && self.sqlite.is_none() {
             bail!("at least one archive target is required");

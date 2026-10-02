@@ -10,4 +10,4 @@ python3 quality/run.py
 
 语言接入直接配置程序可执行文件与参数。例如 Python `python3 -u script.py`、Node `node script.js`、Java `java -jar app.jar`、已编译 C/Rust 可执行文件等均使用同一个 input-program，不需要每语言插件。只有实际运行记录才计入平台/语言支持验证；参数示例不意味着环境已安装。
 
-0.1.2 使用 `input-file` 的 `mode:static` 读取静态文件，已取消独立 input-replay。串口、TUI、WebUI 暂缓，不参与当前 workspace；当前归档插件仅创建新目标，不提供实时 resume。完整测试要求与平台边界见 [测试说明](../../../quality/README.md)，保存语义见 [output-file](../../plugins/outputs/output-file/README.md)。
+0.1.2 使用 `input-file` 的 `mode:static` 读取静态文件，已取消独立 input-replay。串口、TUI 暂缓，不参与当前 workspace；当前归档插件仅创建新目标，不提供实时 resume。完整测试要求与平台边界见 [测试说明](../../../quality/README.md)，保存语义见 [output-file](../../plugins/outputs/output-file/README.md)。

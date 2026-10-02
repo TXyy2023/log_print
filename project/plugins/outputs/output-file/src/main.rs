@@ -102,6 +102,7 @@ fn bounded_report(mut report: Value) -> Value {
         "report_truncated":true,"total_streams":names.len(),"stream_details_control":"status.get"})
 }
 enum Item {
+    Register(String, Cursor, Value),
     Record(log_proto::Record),
     Gap(Gap),
 }
@@ -227,6 +228,14 @@ fn archive_worker(
             }
         };
         match &work.pending.item {
+            Item::Register(stream, cursor, metadata) => {
+                commit(&mut archive, &view)?;
+                archive.register_stream(stream, cursor, metadata)?;
+                expected
+                    .entry(stream.clone())
+                    .or_insert_with(|| cursor.clone());
+                update_view(&archive, &view);
+            }
             Item::Record(record) => {
                 let cursor = expected
                     .get_mut(&record.stream)
@@ -464,6 +473,26 @@ async fn run(
         archive_worker(archive, worker_config, receiver, worker_view)
     });
     let mut failure = None;
+    let mut streams = config.streams.clone();
+    let mut discovery = tokio::time::interval(Duration::from_millis(100));
+    if config.discover_streams {
+        for stream in &streams {
+            let metadata = client.stream(stream).await?;
+            let cursor = Cursor {
+                epoch: metadata["epoch"].as_str().context("epoch")?.into(),
+                next: metadata["oldest"].as_u64().unwrap_or(1),
+            };
+            enqueue(
+                Pending {
+                    item: Item::Register(stream.clone(), cursor, metadata),
+                    bytes: 1024,
+                },
+                &sender,
+                &counters,
+            )
+            .await?;
+        }
+    }
     // A pending enqueue future owns an accepted SDK event and MUST finish on
     // shutdown. Cancellation is only permitted after a worker failure.
     loop {
@@ -474,8 +503,20 @@ async fn run(
             biased;
             changed = stop.changed() => { if changed.is_err() { failure=Some(anyhow!("control task disappeared")); } break; }
             result = &mut worker => {
-                freeze(client, &config.streams, events).await?;
+                freeze(client, &streams, events).await?;
                 return result.context("archive worker panicked")?;
+            }
+            _ = discovery.tick(), if config.discover_streams => {
+                let catalog = client.streams().await?;
+                for metadata in catalog.as_array().context("stream catalog")? {
+                    let stream = metadata["id"].as_str().context("stream id")?;
+                    if streams.iter().any(|s|s == stream) { continue; }
+                    let sub = client.subscribe(stream).await?;
+                    let cursor = Cursor { epoch:sub["epoch"].as_str().context("epoch")?.into(),next:sub["from"].as_u64().context("from")? };
+                    enqueue(Pending { item:Item::Register(stream.into(),cursor,metadata.clone()),bytes:1024 },&sender,&counters).await?;
+                    streams.push(stream.into());
+                }
+                continue;
             }
             event = events.recv() => event,
         };
@@ -498,7 +539,7 @@ async fn run(
             biased;
             changed = stop.changed() => {
                 if changed.is_err() { failure=Some(anyhow!("control task disappeared")); }
-                freeze(client, &config.streams, events).await?;
+                freeze(client, &streams, events).await?;
                 tokio::select! {
                     result = &mut worker => return result.context("archive worker panicked")?,
                     result = &mut enqueue => if let Err(e)=result { failure=Some(e); },
@@ -506,13 +547,13 @@ async fn run(
                 break;
             }
             result = &mut worker => {
-                freeze(client, &config.streams, events).await?;
+                freeze(client, &streams, events).await?;
                 return result.context("archive worker panicked")?;
             }
             result = &mut enqueue => if let Err(e) = result { failure=Some(e); break; },
         }
     }
-    freeze(client, &config.streams, events).await?;
+    freeze(client, &streams, events).await?;
     // A disconnect/gap failure is never converted into a successful shutdown.
     if let Some(Stop::Failed(reason)) = stop.borrow().clone() {
         failure = Some(anyhow!(reason));

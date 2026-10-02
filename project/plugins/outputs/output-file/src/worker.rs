@@ -133,6 +133,26 @@ impl Archive {
     pub fn open(config: &Config, initial: BTreeMap<String, Cursor>) -> Result<Self> {
         Self::prepare(config)?.initialize(initial)
     }
+    pub fn register_stream(
+        &mut self,
+        stream: &str,
+        cursor: &Cursor,
+        metadata: &serde_json::Value,
+    ) -> Result<()> {
+        self.healthy()?;
+        if !self.config.discover_streams {
+            bail!("dynamic registration is disabled");
+        }
+        self.commit()?;
+        self.sqlite
+            .as_mut()
+            .context("SQLite required")?
+            .register(stream, cursor, metadata)?;
+        if !self.config.streams.iter().any(|s| s == stream) {
+            self.config.streams.push(stream.into());
+        }
+        Ok(())
+    }
     pub fn cursors(&self) -> BTreeMap<String, Cursor> {
         let mut cursors = self
             .file
