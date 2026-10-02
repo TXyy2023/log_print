@@ -258,6 +258,7 @@ class WebUI(unittest.TestCase):
                 web.stop()
 
     def test_slow_archive_keeps_gaps_and_later_context(self):
+        record_count, write_delay_ms = 500, 50
         with tempfile.TemporaryDirectory() as td:
             path=Path(td)/'gaps.sqlite'
             archive={'id':'archive','role':'output','bin':'output-file','read_all':True,
@@ -267,13 +268,27 @@ class WebUI(unittest.TestCase):
             # Bound Core's event queue too, and make the writer slower than the
             # publisher on all CI hosts. Small records at 5 ms can be absorbed
             # entirely by TCP/SDK queues, producing no actual eviction gap.
-            with Core(options={'buffer_records':1,'queue_records':1},plugins=plugins) as core,Output(core,archive,{'LOG_PRINT_ARCHIVE_TESTING':'1','LOG_PRINT_ARCHIVE_TEST_DELAY_MS':'50'}) as file:
+            with Core(options={'buffer_records':1,'queue_records':1},plugins=plugins) as core,Output(core,archive,{'LOG_PRINT_ARCHIVE_TESTING':'1','LOG_PRINT_ARCHIVE_TEST_DELAY_MS':str(write_delay_ms)}) as file:
                 file.ready('archiving')
                 with core.rpc('source') as writer:
                     stream=core.stream('source');writer.call('stream.claim',stream=stream)
-                    for i in range(1,501):writer.publish(stream,b'p'*(48*1024)+f'\nvalue={i}\n'.encode(),channel='stdout')
+                    for i in range(1,record_count+1):writer.publish(stream,b'p'*(48*1024)+f'\nvalue={i}\n'.encode(),channel='stdout')
                 with closing(sqlite3.connect(path)) as db:
-                    eventually(lambda:db.execute('SELECT next FROM checkpoints WHERE stream=?',(stream,)).fetchone()[0]=='501',15)
+                    # Injected sleeps alone can total 25s. How many records
+                    # remain in TCP/SDK queues after publishing is host-dependent;
+                    # do not assume enough evictions to drain within 15s.
+                    # Keep a finite budget for the entire fixture plus commits.
+                    drain_timeout = record_count * write_delay_ms / 1000 + 30
+                    def confirmed():
+                        if file.process.poll() is not None:
+                            self.fail(file.stderr_path.read_text())
+                        cursor = db.execute('SELECT next FROM checkpoints WHERE stream=?',(stream,)).fetchone()
+                        return cursor is not None and cursor[0] == str(record_count + 1)
+                    try:
+                        eventually(confirmed, drain_timeout)
+                    except AssertionError as error:
+                        cursor = db.execute('SELECT next FROM checkpoints WHERE stream=?',(stream,)).fetchone()
+                        self.fail(f'{error}; checkpoint={cursor!r}; archive={file.report()!r}; stderr={file.stderr_path.read_text()!r}')
                     self.assertGreater(db.execute('SELECT COUNT(*) FROM gaps').fetchone()[0],0)
                 # Start after the overwrite so the WebUI cache cannot repair archive gaps.
                 with Output(core,plugins[2]) as web:
