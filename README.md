@@ -6,6 +6,7 @@
 
 <p align="center">
   <a href="https://github.com/TXyy2023/log_print/actions/workflows/validate.yml"><img src="https://github.com/TXyy2023/log_print/actions/workflows/validate.yml/badge.svg?branch=main" alt="CI"></a>
+  <a href="https://txyy2023.github.io/log_print/"><img src="https://github.com/TXyy2023/log_print/actions/workflows/docs.yml/badge.svg?branch=main" alt="文档部署"></a>
   <a href="https://github.com/TXyy2023/log_print/releases/tag/ver-0.1.2"><img src="https://img.shields.io/badge/version-0.1.2-8574d8" alt="Version 0.1.2"></a>
   <a href="Cargo.toml"><img src="https://img.shields.io/badge/Rust-%3E%3D1.92-dea584?logo=rust&amp;logoColor=white" alt="Rust 1.92 或更新"></a>
   <a href="doc/public/concepts.md"><img src="https://img.shields.io/badge/protocol-log--print%2F2-64748b" alt="Protocol log-print/2"></a>
@@ -36,6 +37,12 @@
 Core 只做内存缓冲与转发，默认使用 TCP，也可显式选择 UDP。Input 发布不等待 Output；慢消费者可能遇到缓冲覆盖。**发布成功不等于已保存**，持久化需要配置 `output-file` 并检查保存结果。Core 重启会丢失内存内容，`read` 也不是持久游标。完整约定见[流、传输与保存](doc/public/concepts.md)。
 
 串口、TUI 和 WebUI 不在当前版本范围。旧 `log-print/1` 配置和客户端不能直接用于 0.1.2，迁移说明见[完整性与迁移](doc/public/guides/recovery.md)。
+
+## 文档
+
+[在线使用手册](https://txyy2023.github.io/log_print/)提供中文全文搜索，按入门、使用指南、参考和插件参考组织。可以从[快速开始](https://txyy2023.github.io/log_print/quickstart.html)入门，查阅 [CLI 命令](https://txyy2023.github.io/log_print/reference/cli.html)、[配置文件](https://txyy2023.github.io/log_print/reference/configuration.html)，或查看[常见问题](https://txyy2023.github.io/log_print/troubleshooting.html)。
+
+手册正文维护在 [`doc/public/`](doc/public/index.md)，GitHub 中的 Markdown 与在线站点共用同一份内容。
 
 ## 快速开始
 
@@ -114,6 +121,8 @@ python3 quality/run.py
 ```
 
 需要 Python 3.12+、Rust stable、rustfmt 和 Clippy。验收覆盖 Rust 测试，以及协议、CLI 生命周期、输入、转换、保存与异常退出的真实子进程场景。macOS、Linux、Windows 的 0.1.2 结果见[验收记录](quality/release-0.1.2.md)；本次展示与 Skill 的验证见[交付记录](quality/github-showcase-0.1.2.md)。CI 徽章显示当前 main 的最新状态。
+
+文档更新先提交到 `dev`，通过公开构建、内容隔离和链接检查后 merge 到 `main`，由 [Documentation 工作流](https://github.com/TXyy2023/log_print/actions/workflows/docs.yml)自动部署到 GitHub Pages。发布内容仅为公开使用手册；内部开发资料和归档保留在本地。构建、预览和部署细节见[文档站说明](doc/site/README.md)。
 
 问题反馈请附版本、系统、脱敏后的配置与命令、实际结果和预期结果。欢迎从一个可复现的问题、插件改进或文档修正开始贡献，见[贡献指南](CONTRIBUTING.md)与 [Issues](https://github.com/TXyy2023/log_print/issues)。
 
