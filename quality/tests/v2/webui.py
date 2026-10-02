@@ -31,17 +31,17 @@ def job(url, method='history.read', **args):
     return request(url,method,args)['query']
 
 
-def complete(url, identity):
+def complete(url, identity, timeout=15):
     def check():
         value=request(url,'query.get',{'query':identity})
         state=value['status']['state']
         if state=='failed': raise AssertionError(value)
         return value if state!='running' else None
-    return eventually(check,15)
+    return eventually(check,timeout)
 
 
-def all_rows(url, identity):
-    value=complete(url,identity);rows=[];offset=0
+def all_rows(url, identity, timeout=15):
+    value=complete(url,identity,timeout);rows=[];offset=0
     while offset<value['total']:
         page=request(url,'query.get',{'query':identity,'offset':offset})
         assert page['next']>offset,page
@@ -275,11 +275,14 @@ class WebUI(unittest.TestCase):
                 # Start after the overwrite so the WebUI cache cannot repair archive gaps.
                 with Output(core,plugins[2]) as web:
                     url=web.ready('serving')['url']
-                    rows,value=all_rows(url,job(url,streams=[stream]))
+                    # The pressure fixture scans up to 24 MiB in debug builds.
+                    # Keep ordinary queries at 15s; allow bounded extra time
+                    # here for Windows runners to format the large log rows.
+                    rows,value=all_rows(url,job(url,streams=[stream]),timeout=60)
                     self.assertGreater(value['status']['coverage']['gap_count'],0)
                     self.assertEqual(rows[-1]['text'],'value=500')
                     self.assertTrue(any(r.get('kind')=='gap' for r in rows))
-                    curve,_=all_rows(url,job(url,'history.curve',streams=[stream],channels=['stdout'],text='value=',time_from='1',regex=r'value=(?P<value>\d+)'))
+                    curve,_=all_rows(url,job(url,'history.curve',streams=[stream],channels=['stdout'],text='value=',time_from='1',regex=r'value=(?P<value>\d+)'),timeout=60)
                     self.assertTrue(any(p.get('gap') and p['value'] is None for p in curve))
                     self.assertEqual(curve[-1]['value'],500)
                     web.stop()
