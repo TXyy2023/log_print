@@ -23,7 +23,7 @@ import tempfile
 import threading
 import time
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[4]
 SCRIPT = Path(__file__).resolve()
 LINE_BYTES = 96
 

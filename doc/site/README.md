@@ -49,9 +49,9 @@ Internal navigation follows actual directories, with filenames as page labels an
 
 ```sh
 npm run build:local --prefix doc/site
-python3 quality/tests/docs/verify_links.py doc/site/dist/local
+cargo run --locked -p log-print-quality -- docs doc/site/dist/local
 npm run build:public --prefix doc/site
-python3 quality/tests/docs/verify_links.py doc/site/dist/public
+cargo run --locked -p log-print-quality -- docs doc/site/dist/public
 node doc/site/verify-locales.mjs
 ```
 
@@ -69,7 +69,7 @@ node doc/site/verify-locales.mjs
 
 ```sh
 DOCS_BASE=/log_print/ npm run build:public --prefix doc/site
-python3 quality/tests/docs/verify_links.py doc/site/dist/public --base /log_print/
+cargo run --locked -p log-print-quality -- docs doc/site/dist/public --base /log_print/
 node doc/site/verify-locales.mjs doc/site/dist/public /log_print/
 npm run preview:public --prefix doc/site
 ```

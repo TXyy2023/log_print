@@ -10,4 +10,4 @@ WebUI 与 TUI 的共享显示库，编译进两个 Output，**不是额外服务
 
 WebUI 只增加嵌入的 Vue 静态资源路由。TUI 后台只增加终端连接提示；其 attach 客户端不读取 Core 凭据，不创建流或发布记录。多个视图连接同一个后端，避免多进程并发打开 Page 数据库。
 
-共享契约分别由 `quality/tests/v2/webui.py` 和 `tui.py` 对两个真实 Output 进程验证；前端和 PTY 验收覆盖各自适配器。代码调整必须让两种显示器都通过，而不能只测试本库。
+共享契约分别由 `quality/src/suites/webui.rs` 和 `quality/src/suites/tui.rs` 对两个真实 Output 进程验证；前端和 PTY 验收覆盖各自适配器。代码调整必须让两种显示器都通过，而不能只测试本库。

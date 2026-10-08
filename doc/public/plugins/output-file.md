@@ -60,4 +60,4 @@ With `read_all`, a SQLite archive can follow all current and newly derived strea
 
 The archive library retains checkpoint validation/recovery logic and tests, but the live plugin does not expose resume. Upgrades use new directories and preserve old files and sidecars. Power-loss behavior depends on the filesystem and hardware; these tests are not physical power-failure certification.
 
-Configuration is the main process's startup snapshot and changes require a main-process restart. Validate with `cargo test -p output-file` and `python3 quality/tests/v2/outputs.py`; retired historical suites are not current acceptance evidence.
+Configuration is the main process's startup snapshot and changes require a main-process restart. Validate with `cargo test -p output-file` and `cargo run --locked -p log-print-quality -- suite outputs-v2`; retired historical suites are not current acceptance evidence.

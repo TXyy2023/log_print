@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
+    "quality",
     "project/crates/app-log-print",
     "project/crates/log-core",
     "project/crates/log-proto",

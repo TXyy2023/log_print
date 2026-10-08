@@ -125,10 +125,10 @@ flowchart LR
 ## 开发与验证
 
 ```sh
-python3 quality/run.py
+cargo run --locked -p log-print-quality --
 ```
 
-需要 Python 3.12+、Node.js 24 与 npm、Rust stable、rustfmt 和 Clippy。验收覆盖 Rust 测试，以及协议、CLI 生命周期、输入、转换、保存与异常退出的真实子进程场景。当前发布见[0.1.3 验收记录](quality/release-0.1.3.md)，旧版结果见[0.1.2 历史记录](quality/release-0.1.2.md)。CI 徽章显示当前 main 的最新状态。
+需要 Node.js 24 与 npm、Rust stable、rustfmt 和 Clippy。验收覆盖 Rust 测试，以及协议、CLI 生命周期、输入、转换、保存与异常退出的真实子进程场景。当前发布见[0.1.3 验收记录](quality/release-0.1.3.md)，旧版结果见[0.1.2 历史记录](quality/release-0.1.2.md)。CI 徽章显示当前 main 的最新状态。
 
 文档更新须通过两种站点路径的构建、双语页面和链接检查、公开内容隔离；`dev` 验证，`main` 由 [Documentation 工作流](https://github.com/TXyy2023/log_print/actions/workflows/docs.yml)自动部署到 GitHub Pages。发布内容仅为公开使用手册；内部开发资料和归档保留在本地。构建、预览和部署细节见[文档站说明](doc/site/README.md)。
 

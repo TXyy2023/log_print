@@ -101,10 +101,10 @@ Like WebUI, history defaults to 200 rows per page, curves to at most 2000 points
 ## Validation
 
 ```sh
-python3 quality/run.py
+cargo run --locked -p log-print-quality --
 # TUI alone: first build binaries and the test PTY driver
 cargo build --workspace --bins --examples --locked
-python3 quality/ci/python-test.py quality/tests/v2/tui.py
+cargo run --locked -p log-print-quality -- suite tui-v2
 ```
 
 Linux/macOS use real PTYs; Windows uses ConPTY. Tests cover keys, Chinese input, mouse dragging, resize, concurrent revisions, two views, cleanup, disconnect, non-TTY snapshots and history. The same ten backend process scenarios run against both WebUI and TUI. The three-OS GitHub matrix also runs real Chromium checks for two synchronized browser views, Vue Flow/GridStack, AG Grid, ECharts and layout restoration, saving screenshots and traces.

@@ -25,9 +25,6 @@ jobs:
         env:
           LOG_PRINT_SELF_HOSTED_ENABLED: 'true'
           CARGO_TERM_COLOR: never
-          PYTHONUNBUFFERED: '1'
-          PYTHONUTF8: '1'
-          PYTHONIOENCODING: utf-8
       - name: Upload validation reports
         if: always()
         uses: actions/upload-artifact@v7

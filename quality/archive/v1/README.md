@@ -6,3 +6,5 @@
 - `tests/`：旧协议、进程、I/O 和归档验收。
 
 0.1.2 的正式检查从 `quality/run.py` 调用 `quality/tests/v2/` 与当前 Rust 测试。
+
+`benchmarks/benchmark.py` 使用 log-print/1 协议及旧存储/绘图配置，仅保留历史测量工具，不兼容当前版本。

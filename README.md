@@ -150,10 +150,10 @@ The main program supervises the instance and child processes. The protocol defin
 ## Development and validation
 
 ```sh
-python3 quality/run.py
+cargo run --locked -p log-print-quality --
 ```
 
-The full suite needs Python 3.12+, Node.js 24/npm, Rust stable, rustfmt and Clippy. It covers Rust tests and real subprocess scenarios for the protocol, CLI lifecycle, inputs, transformations, archives, WebUI/TUI and failures. GitHub CI runs Linux, macOS and Windows, including real PTY/ConPTY terminal interactions and Chromium workbench tests. See [validation instructions](quality/README.md); the CI badge reports current main status. See the [0.1.3 release report](quality/release-0.1.3.md) for this release and the [original 0.1.2 report](quality/release-0.1.2.md) for historical validation.
+The full suite needs Node.js 24/npm, Rust stable, rustfmt and Clippy. It covers Rust tests and real subprocess scenarios for the protocol, CLI lifecycle, inputs, transformations, archives, WebUI/TUI and failures. GitHub CI runs Linux, macOS and Windows, including real PTY/ConPTY terminal interactions and Chromium workbench tests. See [validation instructions](quality/README.md); the CI badge reports current main status. See the [0.1.3 release report](quality/release-0.1.3.md) for this release and the [original 0.1.2 report](quality/release-0.1.2.md) for historical validation.
 
 Documentation changes must pass both root-path and GitHub Pages subpath builds, locale/link checks and public-content isolation. The [Documentation workflow](https://github.com/TXyy2023/log_print/actions/workflows/docs.yml) validates `dev` and `main`, and deploys `main` to GitHub Pages. Internal development notes remain local. See [site maintenance](doc/site/README.md).
 

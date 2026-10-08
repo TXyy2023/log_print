@@ -26,19 +26,20 @@ jobs:
           node-version: '24'
           cache: npm
           cache-dependency-path: doc/site/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
       - name: Install documentation dependencies
         run: npm ci --prefix doc/site
       - name: Build and verify the default site path
         run: |
           npm run build:public --prefix doc/site
-          python3 quality/tests/docs/verify_links.py doc/site/dist/public
+          cargo run --locked -p log-print-quality -- docs doc/site/dist/public
           node doc/site/verify-locales.mjs
       - name: Build and verify the Pages site path
         env:
           DOCS_BASE: /log_print/
         run: |
           npm run build:public --prefix doc/site
-          python3 quality/tests/docs/verify_links.py doc/site/dist/public --base /log_print/
+          cargo run --locked -p log-print-quality -- docs doc/site/dist/public --base /log_print/
           node doc/site/verify-locales.mjs doc/site/dist/public /log_print/
       - name: Upload public documentation
         uses: actions/upload-pages-artifact@v5

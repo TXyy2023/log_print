@@ -100,10 +100,10 @@ Page 名称、主题、顺序、来源绑定、自由布局、过滤、列配置
 ## 验证入口
 
 ```sh
-python3 quality/run.py
+cargo run --locked -p log-print-quality --
 # 单独运行 TUI：先构建二进制和测试专用 PTY 驱动
 cargo build --workspace --bins --examples --locked
-python3 quality/ci/python-test.py quality/tests/v2/tui.py
+cargo run --locked -p log-print-quality -- suite tui-v2
 ```
 
 Linux/macOS 使用真实 PTY，Windows 使用 ConPTY，覆盖键盘、中文、鼠标拖拽、resize、并发 revision、双视图、退出清理、断连、无 TTY、快照和历史。相同的十项后端进程验收分别对 WebUI/TUI 执行。GitHub 三系统矩阵另跑真实 Chromium 的双浏览器、VueFlow/GridStack、AG Grid、ECharts 与布局恢复测试，保存截图和 trace。

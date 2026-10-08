@@ -58,4 +58,4 @@
 
 内部归档库保留自身检查点校验和恢复能力及测试，但当前插件不开放 live resume。当前版本不自动转换旧版归档；升级使用新目录，保留旧目标与旁文件。文件同步的断电效果依赖文件系统与硬件，本版测试不等于真实断电认证。
 
-配置为主进程启动快照，修改须重启主进程。验证入口为 `cargo test -p output-file` 和 `python3 quality/tests/v2/outputs.py`；历史套件已归档，不用于本版验收。
+配置为主进程启动快照，修改须重启主进程。验证入口为 `cargo test -p output-file` 和 `cargo run --locked -p log-print-quality -- suite outputs-v2`；历史套件已归档，不用于本版验收。

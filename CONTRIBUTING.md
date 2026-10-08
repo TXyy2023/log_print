@@ -1,6 +1,6 @@
 # Contributing
 
-Install Rust 1.92+, Python 3.12+, and Node.js 24/npm. Build with `cargo build --workspace --locked`, then run `python3 quality/run.py`. Historical MVP results do not establish current acceptance. See [validation](quality/README.md) for the cross-platform process, terminal and browser suites.
+Install Rust 1.92+ and Node.js 24/npm. Build with `cargo build --workspace --locked`, then run `cargo run --locked -p log-print-quality --`. Historical MVP results do not establish current acceptance. See [validation](quality/README.md) for the cross-platform process, terminal and browser suites.
 
 Keep plugin-specific business logic in plugins. Core handles stream identity, authorization and bounded memory. WebUI and TUI share the `log-view` display/history engine; serial input remains outside the active workspace. Third-party plugins can use the Rust SDK or the protocol without changing Core.
 
