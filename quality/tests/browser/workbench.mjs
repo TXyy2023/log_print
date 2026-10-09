@@ -3,7 +3,7 @@ import { chromium, expect } from '../../../project/plugins/outputs/output-webui/
 import { execFileSync } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-const [url, state, binary, artifact] = process.argv.slice(2);
+const [url, state, binary, artifact, memoryUrl, memoryState] = process.argv.slice(2);
 await mkdir(artifact,{recursive:true});
 const browser = await chromium.launch();
 const context = await browser.newContext({viewport:{width:1600,height:1050}});
@@ -86,6 +86,44 @@ try{
  cli('page','set','--layout-mode','canvas');await expect(node(first)).toBeVisible();
  await synced();
  await first.screenshot({path:path.join(artifact,'workbench.png'),fullPage:true});
+ // Actual live data is cache-backed even when a companion archive is enabled.
+ const archivedFooter=node(first).locator('.coverage-trigger');
+ await expect(archivedFooter).toContainText('实时缓存');
+ await expect(archivedFooter.locator('.status-dot')).toHaveClass(/offline/);
+ await archivedFooter.click();
+ await expect(first.locator('.coverage-details:visible')).toContainText('不代表日志已提交');
+ await first.mouse.click(1400,800);
+ await node(first).getByRole('button',{name:'历史',exact:true}).click();
+ await expect(archivedFooter).toContainText('归档上下文');
+ await synced();
+ await node(first).getByRole('button',{name:'实时',exact:true}).click();
+ await expect(archivedFooter).toContainText('实时缓存');
+ await synced();
+ // The original regression: no archive, real rows, and a useful clickable explanation.
+ const memory=await context.newPage();
+ execFileSync(binary,['--state',memoryState,'webui','web','panel','add','--title','Memory only','--stream','source','--column','text'],{encoding:'utf8'});
+ await memory.goto(memoryUrl);
+ const memoryPanel=memory.locator('.panel');
+ const memoryFooter=memoryPanel.locator('.coverage-trigger');
+ await expect(memoryPanel.locator('.ag-row').first()).toBeVisible();
+ await expect(memoryFooter).toContainText('实时缓存');
+ await expect(memoryFooter.locator('.status-dot')).toHaveClass(/offline/);
+ await memoryFooter.click();
+ await expect(memory.locator('.coverage-details:visible')).toContainText('未启用归档');
+ await memory.screenshot({path:path.join(artifact,'live-memory-coverage.png'),fullPage:true});
+ await memory.mouse.click(1400,800);
+ await memoryPanel.getByRole('button',{name:'历史',exact:true}).click();
+ await expect(memoryFooter).toContainText('内存范围');
+ await memoryFooter.click();
+ await expect(memory.locator('.coverage-details:visible')).toContainText('归档 不可用');
+ await memory.mouse.click(1400,800);
+ await memoryPanel.getByRole('button',{name:'实时',exact:true}).click();
+ await expect(memoryFooter).toContainText('实时缓存');
+ // Stop the owned archive and ensure live cache does not turn into an archive claim.
+ execFileSync(binary,['--state',state,'plugin','call','web-archive','shutdown'],{encoding:'utf8'});
+ await expect(archivedFooter).toContainText('实时缓存 · 归档已停止');
+ await expect(archivedFooter.locator('.status-dot')).toHaveClass(/warning/);
+ await first.screenshot({path:path.join(artifact,'stopped-archive-coverage.png'),fullPage:true});
  expect(errors).toEqual([]);ok=true;
 }finally{
  await writeFile(path.join(artifact,'browser.json'),JSON.stringify({ok,errors,platform:process.platform},null,2));

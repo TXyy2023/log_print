@@ -1055,6 +1055,15 @@ pub fn browser() {
         std::env::consts::OS,
         crate::runner::stamp()
     ));
+    let memory = App::native(&[
+        "--input-file",
+        &format!("source={}", source.display()),
+        "--set",
+        "source.from_start=true",
+        "--output-webui",
+        "web",
+    ]);
+    let memory_url = s(&memory.control("web", "url", json!({}))["url"]);
     let r = capture(
         std::process::Command::new("node")
             .arg(root().join("quality/tests/browser/workbench.mjs"))
@@ -1062,6 +1071,8 @@ pub fn browser() {
             .arg(&a.state)
             .arg(bin("log-print"))
             .arg(artifact)
+            .arg(memory_url)
+            .arg(&memory.state)
             .current_dir(root()),
         180,
     );

@@ -30,6 +30,7 @@ import {
 import { CanvasRenderer } from "echarts/renderers";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { AppContext, bindingValue, type Data } from "./api";
+import { coveragePresentation } from "./coverage";
 ModuleRegistry.registerModules([AllCommunityModule]);
 echarts.use([
   LineChart,
@@ -218,7 +219,12 @@ const streamOptions = computed(() =>
     label: s.alias || `${s.owner} / ${s.id.slice(0, 8)}`,
   })),
 );
-const coverage = computed(() => result.value.status?.coverage);
+const coverage = computed(() =>
+  panel.value.mode === "history" ? result.value.status?.coverage : undefined,
+);
+const coverageStatus = computed(() =>
+  coveragePresentation(panel.value.mode, ctx.state.value, coverage.value),
+);
 const waiting = computed(
   () => result.value.waiting === true || result.value.status?.waiting === true,
 );
@@ -229,17 +235,6 @@ const sourceLabel = computed(() => {
     : "全部来源";
 });
 const queryRunning = computed(() => result.value.status?.state === "running");
-const hasCoverageIssue = computed(
-  () =>
-    coverage.value &&
-    (coverage.value.gap_count ||
-      coverage.value.archive_error ||
-      coverage.value.runtime_match === false ||
-      coverage.value.streams?.some(
-        (s: Data) =>
-          s.uncovered_prefix || s.uncovered_between || s.uncovered_after,
-      )),
-);
 async function set(args: Data) {
   await ctx.command("panel.set", {
     page: page.value.id,
@@ -812,66 +807,64 @@ onBeforeUnmount(() => {
       </div>
     </div>
     <div class="panel-footer nodrag">
-      <el-popover
-        placement="top-start"
-        width="360"
-        trigger="click"
-        :disabled="!coverage"
-      >
+      <el-popover placement="top-start" width="360" trigger="click">
         <template #reference
           ><button
             class="coverage-trigger"
-            :class="{ warning: hasCoverageIssue }"
+            :class="{ warning: coverageStatus.tone === 'warning' }"
             :title="sourceLabel"
           >
             <span
               class="status-dot"
-              :class="{ warning: hasCoverageIssue }"
+              :class="{
+                warning: coverageStatus.tone === 'warning',
+                offline: coverageStatus.tone === 'neutral',
+              }"
             ></span
-            >{{
-              hasCoverageIssue
-                ? "覆盖不完整"
-                : coverage?.mode === "memory_only"
-                  ? "内存范围"
-                  : "归档上下文"
-            }}<span class="footer-source"> · {{ sourceLabel }}</span>
+            >{{ coverageStatus.label }}<span class="footer-source">
+              · {{ sourceLabel }}</span
+            >
           </button></template
         >
-        <div v-if="coverage" class="coverage-details">
-          <strong>{{
-            coverage.mode === "memory_only" ? "当前内存覆盖" : "归档与内存覆盖"
-          }}</strong>
-          <p v-for="s in coverage.streams" :key="s.stream">
-            归档
-            {{
-              s.archived
-                ? s.archived.empty
-                  ? "等待提交"
-                  : `${s.archived.first}–${s.archived.last}`
-                : "不可用"
-            }}
-            · 内存 {{ s.memory.first || "无" }}–{{ s.memory.last || "无"
-            }}<em
-              v-if="
-                s.uncovered_prefix ||
-                s.uncovered_between ||
-                s.uncovered_after ||
-                s.memory.range_count > 1
-              "
-              >存在未覆盖区间</em
-            ><em v-if="s.uncommitted && coverage.mode !== 'memory_only'"
-              >尚未提交</em
+        <div class="coverage-details">
+          <p>{{ coverageStatus.description }}</p>
+          <em v-if="coverageStatus.error">{{ coverageStatus.error }}</em>
+          <template v-if="coverage">
+            <strong>{{
+              coverage.mode === "memory_only" ? "当前内存覆盖" : "归档与内存覆盖"
+            }}</strong>
+            <p v-for="s in coverage.streams" :key="s.stream">
+              归档
+              {{
+                s.archived
+                  ? s.archived.empty
+                    ? "等待提交"
+                    : `${s.archived.first}–${s.archived.last}`
+                  : "不可用"
+              }}
+              · 内存 {{ s.memory.first || "无" }}–{{ s.memory.last || "无"
+              }}<em
+                v-if="
+                  s.uncovered_prefix ||
+                  s.uncovered_between ||
+                  s.uncovered_after ||
+                  s.memory.range_count > 1
+                "
+                >存在未覆盖区间</em
+              ><em v-if="s.uncommitted && coverage.mode !== 'memory_only'"
+                >尚未提交</em
+              >
+            </p>
+            <em v-if="coverage.runtime_match === false">归档未匹配本次运行</em
+            ><em v-if="coverage.writer?.report?.state === 'failed'"
+              >归档写入失败：{{ coverage.writer.report.error }}</em
+            ><em v-if="coverage.archive_error"
+              >归档故障：{{ coverage.archive_error }}</em
+            ><em v-if="coverage.gap_count">{{ coverage.gap_count }} 个归档缺口</em
+            ><em v-if="coverage.writer?.connected === false"
+              >归档已停止，保留已提交前缀</em
             >
-          </p>
-          <em v-if="coverage.runtime_match === false">归档未匹配本次运行</em
-          ><em v-if="coverage.writer?.report?.state === 'failed'"
-            >归档写入失败：{{ coverage.writer.report.error }}</em
-          ><em v-if="coverage.archive_error"
-            >归档故障：{{ coverage.archive_error }}</em
-          ><em v-if="coverage.gap_count">{{ coverage.gap_count }} 个归档缺口</em
-          ><em v-if="coverage.writer?.connected === false"
-            >归档已停止，保留已提交前缀</em
-          >
+          </template>
         </div>
       </el-popover>
       <span v-if="queryRunning" class="scan-progress"

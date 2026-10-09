@@ -6,7 +6,8 @@
   "license": "MIT",
   "scripts": {
     "check": "vue-tsc --noEmit",
-    "build": "npm run check && npm run licenses && vite build",
+    "build": "npm run check && npm test && npm run licenses && vite build",
+    "test": "node --experimental-strip-types --test tests/coverage.test.mjs",
     "licenses": "node scripts/licenses.mjs"
   },
   "dependencies": {
