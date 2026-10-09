@@ -1,4 +1,5 @@
 //! Real-process fixtures. All data is synthetic; Drop only cleans owned resources.
+use anyhow::Context;
 use serde_json::{json, Value};
 use std::{
     fs::{self, File},
@@ -209,7 +210,9 @@ impl Rpc {
     pub fn try_call(&mut self, op: &str, args: Value) -> anyhow::Result<Value> {
         self.seq += 1;
         self.send(&json!({ "id" : self.seq, "op" : op, "args" : args }))?;
-        let m = self.receive()?;
+        let m = self
+            .receive()
+            .with_context(|| format!("waiting for RPC {op} response {}", self.seq))?;
         anyhow::ensure!(m["type"] == "response" && m["id"] == self.seq, "{m}");
         Self::result(m)
     }

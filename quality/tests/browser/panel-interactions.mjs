@@ -22,8 +22,12 @@ export async function panelInteractions(browser, url, control, read, artifact) {
   const title = () => inspector.locator('.el-form-item').filter({ hasText: '名称' }).locator('input');
   const apply = () => inspector.getByRole('button', { name: '应用', exact: true });
   const synced = async () => {
-    const revision = (await read()).revision;
-    await expect(page.locator('.workspace-status code')).toHaveText(`rev ${revision}`);
+    await expect(page.locator('.status-save')).toHaveText('所有更改已保存');
+    // Selection and layout saves can advance the revision while SSE catches up.
+    await expect.poll(async () => {
+      const revision = (await read()).revision;
+      return await page.locator('.workspace-status code').textContent() === `rev ${revision}`;
+    }).toBe(true);
     await expect(page.locator('.status-save')).toHaveText('所有更改已保存');
   };
   const select = async pid => { await node(pid).getByRole('button', { name: '面板属性', exact: true }).click(); await synced(); };

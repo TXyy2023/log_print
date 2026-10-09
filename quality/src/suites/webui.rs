@@ -115,6 +115,24 @@ fn sse(url: &str) -> Value {
     serde_json::from_str(line.trim().strip_prefix("data: ").unwrap()).unwrap()
 }
 pub fn run(t: &mut Suite, kind: &str) {
+    t.case("shutdown_acknowledged_before_exit", || {
+        // Exercise the shutdown/ingestion race with a single worker as well as
+        // concurrent workers; every caller must receive the reply before exit.
+        for workers in ["1", "2"] {
+            for _ in 0..8 {
+                let td = tempfile::tempdir().unwrap();
+                let plugins = base(
+                    kind,
+                    json!({ "state_path": td.path().join("pages.sqlite3") }),
+                    None,
+                );
+                let c = Core::new("tcp", json!({}), plugins.clone());
+                let mut web = Plugin::new(&c, &plugins[2], &[("TOKIO_WORKER_THREADS", workers)]);
+                web.ready("serving");
+                assert_eq!(web.stop()["stopping"], true);
+            }
+        }
+    });
     t.case("memory_only_http_sse_revision_and_empty_streams", || {
         let td = tempfile::tempdir().unwrap();
         let plugins = base(

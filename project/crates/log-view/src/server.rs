@@ -182,7 +182,6 @@ pub async fn serve(surface: &str, routes: Router<Arc<Engine>>) -> Result<()> {
         while let Some(control) = controls.recv().await {
             let method = control.method.as_str();
             let result = if method == "shutdown" {
-                ctl_stop.send_replace(true);
                 Ok(json!({"stopping":true}))
             } else if method == "config.get" {
                 Ok(json!({"effective":ctl.config,"dynamic_fields":["pages"]}))
@@ -231,6 +230,8 @@ pub async fn serve(surface: &str, routes: Router<Arc<Engine>>) -> Result<()> {
                 break;
             }
         }
+        // Stopping ingestion wakes serve(), which aborts this task. Publish
+        // shutdown only after Core has acknowledged the caller's control reply.
         ctl_stop.send_replace(true);
         Ok::<(), anyhow::Error>(())
     });
