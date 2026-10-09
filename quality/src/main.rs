@@ -1,5 +1,6 @@
 mod docs;
 mod fixtures;
+mod gated_core;
 mod owned;
 mod runner;
 mod suites;

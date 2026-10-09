@@ -12,4 +12,10 @@ tmux验收创建唯一socket名、独立服务/窗格，只清理自建资源；
 
 GitHub `validate.yml` 在push/手动运行三系统矩阵。`self-hosted.yml` 仍仅手动main分支且仓库变量启用时运行已有runner，不注册、不创建定时任务。可本机使用 `LOG_PRINT_SELF_HOSTED_ENABLED=true bash quality/ci/self-hosted/run-macos.sh`。
 
+`validate.yml` 每次使用包含 run ID / attempt 的新报告目录。`browser-readiness.mjs` 只接受本提交完整入口生成的最终报告，要求 `frontend` 和 `build` 均成功；报告缺失、损坏、不完整或 SHA 不符时失败关闭。运行时套件失败仍执行浏览器验收，原失败继续使 job 失败；构建失败明确说明浏览器跳过原因。Chromium 安装和浏览器本身失败也不会被忽略，矩阵仍为 `fail-fast: false`。此门控不改变 `self-hosted.yml`。用 `node --test quality/ci/browser-readiness.test.mjs` 检查正常、构建失败、运行时失败和报告故障分支。
+
+归档缺口回归使用 quality 专用 Core 夹具：`log-proto/test-support` 编译特性提供显式 TCP 构造入口，正常监听器不调用它，也不会因环境变量暂停。订阅应答和记录 1 均经真实 TCP 发出；归档确认 checkpoint=2 后，Core 对记录 1 的发送完成确认仍被屏障暂扣，尚未读取下一批。发布 2..5 后先确认 Core oldest=head=5，再释放屏障；真实 SDK / output-file 必须产生唯一缺口 2..4、保存记录 1/5/6/7、推进 checkpoint=8，历史行与曲线均保留缺口及后续上下文。使用内部缺口保留原先的行解码器验收范围；首条记录之前的缺口显示不由本用例作保证。
+
+该屏障不持 Core/stream 锁、不伪造 Gap，不靠 TCP 缓冲大小或 sleep 制造丢失。释放文件单调存在，等待有 30 秒上限；父进程 EOF 可立即取消，并有单独回归。小记录快速发布、小记录带间隔、大记录加归档延迟三种配置都执行精确断言，WebUI/TUI 共用同一场景。日志打印起点、实际保留范围、缺失序号、记录序列与 checkpoint，便于跨平台定位。
+
 本套件验证软件行为，不构成真实硬件、真实断电或无限负载保证。测试用合成字节与真实软件日志工作负载分开。

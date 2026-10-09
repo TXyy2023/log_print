@@ -8,6 +8,7 @@ use std::{
 };
 pub fn run(mode: &str, args: &[String]) -> anyhow::Result<()> {
     match mode {
+        "gated-core" => crate::gated_core::run(&args[0])?,
         "sleep" => pause(120_000),
         "channels" => {
             let mut b = Vec::new();

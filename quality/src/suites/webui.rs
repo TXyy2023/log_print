@@ -660,84 +660,125 @@ pub fn run(t: &mut Suite, kind: &str) {
             web.stop();
         },
     );
-    t.case("slow_archive_keeps_gaps_and_later_context", || {
+    t.case("archive_send_gate_cancels_on_core_shutdown", || {
         let td = tempfile::tempdir().unwrap();
-        let path = td.path().join("gaps.sqlite");
-        let mut arch = archive(&path);
-        arch["config"]["queue"] = json!({ "max_records" : 1 });
-        let plugins = base(
-            kind,
-            json!(
-                { "state_path" : td.path().join("pages.sqlite3"), "history_path" :
-                path, "history_plugin" : "archive" }
-            ),
-            Some(arch.clone()),
+        let arch = archive(&td.path().join("unused.sqlite"));
+        let mut c = Core::gated(
+            json!({ "buffer_records": 1 }),
+            base(kind, json!({}), Some(arch)),
         );
-        let c = Core::new(
-            "tcp",
-            json!({ "buffer_records" : 1, "queue_records" : 1 }),
-            plugins.clone(),
-        );
-        let mut file = Plugin::new(
-            &c,
-            &arch,
-            &[
-                ("LOG_PRINT_ARCHIVE_TESTING", "1"),
-                ("LOG_PRINT_ARCHIVE_TEST_DELAY_MS", "50"),
-            ],
-        );
-        file.ready("archiving");
         let stream = c.stream("source");
-        {
-            let mut w = c.rpc("source");
-            w.call("stream.claim", json!({ "stream" : stream }));
-            for i in 1..501 {
-                w.publish(
-                    &stream,
-                    format!("{}\nvalue={i}\n", "p".repeat(48 * 1024)).as_bytes(),
-                    json!({ "channel" : "stdout" }),
-                );
-            }
-        }
-        let db = Connection::open(&path).unwrap();
-        eventually(55, || {
-            assert!(file.process.exited().is_none(), "{}", text(&file.stderr));
-            checkpoint(&db, &stream, 501).then_some(())
-        });
-        assert!(
-            db.query_row("SELECT COUNT(*) FROM gaps", [], |r| r.get::<_, i64>(0))
-                .unwrap()
-                > 0
-        );
-        let mut web = Plugin::new(&c, &plugins[2], &[]);
-        let url = s(&web.ready("serving")["url"]);
-        let (r, v) = rows(
-            &url,
-            &job(&url, "history.read", json!({ "streams" : [stream] })),
-            60,
-        );
-        assert!(v["status"]["coverage"]["gap_count"].as_u64().unwrap() > 0);
-        assert_eq!(r.last().unwrap()["text"], "value=500");
-        assert!(r.iter().any(|r| r["kind"] == "gap"));
-        let (curve, _) = rows(
-            &url,
-            &job(
-                &url,
-                "history.curve",
-                json!(
-                    { "streams" : [stream], "channels" : ["stdout"], "text" :
-                    "value=", "time_from" : "1", "regex" : r"value=(?P<value>\d+)" }
-                ),
-            ),
-            60,
-        );
-        assert!(curve
-            .iter()
-            .any(|v| v["gap"] == true && v["value"].is_null()));
-        assert_eq!(curve.last().unwrap()["value"], 500.0);
-        web.stop();
-        file.stop();
+        let mut reader = c.events("archive", true);
+        let welcome = reader.call("subscribe", json!({ "stream": stream }));
+        assert_eq!(welcome["from"], 1);
+        let mut writer = c.rpc("source");
+        writer.call("stream.claim", json!({ "stream": stream }));
+        writer.publish(&stream, b"value=1\n", json!({}));
+        assert_eq!(reader.receive().unwrap()["record"]["seq"], 1);
+        eventually(8, || read_json(c.path().join("gate-ready.json")));
+        // No release file: parent EOF must cancel the suspended send and all tasks.
+        c.stop();
+        assert!(reader.receive().is_err());
     });
+    for (profile, payload_bytes, publish_delay, archive_delay) in [
+        ("small_fast", 0, 0, 0),
+        ("small_paced", 0, 10, 0),
+        ("large_slow_archive", 48 * 1024, 0, 20),
+    ] {
+        t.case(&format!("slow_archive_keeps_gaps_and_later_context_{profile}"), || {
+            let td = tempfile::tempdir().unwrap();
+            let path = td.path().join("gaps.sqlite");
+            let mut arch = archive(&path);
+            arch["config"]["queue"] = json!({ "max_records": 1 });
+            arch["config"]["streams"] = json!(["raw"]);
+            arch["config"]["discover_streams"] = json!(false);
+            let plugins = base(kind, json!({ "state_path": td.path().join("pages.sqlite3"),
+                "history_path": path, "history_plugin": "archive" }), Some(arch.clone()));
+            let c = Core::gated(json!({ "buffer_records": 1, "queue_records": 1 }), plugins.clone());
+            let delay = archive_delay.to_string();
+            let mut file = Plugin::new(&c, &arch, &[
+                ("LOG_PRINT_ARCHIVE_TESTING", "1"),
+                ("LOG_PRINT_ARCHIVE_TEST_DELAY_MS", &delay),
+            ]);
+            let welcome = eventually(8, || {
+                assert!(file.process.exited().is_none(), "{}", text(&file.stderr));
+                read_json(c.path().join("subscription.json"))
+            });
+            file.ready("archiving");
+            let stream = c.stream("source");
+            assert_eq!(welcome["stream"], stream);
+            assert_eq!(welcome["from"], 1, "{welcome}");
+            assert_eq!(welcome["head"], 0, "{welcome}");
+            let db = Connection::open(&path).unwrap();
+            assert!(checkpoint(&db, &stream, 1), "initial cursor: {welcome}");
+            let mut w = c.rpc("source");
+            w.call("stream.claim", json!({ "stream": stream }));
+            let payload = |i| format!("{}value={i}\n", "p".repeat(payload_bytes));
+            w.publish(&stream, payload(1).as_bytes(), json!({ "channel": "stdout" }));
+            let gate = eventually(8, || read_json(c.path().join("gate-ready.json")));
+            assert_eq!(gate["seq"], 1);
+            assert_eq!(gate["stream"], stream);
+            eventually(8, || checkpoint(&db, &stream, 2).then_some(()));
+            for i in 2..=5 {
+                w.publish(&stream, payload(i).as_bytes(), json!({ "channel": "stdout" }));
+                if publish_delay > 0 { pause(publish_delay); }
+            }
+            let metadata = c.admin().call("stream.get", json!({ "stream": stream }));
+            assert_eq!(metadata["oldest"], 5, "{metadata}");
+            assert_eq!(metadata["head"], 5, "{metadata}");
+            assert!(checkpoint(&db, &stream, 2), "Core must still be held before its next batch");
+            let count = |table| db.query_row(&format!("SELECT COUNT(*) FROM {table}"), [], |r| r.get::<_, i64>(0)).unwrap();
+            assert_eq!(count("records"), 1);
+            assert_eq!(count("gaps"), 0);
+            fs::write(c.path().join("gate-release"), b"release").unwrap();
+            let wait_checkpoint = |next: u64, file: &mut Plugin| {
+                let start = std::time::Instant::now();
+                loop {
+                    assert!(file.process.exited().is_none(), "archive stderr: {}", text(&file.stderr));
+                    assert!(!c.path().join("gate-error").exists(), "{}", text(c.path().join("gate-error")));
+                    let current = db.query_row("SELECT next FROM checkpoints WHERE stream=?", [&stream], |r| r.get::<_, String>(0)).ok();
+                    if current.as_deref() == Some(&next.to_string()) { break; }
+                    assert!(start.elapsed() < Duration::from_secs(10),
+                        "expected checkpoint={next}, actual={current:?}, records={}, gaps={}, retained={metadata}, stderr={}, core={}",
+                        count("records"), count("gaps"), text(&file.stderr), text(c.path().join("core.log")));
+                    pause(10);
+                }
+            };
+            wait_checkpoint(6, &mut file);
+            // These later records are individually acknowledged by the archive,
+            // so the test requires recovery, not an additional accidental gap.
+            for i in 6..=7 {
+                w.publish(&stream, payload(i).as_bytes(), json!({ "channel": "stdout" }));
+                wait_checkpoint(i + 1, &mut file);
+            }
+            let gap: (String, String, String, String) = db.query_row(
+                "SELECT stream,epoch,first,last FROM gaps", [],
+                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?))).unwrap();
+            let mut statement = db.prepare("SELECT seq FROM records ORDER BY CAST(seq AS INTEGER)").unwrap();
+            let sequences: Vec<String> = statement.query_map([], |r| r.get(0)).unwrap().map(Result::unwrap).collect();
+            println!("GAP EVIDENCE {kind}/{profile}: welcome={welcome}, retained={metadata}, gap={gap:?}, records={sequences:?}, checkpoint=8");
+            assert_eq!(count("gaps"), 1);
+            assert_eq!(gap, (stream.clone(), s(&welcome["epoch"]), "2".into(), "4".into()));
+            assert_eq!(sequences, ["1", "5", "6", "7"]);
+            let mut web = Plugin::new(&c, &plugins[2], &[]);
+            let url = s(&web.ready("serving")["url"]);
+            let (r, v) = rows(&url, &job(&url, "history.read", json!({ "streams": [stream] })), 15);
+            assert_eq!(v["status"]["coverage"]["gap_count"], 1, "{v}");
+            assert_eq!(r.iter().filter(|r| r["kind"] == "gap").count(), 1, "history row count={}", r.len());
+            for i in [1, 5, 6, 7] {
+                assert!(r.iter().any(|r| r["text"].as_str().is_some_and(|text| text.ends_with(&format!("value={i}")))), "missing {i}; history row count={}", r.len());
+            }
+            let (curve, _) = rows(&url, &job(&url, "history.curve", json!({
+                "streams": [stream], "channels": ["stdout"], "text": "value=",
+                "time_from": "1", "regex": r"value=(?P<value>\d+)"
+            })), 15);
+            assert_eq!(curve.iter().filter(|v| v["gap"] == true && v["value"].is_null()).count(), 1, "{curve:?}");
+            let values: Vec<f64> = curve.iter().filter_map(|v| v["value"].as_f64()).collect();
+            assert_eq!(values, [1.0, 5.0, 6.0, 7.0], "{curve:?}");
+            web.stop();
+            file.stop();
+        });
+    }
     canvas(t, kind);
     restore(t, kind);
 }

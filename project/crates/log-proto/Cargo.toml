@@ -4,6 +4,10 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 
+[features]
+# Explicitly used only by the quality fixture; normal TCP never installs a hook.
+test-support = []
+
 [dependencies]
 serde.workspace = true
 serde_json.workspace = true

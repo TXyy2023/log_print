@@ -253,6 +253,7 @@ impl Drop for Rpc {
     }
 }
 pub struct Core {
+    gated: bool,
     pub temp: TempDir,
     pub transport: String,
     pub address: String,
@@ -260,6 +261,12 @@ pub struct Core {
 }
 impl Core {
     pub fn new(transport: &str, options: Value, plugins: Value) -> Self {
+        Self::configured(transport, options, plugins, false)
+    }
+    pub fn gated(options: Value, plugins: Value) -> Self {
+        Self::configured("tcp", options, plugins, true)
+    }
+    fn configured(transport: &str, options: Value, plugins: Value, gated: bool) -> Self {
         let temp = tempfile::tempdir().unwrap();
         let mut opts = options;
         opts["transport"] = json!(transport);
@@ -275,6 +282,7 @@ impl Core {
             ),
         );
         let mut c = Self {
+            gated,
             temp,
             transport: transport.into(),
             address: String::new(),
@@ -308,14 +316,22 @@ impl Core {
             .append(true)
             .open(self.path().join("core.log"))
             .unwrap();
+        let mut command = if self.gated {
+            let mut command = Command::new(fixture());
+            command.args(["fixture", "gated-core", self.path().to_str().unwrap()]);
+            command
+        } else {
+            let mut command = Command::new(bin("log-print-core"));
+            command.args([
+                "--runtime-config",
+                self.path().join("runtime.json").to_str().unwrap(),
+                "--ready-file",
+                ready.to_str().unwrap(),
+            ]);
+            command
+        };
         self.process = Some(Process::spawn(
-            Command::new(bin("log-print-core"))
-                .args([
-                    "--runtime-config",
-                    self.path().join("runtime.json").to_str().unwrap(),
-                    "--ready-file",
-                    ready.to_str().unwrap(),
-                ])
+            command
                 .stdin(Stdio::piped())
                 .stdout(log.try_clone().unwrap())
                 .stderr(log),

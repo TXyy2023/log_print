@@ -20,6 +20,8 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
+    env:
+      VALIDATION_REPORT: quality/artifacts/validation/ci-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -44,14 +46,23 @@ jobs:
           else
             HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1 brew install tmux
           fi
+      - name: Test browser readiness failure branches
+        run: node --test quality/ci/browser-readiness.test.mjs
       - name: Validate actual workspace and child processes
-        run: cargo run --locked -p log-print-quality --
+        run: cargo run --locked -p log-print-quality -- --report-dir "${{ env.VALIDATION_REPORT }}"
         env:
           CARGO_TERM_COLOR: never
+      - name: Check this run's browser build prerequisites
+        id: readiness
+        if: ${{ !cancelled() }}
+        run: node quality/ci/browser-readiness.mjs "${{ env.VALIDATION_REPORT }}/results.json"
       - name: Install Chromium for actual browser acceptance
+        id: chromium
+        if: ${{ !cancelled() && steps.readiness.outputs.browser_ready == 'true' }}
         working-directory: project/plugins/outputs/output-webui/frontend
         run: npx playwright install --with-deps chromium
       - name: Verify WebUI interactions in two real browser views
+        if: ${{ !cancelled() && steps.readiness.outputs.browser_ready == 'true' && steps.chromium.outcome == 'success' }}
         run: cargo run --locked -p log-print-quality -- browser
       - name: Upload command logs and result reports
         if: always()

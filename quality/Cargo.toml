@@ -8,6 +8,9 @@ publish = false
 
 [dependencies]
 anyhow.workspace = true
+tokio.workspace = true
+log-core = { path = "../project/crates/log-core" }
+log-proto = { workspace = true, features = ["test-support"] }
 clap.workspace = true
 serde_json.workspace = true
 uuid.workspace = true

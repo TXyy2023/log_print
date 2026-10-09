@@ -371,6 +371,24 @@ impl ServerConnection {
     }
     /// Adapter retained for callers with an already accepted TCP socket.
     pub async fn tcp(socket: TcpStream) -> Result<Self> {
+        Self::tcp_after_send(socket, |_, _| std::future::ready(Ok(()))).await
+    }
+    /// Test-only transport barrier. The frame reaches the real peer before the
+    /// hook runs, but Core's send does not complete until the hook returns.
+    /// No production listener calls this constructor or reads test environment.
+    #[cfg(feature = "test-support")]
+    pub async fn tcp_with_test_send_hook<F, Fut>(socket: TcpStream, hook: F) -> Result<Self>
+    where
+        F: Fn(&Hello, &ServerMessage) -> Fut + Send + 'static,
+        Fut: std::future::Future<Output = Result<()>> + Send,
+    {
+        Self::tcp_after_send(socket, hook).await
+    }
+    async fn tcp_after_send<F, Fut>(socket: TcpStream, hook: F) -> Result<Self>
+    where
+        F: Fn(&Hello, &ServerMessage) -> Fut + Send + 'static,
+        Fut: std::future::Future<Output = Result<()>> + Send,
+    {
         socket.set_nodelay(true)?;
         let (r, mut w) = socket.into_split();
         let mut r = BufReader::new(r);
@@ -386,9 +404,13 @@ impl ServerConnection {
                 }
             }
         });
+        let peer = hello.clone();
         let writer = tokio::spawn(async move {
             while let Some((message, ack)) = orx.recv().await {
-                let result = write_json(&mut w, &message).await;
+                let result = match write_json(&mut w, &message).await {
+                    Ok(()) => hook(&peer, &message).await,
+                    Err(error) => Err(error),
+                };
                 let failed = result.is_err();
                 let _ = ack.send(result);
                 if failed {
