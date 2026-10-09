@@ -42,12 +42,24 @@ echarts.use([
 ]);
 const props = defineProps<{ id: string }>(),
   ctx = inject(AppContext)!;
+// Async work belongs to this mounted panel, even after the selected page changes.
+const pageId = ctx.state.value.selected,
+  panelId = props.id;
+let disposed = false;
 const page = computed(() =>
-  ctx.state.value.pages.find((p: Data) => p.id === ctx.state.value.selected),
+  ctx.state.value.pages.find((p: Data) => p.id === pageId),
 );
 const panel = computed<Data>(
-  () => page.value?.panels.find((p: Data) => p.id === props.id) || {},
+  () => page.value?.panels.find((p: Data) => p.id === panelId) || {},
 );
+function active() {
+  return (
+    !disposed &&
+    ctx.state.value.selected === pageId &&
+    panel.value.id === panelId &&
+    !panel.value.hidden
+  );
+}
 const filterText = ref("");
 let filterRevision: number | undefined;
 watch(
@@ -236,29 +248,32 @@ const sourceLabel = computed(() => {
 });
 const queryRunning = computed(() => result.value.status?.state === "running");
 async function set(args: Data) {
+  if (!active()) return;
   await ctx.command("panel.set", {
-    page: page.value.id,
-    panel: props.id,
     ...args,
+    page: pageId,
+    panel: panelId,
   });
 }
 async function update() {
-  if (fetching) return;
+  if (fetching || !active()) return;
   fetching = true;
   try {
     const p = panel.value;
     let data: Data;
     if (p.paused) {
       data = await ctx.command("panel.data", {
-        page: page.value.id,
-        panel: props.id,
+        page: pageId,
+        panel: panelId,
       });
+      if (!active()) return;
       rows.value = data.rows || [];
     } else if (p.mode === "history" && p.query) {
       data = await ctx.command("query.get", {
         query: p.query,
         offset: p.offset || 0,
       });
+      if (!active()) return;
       rows.value = data.rows || [];
       if (p.kind === "curve" && data.status?.state === "complete") {
         if (loadedCurveQuery !== p.query) {
@@ -269,6 +284,7 @@ async function update() {
               query: p.query,
               offset,
             });
+            if (!active()) return;
             points.push(...batch.rows);
             if (batch.next <= offset) break;
             offset = batch.next;
@@ -285,9 +301,10 @@ async function update() {
     } else {
       loadedCurveQuery = undefined;
       data = await ctx.command("panel.data", {
-        page: page.value.id,
-        panel: props.id,
+        page: pageId,
+        panel: panelId,
       });
+      if (!active()) return;
       rows.value = data.rows || [];
     }
     result.value = data;
@@ -299,17 +316,18 @@ async function update() {
       rows.value.length
     ) {
       await nextTick();
+      if (!active()) return;
       const count = gridApi?.getDisplayedRowCount() || 0;
       if (count) gridApi?.ensureIndexVisible(count - 1, "bottom");
     }
   } catch (e) {
-    result.value = { error: String(e) };
+    if (active()) result.value = { error: String(e) };
   } finally {
     fetching = false;
   }
 }
 function draw(data: Data) {
-  if (!chartElement.value) return;
+  if (!active() || !chartElement.value) return;
   if (!chart) {
     chart = echarts.init(chartElement.value);
     chart.on(
@@ -443,11 +461,14 @@ function draw(data: Data) {
   chart.resize();
 }
 async function history(method: string) {
+  if (!active()) return;
   working.value = true;
   try {
     await textCommit;
+    if (!active()) return;
     if (filterText.value !== panel.value.text)
       await changeText(filterText.value);
+    if (!active()) return;
     let args: Data = {
       streams: panel.value.streams,
       channels: panel.value.channels,
@@ -462,19 +483,21 @@ async function history(method: string) {
         ElMessage.warning("先添加至少一条曲线");
         return;
       }
-      args = { ...args, page: page.value.id, panel: props.id };
+      args = { ...args, page: pageId, panel: panelId };
       method = "history.curve";
     }
     const data = await ctx.command(method, args);
+    if (!active()) return;
     await set({ mode: "history", query: data.query, offset: 0, paused: false });
     await update();
   } catch {
     // The shared command handler reports validation and revision errors.
   } finally {
-    working.value = false;
+    if (active()) working.value = false;
   }
 }
 async function context(event: any) {
+  if (!active()) return;
   const row = event.data;
   const query = await ctx.command("history.context", {
     streams: [row.stream],
@@ -484,6 +507,7 @@ async function context(event: any) {
     before: 10,
     after: 10,
   });
+  if (!active()) return;
   await set({ mode: "history", query: query.query, offset: 0, paused: false });
   await update();
 }
@@ -512,6 +536,7 @@ async function save() {
     delete value.id;
     delete value.series;
     await set(value);
+    if (!active()) return;
     settings.value = false;
     await update();
   } catch {
@@ -521,7 +546,8 @@ async function save() {
 async function remove() {
   try {
     await ElMessageBox.confirm("删除这个面板？", "移除面板");
-    await ctx.command("panel.remove", { page: page.value.id, panel: props.id });
+    if (!active()) return;
+    await ctx.command("panel.remove", { page: pageId, panel: panelId });
   } catch (e) {
     if (!["cancel", "close"].includes(String(e))) throw e;
   }
@@ -541,15 +567,17 @@ function editSeries(series?: Data) {
   seriesForm.value.revision = ctx.state.value.revision;
 }
 async function saveSeries() {
+  if (!active()) return;
   try {
     const value = {
       ...seriesForm.value,
       streams: seriesForm.value.streams.map((s: string) => JSON.parse(s)),
-      page: page.value.id,
-      panel: props.id,
+      page: pageId,
+      panel: panelId,
       series: seriesForm.value.id,
     };
     await ctx.command(value.series ? "series.set" : "series.add", value);
+    if (!active()) return;
     seriesDialog.value = false;
     await update();
   } catch {
@@ -557,13 +585,15 @@ async function saveSeries() {
   }
 }
 async function removeSeries(id: string) {
+  if (!active()) return;
   await ctx.command("series.remove", {
-    page: page.value.id,
-    panel: props.id,
+    page: pageId,
+    panel: panelId,
     series: id,
   });
 }
 function ready(event: any) {
+  if (!active()) return;
   gridApi = event.api;
   if (panel.value.column_state)
     gridApi?.applyColumnState({
@@ -573,6 +603,7 @@ function ready(event: any) {
 }
 async function saveColumns(event: any) {
   if (
+    !active() ||
     event.finished === false ||
     ![
       "uiColumnMoved",
@@ -589,6 +620,7 @@ async function saveColumns(event: any) {
   if (columnTimer) clearTimeout(columnTimer);
   const revision = ctx.state.value.revision;
   columnTimer = setTimeout(() => {
+    if (!active()) return;
     const columnState = gridApi?.getColumnState();
     if (columnState)
       void set({
@@ -600,15 +632,15 @@ async function saveColumns(event: any) {
       }).catch(() => {});
   }, 250);
 }
-onMounted(async () => {
-  await nextTick();
-  await update();
+onMounted(() => {
+  // Register cleanup-owned resources before starting any asynchronous work.
   timer = setInterval(update, 750);
   observer = new ResizeObserver(() => chart?.resize());
   if (chartElement.value) observer.observe(chartElement.value);
+  void update();
 });
 watch(
-  () => page.value.theme,
+  () => page.value?.theme,
   () => {
     if (chart) draw(result.value);
   },
@@ -630,11 +662,14 @@ watch(
   },
 );
 onBeforeUnmount(() => {
+  disposed = true;
   if (timer) clearInterval(timer);
   if (zoomTimer) clearTimeout(zoomTimer);
   if (columnTimer) clearTimeout(columnTimer);
   observer?.disconnect();
   chart?.dispose();
+  chart = undefined;
+  gridApi = undefined;
 });
 </script>
 <template>
@@ -684,7 +719,7 @@ onBeforeUnmount(() => {
             ><el-dropdown-menu>
               <el-dropdown-item @click="edit">筛选与显示设置</el-dropdown-item>
               <el-dropdown-item
-                @click="ctx.command('panel.clone', { panel: id })"
+                @click="ctx.command('panel.clone', { page: pageId, panel: panelId })"
                 >复制面板</el-dropdown-item
               >
               <el-dropdown-item @click="set({ locked: !panel.locked })">{{
