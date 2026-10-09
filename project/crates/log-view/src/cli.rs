@@ -137,6 +137,8 @@ pub struct Options {
     #[arg(long)]
     snap: Option<bool>,
     #[arg(long)]
+    allow_overlap: Option<bool>,
+    #[arg(long)]
     sidebar_open: Option<bool>,
     #[arg(long)]
     inspector_open: Option<bool>,
@@ -258,6 +260,7 @@ impl Options {
             show_grid,
             show_minimap,
             snap,
+            allow_overlap,
             sidebar_open,
             inspector_open,
             active_panel,

@@ -13,7 +13,7 @@ fn id() -> String {
     uuid::Uuid::new_v4().to_string()
 }
 fn page(name: &str) -> Value {
-    json!({"id":id(),"name":name,"title":name,"theme":"light","order":0,"panels":[],"layout_mode":"canvas","view_x":24.0,"view_y":24.0,"view_zoom":1.0,"show_grid":true,"snap":true,"locked":false,"show_minimap":false,"sidebar_open":true,"inspector_open":false,"active_panel":null,"tool":"select"})
+    json!({"id":id(),"name":name,"title":name,"theme":"light","order":0,"panels":[],"layout_mode":"canvas","view_x":24.0,"view_y":24.0,"view_zoom":1.0,"show_grid":true,"snap":true,"allow_overlap":false,"locked":false,"show_minimap":false,"sidebar_open":true,"inspector_open":false,"active_panel":null,"tool":"select"})
 }
 const PAGE_FIELDS: &[&str] = &[
     "name",
@@ -26,6 +26,7 @@ const PAGE_FIELDS: &[&str] = &[
     "view_zoom",
     "show_grid",
     "snap",
+    "allow_overlap",
     "locked",
     "show_minimap",
     "sidebar_open",
@@ -377,6 +378,7 @@ fn validate(state: &Value) -> Result<()> {
         for key in [
             "show_grid",
             "snap",
+            "allow_overlap",
             "locked",
             "show_minimap",
             "sidebar_open",
@@ -556,8 +558,9 @@ mod canvas_tests {
     fn canvas_changes_are_atomic_validated_and_restored() {
         let path = database();
         let mut store = Store::open(&path).unwrap();
+        assert_eq!(store.state["pages"][0]["allow_overlap"], false);
         let panel = store.command("panel.add", &json!({"title":"Console","left":-24.5,"top":40,"panel_width":800,"panel_height":480})).unwrap()["result"]["id"].clone();
-        store.command("page.set", &json!({"active_panel":panel,"view_x":-100,"view_y":64,"view_zoom":0.75,"show_minimap":true,"inspector_open":true})).unwrap();
+        store.command("page.set", &json!({"active_panel":panel,"view_x":-100,"view_y":64,"view_zoom":0.75,"show_minimap":true,"inspector_open":true,"allow_overlap":true})).unwrap();
         let before = store.state.clone();
         assert!(store
             .command(
@@ -566,6 +569,9 @@ mod canvas_tests {
             )
             .is_err());
         assert_eq!(before, store.state);
+        assert!(store
+            .command("page.set", &json!({"allow_overlap":"yes"}))
+            .is_err());
         assert!(store
             .command("page.set", &json!({"revision":0,"view_zoom":1.0}))
             .is_err());

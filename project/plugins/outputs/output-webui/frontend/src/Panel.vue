@@ -28,9 +28,16 @@ import {
   DataZoomComponent,
 } from "echarts/components";
 import { CanvasRenderer } from "echarts/renderers";
-import { ElMessage, ElMessageBox } from "element-plus";
+import { ElMessage } from "element-plus";
 import { AppContext, bindingValue, type Data } from "./api";
 import { coveragePresentation } from "./coverage";
+import { clone, patchFrom, conflictingFields, fieldLabels } from "./panelDraft";
+import { place } from "./layout";
+const menuButton = ref<HTMLElement>(), cancelRemove = ref<HTMLButtonElement>();
+const removeOpen = ref(false), removing = ref(false), removeError = ref("");
+const settingsBase = ref<Data>({}), settingsError = ref(""), settingsSaving = ref(false);
+const settingsFields = ["title", "streams", "channels", "regex", "format", "follow", "metadata", "columns", "legend", "y_min", "y_max", "time_from", "time_end"];
+const normalizeSettings = (p: Data): Data => ({ ...clone(p), streams: p.streams.map((s: Data) => bindingValue(s)) });
 ModuleRegistry.registerModules([AllCommunityModule]);
 echarts.use([
   LineChart,
@@ -519,38 +526,74 @@ async function paginate(offset: number) {
   await set({ offset });
   await update();
 }
+const settingsPatch = computed(() => patchFrom(settingsBase.value, form.value, settingsFields));
+const settingsConflicts = computed(() => panel.value.id ? conflictingFields(settingsBase.value, settingsPatch.value, normalizeSettings(panel.value)) : []);
 function edit() {
-  form.value = {
-    ...panel.value,
-    revision: ctx.state.value.revision,
-    streams: panel.value.streams.map((s: Data) => bindingValue(s)),
-  };
+  settingsBase.value = normalizeSettings(panel.value);
+  form.value = clone(settingsBase.value);
+  settingsError.value = "";
   settings.value = true;
 }
+function resolveSetting(key: string, mine: boolean) {
+  const current = normalizeSettings(panel.value)[key];
+  settingsBase.value[key] = clone(current);
+  if (!mine) form.value[key] = clone(current);
+  settingsError.value = "";
+}
 async function save() {
+  if (!active()) return;
+  const original = clone(settingsBase.value), changes = clone(settingsPatch.value);
+  const wire = { ...changes };
+  if (wire.streams) wire.streams = wire.streams.map((s: string) => JSON.parse(s));
+  settingsSaving.value = true;
   try {
-    const value: Data = {
-      ...form.value,
-      streams: form.value.streams.map((s: string) => JSON.parse(s)),
-    };
-    delete value.id;
-    delete value.series;
-    await set(value);
+    await ctx.command("panel.set", { page: pageId, panel: props.id, ...wire }, {
+      localError: true, editKey: `settings:${pageId}:${props.id}`, retryConflict: true,
+      guard: (state) => {
+        const p = state.pages.find((p: Data) => p.id === pageId)?.panels.find((p: Data) => p.id === props.id);
+        return !!p && !conflictingFields(original, changes, normalizeSettings(p)).length;
+      },
+    });
     if (!active()) return;
     settings.value = false;
     await update();
-  } catch {
-    /* command already displays the error; keep the form open. */
-  }
-}
-async function remove() {
-  try {
-    await ElMessageBox.confirm("删除这个面板？", "移除面板");
-    if (!active()) return;
-    await ctx.command("panel.remove", { page: pageId, panel: panelId });
   } catch (e) {
-    if (!["cancel", "close"].includes(String(e))) throw e;
-  }
+    if (!active()) return;
+    settingsError.value = e instanceof Error ? e.message : String(e);
+  } finally { settingsSaving.value = false; }
+}
+async function askRemove() {
+  if (!active()) return;
+  removeError.value = "";
+  removeOpen.value = true;
+  await nextTick();
+  if (active()) cancelRemove.value?.focus();
+}
+function dismissRemove(event?: Event) {
+  if (removing.value) return;
+  if (event?.type === "pointerdown" && ((event.target as HTMLElement).closest('.panel-remove-confirm') || menuButton.value?.contains(event.target as Node))) return;
+  removeOpen.value = false;
+}
+function removeKey(event: KeyboardEvent) { if (event.key === "Escape" && removeOpen.value) { dismissRemove(); menuButton.value?.focus(); } }
+onMounted(() => { document.addEventListener('pointerdown', dismissRemove); document.addEventListener('keydown', removeKey); });
+onBeforeUnmount(() => { document.removeEventListener('pointerdown', dismissRemove); document.removeEventListener('keydown', removeKey); });
+async function remove() {
+  if (!active()) return;
+  removing.value = true;
+  try {
+    await ctx.command("panel.remove", { page: pageId, panel: panelId }, { localError: true, editKey: `remove:${props.id}` });
+    ctx.panelDrafts.value.delete(`${pageId}:${panelId}`);
+    ctx.clearEditError(`panel:${pageId}:${panelId}`);
+    removeOpen.value = false;
+  } catch (e) { removeError.value = e instanceof Error ? e.message : String(e); }
+  finally { removing.value = false; }
+}
+async function duplicate() {
+  if (!active()) return;
+  const rect = place({ ...panel.value, id: "copy" } as any, page.value.panels, { x: 24, y: 24 },
+    Math.max(320, (document.querySelector('.canvas-board')?.clientWidth ?? 1400) / page.value.view_zoom - 48));
+  await ctx.command('panel.clone', { page: pageId, panel: panelId, left: rect.left, top: rect.top,
+    y: Math.max(0, ...page.value.panels.map((p: Data) => p.y + p.h)) }).catch(() => {});
 }
 function editSeries(series?: Data) {
   seriesForm.value = series
@@ -674,10 +717,12 @@ onBeforeUnmount(() => {
 </script>
 <template>
   <section
-    class="panel nowheel nopan"
+    class="panel nowheel"
     :class="{
       selected: page.active_panel === id,
       'panel-paused': panel.paused,
+      nopan: page.tool !== 'pan',
+      'pending-remove': removeOpen,
     }"
     :data-panel-id="id"
     v-if="panel.id"
@@ -712,14 +757,14 @@ onBeforeUnmount(() => {
           <Icon name="inspector" />
         </button>
         <el-dropdown trigger="click" placement="bottom-end">
-          <button class="icon-button" aria-label="面板菜单">
+          <button ref="menuButton" class="icon-button" aria-label="面板菜单">
             <Icon name="more" />
           </button>
           <template #dropdown
             ><el-dropdown-menu>
               <el-dropdown-item @click="edit">筛选与显示设置</el-dropdown-item>
               <el-dropdown-item
-                @click="ctx.command('panel.clone', { page: pageId, panel: panelId })"
+                @click="duplicate"
                 >复制面板</el-dropdown-item
               >
               <el-dropdown-item @click="set({ locked: !panel.locked })">{{
@@ -728,12 +773,23 @@ onBeforeUnmount(() => {
               <el-dropdown-item @click="set({ hidden: true })"
                 >隐藏面板</el-dropdown-item
               >
-              <el-dropdown-item divided @click="remove"
+              <el-dropdown-item divided class="danger-text" @click="askRemove"
                 >删除面板…</el-dropdown-item
               >
             </el-dropdown-menu></template
           >
         </el-dropdown>
+        <el-popover :visible="removeOpen" :virtual-ref="menuButton" virtual-triggering placement="bottom-end" :width="280" popper-class="panel-remove-confirm" :teleported="true">
+          <div role="dialog" :aria-label="`删除面板 ${panel.title}`" @keydown.esc="dismissRemove()">
+            <strong>删除“{{ panel.title }}”？</strong>
+            <p>仅移除面板配置，日志数据保留。</p>
+            <p v-if="removeError" class="danger-text" role="alert">{{ removeError }}</p>
+            <div class="confirm-actions">
+              <button ref="cancelRemove" class="text-button" :disabled="removing" @click="dismissRemove(); menuButton?.focus()">取消</button>
+              <el-button size="small" type="danger" :loading="removing" @click="remove">删除面板</el-button>
+            </div>
+          </div>
+        </el-popover>
       </div>
     </div>
     <div class="panel-toolbar nodrag">
@@ -947,7 +1003,7 @@ onBeforeUnmount(() => {
     </div>
   </section>
   <el-dialog v-model="settings" title="筛选与显示" width="580" append-to-body>
-    <el-form label-position="top" class="settings-form">
+    <el-form label-position="top" class="settings-form" :disabled="settingsSaving">
       <el-form-item label="标题">
         <el-input v-model="form.title" />
       </el-form-item>
@@ -998,7 +1054,15 @@ onBeforeUnmount(() => {
       </el-form-item>
     </el-form>
     <template #footer>
-      <el-button type="primary" @click="save">保存设置</el-button>
+      <div v-if="settingsError || settingsConflicts.length" class="draft-feedback" role="alert">
+        <p>{{ settingsError }}</p>
+        <div v-for="key in settingsConflicts" :key="key" class="field-conflict">
+          <strong>{{ fieldLabels[key] || key }}已被修改</strong>
+          <span>当前：{{ normalizeSettings(panel)[key] }} · 我的：{{ form[key] }}</span>
+          <el-button @click="resolveSetting(key, false)">采用当前值</el-button><el-button @click="resolveSetting(key, true)">保留我的修改</el-button>
+        </div>
+      </div>
+      <el-button type="primary" :loading="settingsSaving" :disabled="settingsConflicts.length > 0" @click="save">保存设置</el-button>
     </template>
   </el-dialog>
   <el-dialog v-model="seriesDialog" title="曲线定义" width="480" append-to-body>

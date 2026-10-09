@@ -2,6 +2,8 @@
 import { computed, inject, ref, watch } from "vue";
 import { AppContext, bindingValue, type Data } from "./api";
 import Icon from "./Icon.vue";
+import { clone, patchFrom, conflictingFields, panelFields, fieldLabels } from "./panelDraft";
+import { available } from "./layout";
 const ctx = inject(AppContext)!;
 const page = computed(() =>
   ctx.state.value.pages.find((p: Data) => p.id === ctx.state.value.selected),
@@ -9,26 +11,40 @@ const page = computed(() =>
 const panel = computed(() =>
   page.value.panels.find((p: Data) => p.id === page.value.active_panel),
 );
-const form = ref<Data>({}),
-  dirty = ref(false),
-  saving = ref(false);
-function load() {
-  form.value = panel.value
-    ? {
-        ...panel.value,
-        streams: panel.value.streams.map((s: Data) => bindingValue(s)),
-        revision: ctx.state.value.revision,
-      }
-    : {};
-  dirty.value = false;
+const form = ref<Data>({}), base = ref<Data>({}), error = ref(""), saving = ref(false);
+const draftKey = () => `${page.value.id}:${panel.value?.id}`;
+let loadedKey = "", loading = false;
+const normalized = (p: Data): Data => ({ ...clone(p), streams: p.streams.map((s: Data) => bindingValue(s)) });
+const patch = computed(() => patchFrom(base.value, form.value, panelFields));
+const dirty = computed(() => Object.keys(patch.value).length > 0);
+const conflicts = computed(() => panel.value ? conflictingFields(base.value, patch.value, normalized(panel.value)) : []);
+function load(restore = false) {
+  loading = true;
+  loadedKey = draftKey();
+  const draft = restore ? ctx.panelDrafts.value.get(loadedKey) : undefined;
+  base.value = draft ? clone(draft.base) : panel.value ? normalized(panel.value) : {};
+  form.value = draft ? clone(draft.form) : clone(base.value);
+  error.value = draft?.error ?? "";
+  if (!draft) ctx.panelDrafts.value.delete(loadedKey);
+  loading = false;
 }
-watch(() => panel.value?.id, load, { immediate: true });
-watch(
-  () => JSON.stringify(panel.value),
-  () => {
-    if (!dirty.value) load();
-  },
-);
+watch([() => page.value.id, () => panel.value?.id], () => load(true), { immediate: true });
+watch(() => JSON.stringify(panel.value), () => { if (!dirty.value && !saving.value) load(); });
+watch([form, base, error], () => {
+  if (loading || !loadedKey) return;
+  if (dirty.value) ctx.panelDrafts.value.set(loadedKey, { base: clone(base.value), form: clone(form.value), error: error.value });
+  else ctx.panelDrafts.value.delete(loadedKey);
+}, { deep: true, flush: "sync" });
+function resolveField(key: string, mine: boolean) {
+  const current = normalized(panel.value)[key];
+  base.value[key] = clone(current);
+  if (!mine) form.value[key] = clone(current);
+  error.value = "";
+}
+function resetDraft() {
+  ctx.clearEditError(`panel:${loadedKey}`);
+  load();
+}
 const streams = computed(() => {
   const available = ctx.state.value.streams.map((s: Data) => ({
     label: s.alias || s.owner,
@@ -49,35 +65,31 @@ const streams = computed(() => {
   return available;
 });
 async function save() {
+  const pageId = page.value.id, panelId = panel.value.id, key = loadedKey;
+  const original = clone(base.value), changes = clone(patch.value);
+  const wireChanges = { ...changes };
+  if (wireChanges.streams) wireChanges.streams = wireChanges.streams.map((s: string) => JSON.parse(s));
   saving.value = true;
+  error.value = "";
   try {
-    await ctx.command("panel.set", {
-      page: page.value.id,
-      panel: panel.value.id,
-      revision: form.value.revision,
-      title: form.value.title,
-      left: form.value.left,
-      top: form.value.top,
-      panel_width: form.value.panel_width,
-      panel_height: form.value.panel_height,
-      x: form.value.x,
-      y: form.value.y,
-      w: form.value.w,
-      h: form.value.h,
-      z_index: form.value.z_index,
-      hidden: form.value.hidden,
-      locked: form.value.locked,
-      font_size: form.value.font_size,
-      row_height: form.value.row_height,
-      streams: form.value.streams.map((s: string) => JSON.parse(s)),
-      channels: form.value.channels,
-      format: form.value.format,
-      metadata: form.value.metadata,
-      follow: form.value.follow,
+    await ctx.command("panel.set", { page: pageId, panel: panelId, ...wireChanges }, {
+      editKey: `panel:${key}`, localError: true, retryConflict: true,
+      guard: (state) => {
+        const p = state.pages.find((p: Data) => p.id === pageId);
+        const target = p?.panels.find((p: Data) => p.id === panelId);
+        if (!target || conflictingFields(original, changes, normalized(target)).length) return false;
+        if (["left", "top", "panel_width", "panel_height", "hidden"].some(k => k in changes) && !p.allow_overlap && p.layout_mode === "canvas" && !(wireChanges.hidden ?? target.hidden)) {
+          if (!available({ ...target, ...wireChanges }, p.panels)) throw new Error("面板位置与其他面板重叠，请调整位置或尺寸。");
+        }
+        return true;
+      },
     });
-    dirty.value = false;
-    load();
-  } catch {
+    ctx.panelDrafts.value.delete(key);
+    if (loadedKey === key) load();
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    if (loadedKey === key) error.value = message;
+    else { const draft = ctx.panelDrafts.value.get(key); if (draft) draft.error = message; }
   } finally {
     saving.value = false;
   }
@@ -131,10 +143,11 @@ async function layer(front: boolean) {
           label-position="top"
           size="small"
           class="inspector-form"
-          @change="dirty = true"
+          :disabled="saving"
+
         >
           <el-form-item label="名称"
-            ><el-input v-model="form.title" @input="dirty = true"
+            ><el-input v-model="form.title"
           /></el-form-item>
           <div class="property-section">
             <h3>
@@ -148,28 +161,28 @@ async function layer(front: boolean) {
                   :controls="false"
                   :min="-1000000"
                   :max="1000000"
-                  @change="dirty = true" /></label
+                   /></label
               ><label
                 >Y<el-input-number
                   v-model="form.top"
                   :controls="false"
                   :min="-1000000"
                   :max="1000000"
-                  @change="dirty = true" /></label
+                   /></label
               ><label
                 >W<el-input-number
                   v-model="form.panel_width"
                   :controls="false"
                   :min="320"
                   :max="4000"
-                  @change="dirty = true" /></label
+                   /></label
               ><label
                 >H<el-input-number
                   v-model="form.panel_height"
                   :controls="false"
                   :min="220"
                   :max="4000"
-                  @change="dirty = true"
+
               /></label>
             </div>
             <div v-else class="property-grid">
@@ -179,38 +192,38 @@ async function layer(front: boolean) {
                   :controls="false"
                   :min="0"
                   :max="11"
-                  @change="dirty = true" /></label
+                   /></label
               ><label
                 >Y<el-input-number
                   v-model="form.y"
                   :controls="false"
                   :min="0"
-                  @change="dirty = true" /></label
+                   /></label
               ><label
                 >W<el-input-number
                   v-model="form.w"
                   :controls="false"
                   :min="1"
                   :max="12"
-                  @change="dirty = true" /></label
+                   /></label
               ><label
                 >H<el-input-number
                   v-model="form.h"
                   :controls="false"
                   :min="1"
                   :max="100"
-                  @change="dirty = true"
+
               /></label>
             </div>
             <div class="property-toggle">
               <span>锁定位置</span
-              ><el-switch v-model="form.locked" @change="dirty = true" />
+              ><el-switch v-model="form.locked"  />
             </div>
             <div class="property-toggle">
               <span>隐藏面板</span
-              ><el-switch v-model="form.hidden" @change="dirty = true" />
+              ><el-switch v-model="form.hidden"  />
             </div>
-            <div class="button-pair">
+            <div v-if="page.allow_overlap && page.layout_mode === 'canvas'" class="button-pair">
               <el-button :disabled="dirty" @click="layer(false)"
                 >移到底层</el-button
               ><el-button :disabled="dirty" @click="layer(true)"
@@ -225,7 +238,7 @@ async function layer(front: boolean) {
               multiple
               filterable
               placeholder="全部来源"
-              @change="dirty = true"
+
               ><el-option
                 v-for="s in streams"
                 :key="s.value"
@@ -239,7 +252,7 @@ async function layer(front: boolean) {
                 allow-create
                 filterable
                 placeholder="全部通道"
-                @change="dirty = true"
+
                 ><el-option value="stdout" label="stdout" /><el-option
                   value="stderr"
                   label="stderr" /></el-select
@@ -247,7 +260,7 @@ async function layer(front: boolean) {
           </div>
           <div v-if="panel.kind === 'log'" class="property-section">
             <h3>日志显示</h3>
-            <el-radio-group v-model="form.format" @change="dirty = true"
+            <el-radio-group v-model="form.format"
               ><el-radio-button value="text">文本</el-radio-button
               ><el-radio-button value="hex"
                 >十六进制</el-radio-button
@@ -260,36 +273,45 @@ async function layer(front: boolean) {
                   :min="10"
                   :max="24"
                   :controls="false"
-                  @change="dirty = true" /></label
+                   /></label
               ><label
                 >行高<el-input-number
                   v-model="form.row_height"
                   :min="22"
                   :max="56"
                   :controls="false"
-                  @change="dirty = true"
+
               /></label>
             </div>
             <div class="property-toggle">
               <span>显示元数据</span
-              ><el-switch v-model="form.metadata" @change="dirty = true" />
+              ><el-switch v-model="form.metadata"  />
             </div>
             <div class="property-toggle">
               <span>跟随最新记录</span
-              ><el-switch v-model="form.follow" @change="dirty = true" />
+              ><el-switch v-model="form.follow"  />
             </div>
           </div>
         </el-form>
       </div>
+      <div v-if="conflicts.length || error" class="draft-feedback" role="alert">
+        <p v-if="error">{{ error }}</p>
+        <div v-for="key in conflicts" :key="key" class="field-conflict">
+          <strong>{{ fieldLabels[key] || key }}已被修改</strong>
+          <span>当前：{{ normalized(panel)[key] }} · 我的：{{ form[key] }}</span>
+          <el-button size="small" @click="resolveField(key, false)">采用当前值</el-button>
+          <el-button size="small" @click="resolveField(key, true)">保留我的修改</el-button>
+        </div>
+      </div>
       <div class="inspector-footer">
         <span>{{ dirty ? "更改尚未应用" : "已保存" }}</span
-        ><el-button size="small" :disabled="!dirty" @click="load"
+        ><el-button size="small" :disabled="!dirty || saving" @click="resetDraft"
           >还原</el-button
         ><el-button
           size="small"
           type="primary"
           :loading="saving"
-          :disabled="!dirty"
+          :disabled="!dirty || conflicts.length > 0"
           @click="save"
           >应用</el-button
         >
@@ -310,7 +332,7 @@ async function layer(front: boolean) {
           ></el-radio-group
         >
         <p class="field-help">
-          自由画布支持重叠、缩放与平移；网格布局自动避让窗口。
+          自由画布默认平铺避让，支持缩放与平移；网格布局自动整理窗口。
         </p>
       </div>
       <div class="property-section">

@@ -1,4 +1,5 @@
 import type { Ref, InjectionKey } from "vue";
+import type { PanelDraft } from "./panelDraft";
 export type Data = Record<string, any>;
 // Rust's JSON map order differs from browser object insertion order.
 // Stable option values keep restored owner/alias bindings selected correctly.
@@ -8,6 +9,8 @@ export function bindingValue(binding: Data): string {
 export interface Context {
   state: Ref<Data>;
   deferredEdits: Ref<number>;
+  panelDrafts: Ref<Map<string, PanelDraft>>;
+  clearEditError: (key: string) => void;
   command: (method: string, args?: Data, options?: CommandOptions) => Promise<Data>;
   refresh: () => Promise<void>;
   selectPanel: (id: string | null, inspect?: boolean) => Promise<void>;
@@ -15,6 +18,10 @@ export interface Context {
 export interface CommandOptions {
   // Evaluate after earlier edits have committed, before attaching the revision.
   guard?: (state: Data) => boolean;
+  // Only guarded field patches may rebase after a server revision conflict.
+  retryConflict?: boolean;
+  localError?: boolean;
+  editKey?: string;
 }
 export class RevisionConflict extends Error {
   constructor() {

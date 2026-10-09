@@ -12,13 +12,22 @@ import { MiniMap } from "@vue-flow/minimap";
 import Panel from "./Panel.vue";
 import { AppContext, type Data } from "./api";
 import { createViewportSaver, sameViewport } from "./viewportSave";
+import { available, compact, snapMove, type Rect } from "./layout";
+import { clone, equal } from "./panelDraft";
 const ctx = inject(AppContext)!;
 const page = computed(() =>
   ctx.state.value.pages.find((p: Data) => p.id === ctx.state.value.selected),
 );
 const nodes = ref<Node[]>([]);
 const flow = useVueFlow();
-let gestureRevision: number | undefined;
+let gestureBase: Data[] = [];
+const root = ref<HTMLElement>();
+const preview = ref<Rect>();
+const layoutError = ref("");
+const previewStyle = computed(() => {
+  const p = preview.value, v = flow.viewport.value;
+  return p ? { left: `${p.left * v.zoom + v.x}px`, top: `${p.top * v.zoom + v.y}px`, width: `${p.panel_width * v.zoom}px`, height: `${p.panel_height * v.zoom}px` } : {};
+});
 let manipulating = false,
   applyingViewport = false;
 const pageId = page.value.id;
@@ -81,24 +90,53 @@ watch(
 );
 function beginGesture() {
   manipulating = true;
-  gestureRevision = ctx.state.value.revision;
+  gestureBase = clone(page.value.panels);
+  layoutError.value = "";
 }
 async function commitLayout(layout: Data[]) {
+  const original = clone(gestureBase);
   try {
     await ctx.command("layout.set", {
-      page: page.value.id,
-      revision: gestureRevision,
+      page: pageId,
       layout,
+    }, {
+      localError: true, editKey: `layout:${pageId}`, retryConflict: true,
+      guard: (state) => {
+        const current = state.pages.find((p: Data) => p.id === pageId);
+        if (!current || current.locked) return false;
+        const result = current.panels.map((p: Data) => ({ ...p, ...layout.find(item => item.id === p.id) }));
+        return layout.every(item => {
+          const p = current.panels.find((p: Data) => p.id === item.id);
+          const base = original.find(p => p.id === item.id);
+          return p && base && !p.locked && Object.keys(item).every(key => key === 'id' || equal(p[key], base[key])) &&
+            (current.allow_overlap || available({ ...p, ...item }, result));
+        });
+      },
     });
-  } catch {
-    /* Reconcile to the committed layout on a conflict. */
+  } catch (e) {
+    layoutError.value = e instanceof Error ? e.message : String(e);
   } finally {
     manipulating = false;
-    gestureRevision = undefined;
+    preview.value = undefined;
     syncNodes();
   }
 }
+function dragging(event: NodeDragEvent) {
+  const n = event.node;
+  const panel = page.value.panels.find((p: Data) => p.id === n.id);
+  const rect = snapMove({ ...panel, left: Math.round(n.position.x), top: Math.round(n.position.y) },
+    page.value.panels, 8 / flow.getViewport().zoom, page.value.snap, page.value.allow_overlap);
+  n.position = { x: rect.left, y: rect.top };
+  preview.value = rect;
+}
+function canResize(id: string, params: { x: number; y: number; width: number; height: number }) {
+  const rect = { id, left: params.x, top: params.y, panel_width: params.width, panel_height: params.height };
+  const valid = page.value.allow_overlap || available(rect, page.value.panels);
+  if (valid) preview.value = rect;
+  return valid;
+}
 async function dragged(event: NodeDragEvent) {
+  dragging(event);
   await commitLayout(
     event.nodes.map((n) => ({
       id: n.id,
@@ -109,13 +147,32 @@ async function dragged(event: NodeDragEvent) {
 }
 async function resized(id: string, event: OnResizeEnd) {
   const p = event.params;
+  // Align the released edges without changing the opposite resize anchor.
+  const original = gestureBase.find(p => p.id === id)!;
+  const rect = { id, left: Math.round(p.x), top: Math.round(p.y), panel_width: Math.round(p.width), panel_height: Math.round(p.height) };
+  const tolerance = 8 / flow.getViewport().zoom;
+  if (page.value.snap) {
+    const right = rect.left + rect.panel_width, bottom = rect.top + rect.panel_height;
+    for (const other of page.value.panels.filter((p: Data) => p.id !== id && !p.hidden)) {
+      const edgesX = [other.left - 8, other.left + other.panel_width, other.left, other.left + other.panel_width + 8];
+      const edgesY = [other.top - 8, other.top + other.panel_height, other.top, other.top + other.panel_height + 8];
+      for (const x of edgesX) {
+        const proposed = { ...rect };
+        if (rect.left !== original.left && Math.abs(x - rect.left) <= tolerance) { proposed.left = x; proposed.panel_width = right - x; }
+        else if (rect.left === original.left && Math.abs(x - right) <= tolerance) proposed.panel_width = x - rect.left;
+        if (proposed.panel_width >= 320 && proposed.panel_width <= 4000 && (page.value.allow_overlap || available(proposed, page.value.panels))) Object.assign(rect, proposed);
+      }
+      for (const y of edgesY) {
+        const proposed = { ...rect };
+        if (rect.top !== original.top && Math.abs(y - rect.top) <= tolerance) { proposed.top = y; proposed.panel_height = bottom - y; }
+        else if (rect.top === original.top && Math.abs(y - bottom) <= tolerance) proposed.panel_height = y - rect.top;
+        if (proposed.panel_height >= 220 && proposed.panel_height <= 4000 && (page.value.allow_overlap || available(proposed, page.value.panels))) Object.assign(rect, proposed);
+      }
+    }
+  }
   await commitLayout([
     {
-      id,
-      left: Math.round(p.x),
-      top: Math.round(p.y),
-      panel_width: Math.round(p.width),
-      panel_height: Math.round(p.height),
+      ...rect,
     },
   ]);
 }
@@ -204,9 +261,37 @@ async function initialized() {
   await nextTick();
   await syncViewport();
 }
-defineExpose({ fit, zoom, reset });
+function availableWidth() { return Math.max(320, (flow.dimensions.value.width - 48) / flow.getViewport().zoom); }
+async function compactLayout() {
+  if (page.value.locked) return;
+  beginGesture();
+  const layout = compact(page.value.panels, availableWidth()).filter(p => !p.locked)
+    .map(({ id, left, top }) => ({ id, left, top }));
+  await commitLayout(layout);
+  if (!layoutError.value) await fit();
+}
+function wheel(event: WheelEvent) {
+  const target = event.target as HTMLElement;
+  const onPanel = !!target.closest('.panel');
+  const panPanel = onPanel && (page.value.tool === 'pan' || !!target.closest('.panel-header'));
+  if (!event.ctrlKey && !panPanel) { viewportInputEnd(); return; }
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  const current = flow.getViewport();
+  const bounds = root.value!.getBoundingClientRect();
+  const x = event.clientX - bounds.left, y = event.clientY - bounds.top;
+  const unit = event.deltaMode === 1 ? 20 : event.deltaMode === 2 ? bounds.height : 1;
+  const next = event.ctrlKey ? Math.min(2, Math.max(0.2, current.zoom * 2 ** (-event.deltaY * unit * 0.01))) : current.zoom;
+  void moveViewport(() => flow.setViewport({
+    zoom: next,
+    x: event.ctrlKey ? x - (x - current.x) * next / current.zoom : current.x - event.deltaX * unit,
+    y: event.ctrlKey ? y - (y - current.y) * next / current.zoom : current.y - event.deltaY * unit,
+  }));
+}
+defineExpose({ fit, zoom, reset, compactLayout, availableWidth });
 </script>
 <template>
+  <div ref="root" class="canvas-shell" @wheel.capture="wheel">
   <VueFlow
     v-model:nodes="nodes"
     :edges="[]"
@@ -232,16 +317,17 @@ defineExpose({ fit, zoom, reset });
     :auto-pan-on-node-drag="false"
     @init="initialized"
     @node-drag-start="beginGesture"
+    @node-drag="dragging"
     @node-drag-stop="dragged"
     @viewport-change-start="viewportStart"
     @viewport-change="viewportChange"
     @viewport-change-end="viewportEnd"
-    @wheel.capture="viewportInputEnd"
     @pane-click="ctx.selectPanel(null)"
   >
     <template #node-panel="{ id }">
       <NodeResizer
         :node-id="id"
+        :should-resize="(_event, params) => canResize(id, params)"
         :is-visible="
           page.active_panel === id &&
           !page.locked &&
@@ -265,4 +351,7 @@ defineExpose({ fit, zoom, reset });
       :mask-color="'var(--canvas-mask)'"
     />
   </VueFlow>
+  <div v-if="preview" class="layout-preview" :style="previewStyle"><i class="guide-horizontal"></i><i class="guide-vertical"></i></div>
+  <div v-if="layoutError" class="layout-error" role="alert">{{ layoutError }}<button class="text-button" @click="layoutError = ''; ctx.clearEditError(`layout:${pageId}`)">关闭</button></div>
+  </div>
 </template>

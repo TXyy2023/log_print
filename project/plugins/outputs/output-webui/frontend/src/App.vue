@@ -6,6 +6,8 @@ import CanvasBoard from "./CanvasBoard.vue";
 import GridBoard from "./GridBoard.vue";
 import Inspector from "./Inspector.vue";
 import Icon from "./Icon.vue";
+import type { PanelDraft } from "./panelDraft";
+import { place } from "./layout";
 const state = ref<Data>({ pages: [], streams: [], revision: 0 });
 const online = ref(false),
   pending = ref(0),
@@ -15,6 +17,7 @@ const online = ref(false),
   cliHelp = ref(false),
   pageForm = ref<Data>({});
 const deferredEdits = ref(0);
+const panelDrafts = ref(new Map<string, PanelDraft>());
 const failedEdits = ref(new Map<string, string>());
 const saving = computed(() => pending.value > 0 || deferredEdits.value > 0);
 const saveError = computed(() => [...failedEdits.value.values()].join("\n"));
@@ -78,18 +81,24 @@ async function command(method: string, args: Data = {}, options: CommandOptions 
     }
   }
   // A later unrelated success must not hide an earlier failed edit.
-  const editKey = JSON.stringify([method, args.page, args.panel,
+  const editKey = options.editKey ?? JSON.stringify([method, args.page, args.panel,
     Object.keys(args).filter((key) => key !== "revision").sort()]);
   pending.value++;
   const task = editQueue
     .catch(() => {})
     .then(async () => {
       try {
-        if (options.guard && !options.guard(state.value)) throw new RevisionConflict();
-        const result = await call(method, {
-          revision: state.value.revision,
-          ...args,
-        });
+        let result: Data;
+        for (let attempt = 0; ; attempt++) {
+          if (options.guard && !options.guard(state.value)) throw new RevisionConflict();
+          try {
+            result = await call(method, { revision: state.value.revision, ...args });
+            break;
+          } catch (e) {
+            if (!(e instanceof RevisionConflict) || !options.guard || !options.retryConflict || attempt >= 1) throw e;
+            await refresh();
+          }
+        }
         if (result.state?.pages) apply(result.state);
         else await refresh();
         failedEdits.value.delete(editKey);
@@ -97,7 +106,7 @@ async function command(method: string, args: Data = {}, options: CommandOptions 
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
         failedEdits.value.set(editKey, message);
-        ElMessage({ type: "error", message, grouping: true });
+        if (!options.localError) ElMessage({ type: "error", message, grouping: true });
         await refresh().catch(() => {});
         throw e;
       } finally {
@@ -119,7 +128,8 @@ async function selectPanel(id: string | null, inspect = false) {
     ...(inspect ? { inspector_open: true } : {}),
   }).catch(() => {});
 }
-provide(AppContext, { state, deferredEdits, command, refresh, selectPanel });
+provide(AppContext, { state, deferredEdits, panelDrafts, command, refresh, selectPanel,
+  clearEditError: (key) => { failedEdits.value.delete(key); } });
 watch(
   () => page.value?.theme,
   (theme) =>
@@ -216,6 +226,9 @@ async function savePage() {
 }
 async function add(kind: string, stream?: Data, geometry: Data = {}) {
   const n = page.value.panels.length;
+  const placement = place({ id: "new", left: 24, top: 24,
+    panel_width: kind === "log" ? 760 : 600, panel_height: kind === "log" ? 440 : 360 },
+    page.value.panels, { x: 24, y: 24 }, canvas.value?.availableWidth() ?? 1400);
   const made = await command("panel.add", {
     page: page.value.id,
     kind,
@@ -228,12 +241,8 @@ async function add(kind: string, stream?: Data, geometry: Data = {}) {
     y: Math.max(0, ...page.value.panels.map((p: Data) => p.y + p.h)),
     w: kind === "log" ? 8 : 6,
     h: 6,
-    left: Math.round(
-      (64 - page.value.view_x) / page.value.view_zoom + (n % 5) * 24,
-    ),
-    top: Math.round(
-      (64 - page.value.view_y) / page.value.view_zoom + (n % 5) * 24,
-    ),
+    left: placement.left,
+    top: placement.top,
     panel_width: kind === "log" ? 760 : 600,
     panel_height: kind === "log" ? 440 : 360,
     z_index: n,
@@ -597,6 +606,8 @@ async function copyCli() {
                   >切换到{{
                     page.layout_mode === "canvas" ? "网格布局" : "自由画布"
                   }}</el-dropdown-item
+                ><el-dropdown-item v-if="page.layout_mode === 'canvas'" :disabled="page.locked" @click="canvas?.compactLayout()"
+                  >紧凑排列面板</el-dropdown-item
                 ><el-dropdown-item @click="clonePage"
                   >复制工作台</el-dropdown-item
                 ><el-dropdown-item
@@ -723,7 +734,7 @@ async function copyCli() {
             ><Icon :name="saving ? 'refresh' : saveError ? 'warning' : 'check'" :size="12" />{{
               saving ? "正在保存…" : saveError ? "部分更改未保存" : "所有更改已保存"
             }}</span
-          ><span
+          ><span v-if="panelDrafts.size" class="warning-text">{{ panelDrafts.size }} 个面板草稿待应用</span><span
             >{{ visiblePanels.length }} / {{ page.panels.length }} 个面板</span
           ><code>rev {{ state.revision }}</code>
         </footer>

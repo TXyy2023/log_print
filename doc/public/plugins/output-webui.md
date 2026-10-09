@@ -21,7 +21,11 @@ The screenshot uses synthetic serial-style text and temperature/voltage samples,
 
 The left sidebar lists Pages, panels and all sources. Click a source to add a bound log panel. The canvas displays configured logs and curves: drag a title to move a panel and use its handles to resize it. The right inspector edits position, size, source, channel, font and row height; Apply submits the changes. Filtering, pause, follow and history navigation stay inside each panel. Expand coverage details from its footer.
 
-New Pages use the freeform canvas. Panels can overlap, move forward/backward, hide and lock. Shortcuts: `V` selects, `H` pans, `0` fits all, `+`/`-` zoom. Scroll to pan and pinch to zoom. The sidebar, inspector, minimap and dot grid can be hidden. Table scrolling and chart zoom use their respective components.
+New Pages use the freeform canvas. Panels added or copied in the browser fill a row before wrapping. Dragging and resizing avoid other panels by default, with edge snapping and an 8 px gutter. Use the workbench menu to compact existing panels; locked panels stay in place. Existing layouts are not rearranged automatically. Enable overlap in canvas settings (CLI: `page set --allow-overlap true`) to expose layer controls. Explicit CLI geometry remains unchanged.
+
+Shortcuts: `V` selects, `H` pans, `0` fits all, `+`/`-` zoom. Pinching over a log table or chart zooms the canvas around the pointer. Ordinary scrolling scrolls the table, or pans the canvas over its background and panel titles. In pan mode, scrolling over panels also pans the canvas. Ordinary chart wheel and time-slider interactions remain available. The sidebar, inspector, minimap and dot grid can be hidden.
+
+Apply submits only changed inspector fields. Viewport and unrelated edits do not invalidate a draft; conflicting changes to the same field require a choice in the inspector. Inspector drafts survive panel switching, inspector closing and failed requests within the browser session (apply before reloading). Deletion uses a confirmation next to the target panel menu, without a workbench-wide overlay. It removes the panel configuration, not log data.
 
 Existing Pages retain their 12-column GridStack layouts. Switch between canvas and grid in the workbench menu; both geometries are stored separately so pixel positions do not overwrite legacy grid coordinates. Filters, source bindings and curve definitions survive switching.
 

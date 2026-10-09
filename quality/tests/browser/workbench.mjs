@@ -5,6 +5,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { canvasRegression } from './canvas.mjs';
 import { panelLifecycleRegression } from './panel-lifecycle.mjs';
+import { panelInteractions } from './panel-interactions.mjs';
 const [url, state, binary, artifact, memoryUrl, memoryState] = process.argv.slice(2);
 await mkdir(artifact,{recursive:true});
 const browser = await chromium.launch();
@@ -131,6 +132,7 @@ try{
  await first.goto('about:blank'); await second.goto('about:blank');
  await panelLifecycleRegression(browser, url, control, read, artifact);
  await canvasRegression(browser, url, control, read, artifact);
+ await panelInteractions(browser, url, control, read, artifact);
  ok=true;
 }finally{
  await writeFile(path.join(artifact,'browser.json'),JSON.stringify({ok,errors,platform:process.platform},null,2));
