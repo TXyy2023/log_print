@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, ref, watch, nextTick } from "vue";
+import { computed, inject, ref, watch, nextTick, onMounted, onBeforeUnmount } from "vue";
 import {
   VueFlow,
   useVueFlow,
@@ -11,6 +11,7 @@ import { NodeResizer, type OnResizeEnd } from "@vue-flow/node-resizer";
 import { MiniMap } from "@vue-flow/minimap";
 import Panel from "./Panel.vue";
 import { AppContext, type Data } from "./api";
+import { createViewportSaver, sameViewport } from "./viewportSave";
 const ctx = inject(AppContext)!;
 const page = computed(() =>
   ctx.state.value.pages.find((p: Data) => p.id === ctx.state.value.selected),
@@ -20,7 +21,7 @@ const flow = useVueFlow();
 let gestureRevision: number | undefined;
 let manipulating = false,
   applyingViewport = false;
-let viewportRevision: number | undefined;
+const pageId = page.value.id;
 function syncNodes() {
   nodes.value = (page.value?.panels || [])
     .filter((p: Data) => !p.hidden)
@@ -75,7 +76,7 @@ async function syncViewport() {
 watch(
   () => JSON.stringify(viewport.value),
   () => {
-    if (viewportRevision === undefined) void syncViewport();
+    if (!viewportSaver.busy) void syncViewport();
   },
 );
 function beginGesture() {
@@ -118,79 +119,92 @@ async function resized(id: string, event: OnResizeEnd) {
     },
   ]);
 }
-function viewportStart() {
-  if (!applyingViewport) viewportRevision = ctx.state.value.revision;
+function pageViewport(p: Data) {
+  return { x: p.view_x, y: p.view_y, zoom: p.view_zoom };
 }
-async function viewportEnd(value: ViewportTransform) {
-  if (applyingViewport || viewportRevision === undefined) return;
-  const revision = viewportRevision;
+const viewportSaver = createViewportSaver({
+  read: () => viewport.value,
+  write: async (value, base) => {
+    await ctx.command("page.set", {
+      page: pageId,
+      view_x: value.x,
+      view_y: value.y,
+      view_zoom: value.zoom,
+    }, {
+      // Own acknowledged saves may advance the revision. Only rebase while
+      // the fields we are editing still match; the server also checks revision.
+      guard: (state) => {
+        const p = state.pages.find((p: Data) => p.id === pageId);
+        return !!p && sameViewport(pageViewport(p), base);
+      },
+    });
+  },
+  reconcile: () => { void syncViewport(); },
+  pending: (delta) => { ctx.deferredEdits.value += delta; },
+});
+// Vue Flow omits viewport-change-end when the transform did not change (for
+// example pinching against a zoom limit, or pressing pan without moving).
+let inputEndTimer: ReturnType<typeof setTimeout> | undefined;
+function viewportInputEnd() {
+  clearTimeout(inputEndTimer);
+  // A microtask from a capture listener can run before D3's target listener.
+  // Use a task so the start/change events of this input have already fired.
+  inputEndTimer = setTimeout(() => {
+    if (!applyingViewport && viewportSaver.busy)
+      viewportSaver.end(flow.getViewport());
+  }, 0);
+}
+onMounted(() => window.addEventListener("mouseup", viewportInputEnd, true));
+onBeforeUnmount(() => {
+  window.removeEventListener("mouseup", viewportInputEnd, true);
+  clearTimeout(inputEndTimer);
+  viewportSaver.dispose();
+});
+function viewportStart() {
+  if (!applyingViewport) viewportSaver.begin();
+}
+function viewportChange(value: ViewportTransform) {
+  if (!applyingViewport) viewportSaver.change(value);
+}
+function viewportEnd(value: ViewportTransform) {
+  if (!applyingViewport) viewportSaver.end(value);
+}
+async function moveViewport(move: () => Promise<unknown>) {
+  viewportSaver.begin();
+  applyingViewport = true;
   try {
-    if (
-      Math.abs(value.x - viewport.value.x) > 0.1 ||
-      Math.abs(value.y - viewport.value.y) > 0.1 ||
-      Math.abs(value.zoom - viewport.value.zoom) > 0.001
-    )
-      await ctx.command("page.set", {
-        page: page.value.id,
-        revision,
-        view_x: Math.round(value.x),
-        view_y: Math.round(value.y),
-        view_zoom: Math.round(value.zoom * 1000) / 1000,
-      });
-  } catch {
-    /* command reports conflicts */
+    await move();
   } finally {
-    viewportRevision = undefined;
-    await syncViewport();
+    applyingViewport = false;
+    viewportSaver.end(flow.getViewport());
   }
 }
 async function fit(id?: string) {
-  // Store the resulting viewport, not a browser-only fit flag.
-  applyingViewport = true;
-  try {
-    await flow.fitView({
-      nodes: id ? [id] : undefined,
-      padding: 0.12,
-      minZoom: 0.2,
-      maxZoom: 1.0,
-      duration: 0,
-    });
-    const v = flow.getViewport();
-    await ctx.command("page.set", {
-      page: page.value.id,
-      view_x: Math.round(v.x),
-      view_y: Math.round(v.y),
-      view_zoom: Math.round(v.zoom * 1000) / 1000,
-    });
-  } catch {
-    /* command reports errors and restores committed state */
-  } finally {
-    applyingViewport = false;
-    await syncViewport();
-  }
+  await moveViewport(() => flow.fitView({
+    nodes: id ? [id] : undefined,
+    padding: 0.12,
+    minZoom: 0.2,
+    maxZoom: 1.0,
+    duration: 0,
+  }));
 }
 async function zoom(factor: number) {
-  const current = flow.getViewport(),
-    size = flow.dimensions.value;
+  const current = flow.getViewport(), size = flow.dimensions.value;
   const next = Math.min(2, Math.max(0.2, current.zoom * factor));
-  await ctx
-    .command("page.set", {
-      page: page.value.id,
-      view_x: Math.round(
-        size.width / 2 - ((size.width / 2 - current.x) * next) / current.zoom,
-      ),
-      view_y: Math.round(
-        size.height / 2 - ((size.height / 2 - current.y) * next) / current.zoom,
-      ),
-      view_zoom: Math.round(next * 1000) / 1000,
-    })
-    .catch(() => {});
+  await moveViewport(() => flow.setViewport({
+    x: size.width / 2 - ((size.width / 2 - current.x) * next) / current.zoom,
+    y: size.height / 2 - ((size.height / 2 - current.y) * next) / current.zoom,
+    zoom: next,
+  }));
+}
+async function reset() {
+  await moveViewport(() => flow.setViewport({ x: 24, y: 24, zoom: 1 }));
 }
 async function initialized() {
   await nextTick();
   await syncViewport();
 }
-defineExpose({ fit, zoom });
+defineExpose({ fit, zoom, reset });
 </script>
 <template>
   <VueFlow
@@ -220,7 +234,9 @@ defineExpose({ fit, zoom });
     @node-drag-start="beginGesture"
     @node-drag-stop="dragged"
     @viewport-change-start="viewportStart"
+    @viewport-change="viewportChange"
     @viewport-change-end="viewportEnd"
+    @wheel.capture="viewportInputEnd"
     @pane-click="ctx.selectPanel(null)"
   >
     <template #node-panel="{ id }">

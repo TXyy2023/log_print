@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onBeforeUnmount, provide, ref, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
-import { AppContext, call, type Data } from "./api";
+import { AppContext, call, RevisionConflict, type CommandOptions, type Data } from "./api";
 import CanvasBoard from "./CanvasBoard.vue";
 import GridBoard from "./GridBoard.vue";
 import Inspector from "./Inspector.vue";
@@ -14,6 +14,10 @@ const online = ref(false),
   settings = ref(false),
   cliHelp = ref(false),
   pageForm = ref<Data>({});
+const deferredEdits = ref(0);
+const failedEdits = ref(new Map<string, string>());
+const saving = computed(() => pending.value > 0 || deferredEdits.value > 0);
+const saveError = computed(() => [...failedEdits.value.values()].join("\n"));
 const canvas = ref<InstanceType<typeof CanvasBoard>>();
 const page = computed<Data>(() =>
   state.value.pages.find((p: Data) => p.id === state.value.selected),
@@ -63,7 +67,7 @@ const readMethods = new Set([
   "capabilities",
   "url",
 ]);
-async function command(method: string, args: Data = {}) {
+async function command(method: string, args: Data = {}, options: CommandOptions = {}) {
   if (readMethods.has(method)) {
     try {
       return await call(method, args);
@@ -73,20 +77,27 @@ async function command(method: string, args: Data = {}) {
       throw e;
     }
   }
+  // A later unrelated success must not hide an earlier failed edit.
+  const editKey = JSON.stringify([method, args.page, args.panel,
+    Object.keys(args).filter((key) => key !== "revision").sort()]);
   pending.value++;
   const task = editQueue
     .catch(() => {})
     .then(async () => {
       try {
+        if (options.guard && !options.guard(state.value)) throw new RevisionConflict();
         const result = await call(method, {
           revision: state.value.revision,
           ...args,
         });
         if (result.state?.pages) apply(result.state);
         else await refresh();
+        failedEdits.value.delete(editKey);
         return result;
       } catch (e) {
-        ElMessage.error(e instanceof Error ? e.message : String(e));
+        const message = e instanceof Error ? e.message : String(e);
+        failedEdits.value.set(editKey, message);
+        ElMessage({ type: "error", message, grouping: true });
         await refresh().catch(() => {});
         throw e;
       } finally {
@@ -108,7 +119,7 @@ async function selectPanel(id: string | null, inspect = false) {
     ...(inspect ? { inspector_open: true } : {}),
   }).catch(() => {});
 }
-provide(AppContext, { state, command, refresh, selectPanel });
+provide(AppContext, { state, deferredEdits, command, refresh, selectPanel });
 watch(
   () => page.value?.theme,
   (theme) =>
@@ -274,7 +285,7 @@ async function starter() {
   } catch {}
 }
 function geometryReset() {
-  pageSet({ view_x: 24, view_y: 24, view_zoom: 1 });
+  void canvas.value?.reset();
 }
 function keyboard(e: KeyboardEvent) {
   if (
@@ -708,9 +719,9 @@ async function copyCli() {
           <span
             ><span class="status-dot" :class="{ offline: !online }"></span
             >{{ online ? "本地连接正常" : "连接中断，正在重试" }}</span
-          ><span class="status-save"
-            ><Icon :name="pending ? 'refresh' : 'check'" :size="12" />{{
-              pending ? "正在保存…" : "所有更改已保存"
+          ><span class="status-save" :class="{ 'warning-text': saveError }" :title="saveError"
+            ><Icon :name="saving ? 'refresh' : saveError ? 'warning' : 'check'" :size="12" />{{
+              saving ? "正在保存…" : saveError ? "部分更改未保存" : "所有更改已保存"
             }}</span
           ><span
             >{{ visiblePanels.length }} / {{ page.panels.length }} 个面板</span

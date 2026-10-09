@@ -7,9 +7,19 @@ export function bindingValue(binding: Data): string {
 }
 export interface Context {
   state: Ref<Data>;
-  command: (method: string, args?: Data) => Promise<Data>;
+  deferredEdits: Ref<number>;
+  command: (method: string, args?: Data, options?: CommandOptions) => Promise<Data>;
   refresh: () => Promise<void>;
   selectPanel: (id: string | null, inspect?: boolean) => Promise<void>;
+}
+export interface CommandOptions {
+  // Evaluate after earlier edits have committed, before attaching the revision.
+  guard?: (state: Data) => boolean;
+}
+export class RevisionConflict extends Error {
+  constructor() {
+    super("配置版本已变化，本次修改未保存。请基于最新配置重新操作。");
+  }
 }
 export const AppContext: InjectionKey<Context> = Symbol("app");
 export async function call(method: string, args: Data = {}): Promise<Data> {
@@ -21,9 +31,7 @@ export async function call(method: string, args: Data = {}): Promise<Data> {
   const value = await response.json();
   if (!response.ok) {
     if (String(value.error).startsWith("revision_conflict"))
-      throw new Error(
-        "配置已在其他窗口或 CLI 中更改。请还原后重新编辑，当前修改尚未保存。",
-      );
+      throw new RevisionConflict();
     throw new Error(value.error || "请求失败");
   }
   return value;

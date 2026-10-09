@@ -3,6 +3,7 @@ import { chromium, expect } from '../../../project/plugins/outputs/output-webui/
 import { execFileSync } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { canvasRegression } from './canvas.mjs';
 const [url, state, binary, artifact, memoryUrl, memoryState] = process.argv.slice(2);
 await mkdir(artifact,{recursive:true});
 const browser = await chromium.launch();
@@ -124,7 +125,11 @@ try{
  await expect(archivedFooter).toContainText('实时缓存 · 归档已停止');
  await expect(archivedFooter.locator('.status-dot')).toHaveClass(/warning/);
  await first.screenshot({path:path.join(artifact,'stopped-archive-coverage.png'),fullPage:true});
- expect(errors).toEqual([]);ok=true;
+ expect(errors).toEqual([]);
+ // Stop polling the old fixture before the isolated canvas suite switches pages.
+ await first.goto('about:blank'); await second.goto('about:blank');
+ await canvasRegression(browser, url, control, read, artifact);
+ ok=true;
 }finally{
  await writeFile(path.join(artifact,'browser.json'),JSON.stringify({ok,errors,platform:process.platform},null,2));
  if(!ok)await first.screenshot({path:path.join(artifact,'failure.png'),fullPage:true}).catch(()=>{});
