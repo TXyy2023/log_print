@@ -1,3 +1,5 @@
+#[path = "recording.rs"]
+mod recording;
 use crate::{
     lines::{self, Lines},
     store::Store,
@@ -28,7 +30,12 @@ pub struct Engine {
     pub url: String,
     pub config: Value,
     pub updates: broadcast::Sender<()>,
-    archive_id: Mutex<Option<String>>,
+    pub data_ready: tokio::sync::Notify,
+    archive_id: Mutex<BTreeMap<PathBuf, String>>,
+    pub(super) recordings: Mutex<BTreeMap<String, Arc<recording::Recording>>>,
+    pub(super) recording_gate: tokio::sync::Mutex<()>,
+    pub(super) imports: Mutex<BTreeMap<String, Value>>,
+    pub uploads: Arc<Semaphore>,
     jobs: Mutex<BTreeMap<String, Arc<Job>>>,
     scans: Arc<Semaphore>,
     frozen: Mutex<BTreeMap<String, Frozen>>,
@@ -42,17 +49,67 @@ struct Frozen {
 pub struct Cache {
     pub streams: BTreeMap<String, VecDeque<Record>>,
     bytes: usize,
+    stream_bytes: BTreeMap<String, usize>,
+    decoders: BTreeMap<String, Lines>,
+    rows: BTreeMap<String, VecDeque<Value>>,
+    row_bytes: BTreeMap<String, usize>,
+    display_bytes: usize,
     pub errors: BTreeMap<String, String>,
 }
 impl Cache {
     pub fn push(&mut self, r: Record) {
+        let rows = self.rows.entry(r.stream.clone()).or_default();
+        let row_bytes = self.row_bytes.entry(r.stream.clone()).or_default();
+        for mut row in self
+            .decoders
+            .entry(r.stream.clone())
+            .or_default()
+            .push_text(&r)
+        {
+            row.as_object_mut().unwrap().remove("hex");
+            let size = row["text"].as_str().map_or(0, str::len) + 1024;
+            *row_bytes += size;
+            self.display_bytes += size;
+            rows.push_back(row);
+        }
+        while rows.len() > 10000 || *row_bytes > 2 * 1024 * 1024 {
+            let row = rows.pop_front().unwrap();
+            let size = row["text"].as_str().map_or(0, str::len) + 1024;
+            *row_bytes -= size;
+            self.display_bytes -= size;
+        }
+        while self.display_bytes > 32 * 1024 * 1024 {
+            let key = self
+                .rows
+                .iter()
+                .filter_map(|(s, q)| {
+                    q.front().map(|r| {
+                        (
+                            s.clone(),
+                            r["time"]
+                                .as_str()
+                                .unwrap_or("0")
+                                .parse::<u64>()
+                                .unwrap_or(0),
+                        )
+                    })
+                })
+                .min_by_key(|(_, t)| *t)
+                .unwrap()
+                .0;
+            let row = self.rows.get_mut(&key).unwrap().pop_front().unwrap();
+            let size = row["text"].as_str().map_or(0, str::len) + 1024;
+            self.display_bytes -= size;
+            *self.row_bytes.get_mut(&key).unwrap() -= size;
+        }
         self.bytes += cache_size(&r);
+        let bytes = self.stream_bytes.entry(r.stream.clone()).or_default();
+        *bytes += cache_size(&r);
         let q = self.streams.entry(r.stream.clone()).or_default();
         q.push_back(r);
-        let mut bytes: usize = q.iter().map(cache_size).sum();
-        while q.len() > 4096 || bytes > 4 * 1024 * 1024 {
+        while q.len() > 4096 || *bytes > 4 * 1024 * 1024 {
             let r = q.pop_front().unwrap();
-            bytes -= cache_size(&r);
+            *bytes -= cache_size(&r);
             self.bytes -= cache_size(&r);
         }
         while self.bytes > 64 * 1024 * 1024 {
@@ -65,6 +122,7 @@ impl Cache {
                 .unwrap();
             let removed = self.streams.get_mut(&key).unwrap().pop_front().unwrap();
             self.bytes -= cache_size(&removed);
+            *self.stream_bytes.get_mut(&key).unwrap() -= cache_size(&removed);
         }
     }
 }
@@ -100,7 +158,12 @@ impl Engine {
             url,
             config,
             updates,
-            archive_id: Mutex::new(None),
+            data_ready: tokio::sync::Notify::new(),
+            archive_id: Mutex::new(BTreeMap::new()),
+            recordings: Mutex::new(BTreeMap::new()),
+            recording_gate: tokio::sync::Mutex::new(()),
+            imports: Mutex::new(BTreeMap::new()),
+            uploads: Arc::new(Semaphore::new(1)),
             jobs: Mutex::new(BTreeMap::new()),
             scans: Arc::new(Semaphore::new(2)),
             frozen: Mutex::new(BTreeMap::new()),
@@ -118,6 +181,24 @@ impl Engine {
         state["runtime_id"] = self.config["runtime_id"].clone();
         state["archive_enabled"] = json!(self.config["history_path"].is_string());
         state["archive_writer"] = self.archive_writer.lock().unwrap().clone();
+        state["recordings"] = json!(self
+            .recordings
+            .lock()
+            .unwrap()
+            .values()
+            .map(|r| r.status.lock().unwrap().clone())
+            .collect::<Vec<_>>());
+        state["imports"] = json!(self
+            .imports
+            .lock()
+            .unwrap()
+            .values()
+            .cloned()
+            .collect::<Vec<_>>());
+        state["import_enabled"] = json!(
+            std::env::var_os("LOG_PRINT_MANAGER").is_some()
+                && self.client.transport() == log_proto::TransportKind::Tcp
+        );
         state["errors"] = json!(self.cache.lock().unwrap().errors);
         state
     }
@@ -163,6 +244,52 @@ impl Engine {
         budget: usize,
     ) -> Result<Value> {
         match method {
+            "recording.start" => self.recording_start(args).await,
+            "recording.stop" => {
+                self.recording_stop(args["id"].as_str().context("id required")?)
+                    .await
+            }
+            "logs.tail" => {
+                let stream = args["stream"].as_str().context("stream required")?;
+                let text = args["text"].as_str().unwrap_or("");
+                let limit = args["limit"].as_u64().unwrap_or(1000).clamp(1, 2000) as usize;
+                let cache = self.cache.lock().unwrap();
+                let cursor = cache
+                    .streams
+                    .get(stream)
+                    .and_then(|q| q.back())
+                    .map(|r| r.seq.to_string())
+                    .unwrap_or_default();
+                if args["since"].as_str() == Some(&cursor) {
+                    return Ok(
+                        json!({"unchanged":true,"cursor":cursor,"error":cache.errors.get(stream)}),
+                    );
+                }
+                let mut rows: Vec<_> = cache
+                    .rows
+                    .get(stream)
+                    .into_iter()
+                    .flatten()
+                    .rev()
+                    .filter(|r| r["text"].as_str().unwrap_or("").contains(text))
+                    .take(limit)
+                    .cloned()
+                    .collect();
+                rows.reverse();
+                // Include the incomplete final line, including files with no trailing newline.
+                if let Some(decoder) = cache.decoders.get(stream) {
+                    for mut row in decoder.preview() {
+                        if row["text"].as_str().unwrap_or("").contains(text) {
+                            row.as_object_mut().unwrap().remove("hex");
+                            rows.push(row);
+                        }
+                    }
+                }
+                bounded(
+                    json!({"rows":rows,"cursor":cursor,"error":cache.errors.get(stream),"retained":cache.rows.get(stream).map_or(0,VecDeque::len),"limit":limit}),
+                    budget,
+                )
+            }
             "url" => Ok(json!({"url":self.url})),
             "streams" => list_page(
                 json!({"streams":*self.catalog.lock().unwrap()}),
@@ -171,7 +298,7 @@ impl Engine {
                 budget,
             ),
             "capabilities" => Ok(
-                json!({"surface":self.config["surface"],"panels":["log","curve"],"layouts":["canvas","grid"],"canvas":{"coordinates":"pixels","zoom":[0.2,2.0],"panel_width":[320,4000],"panel_height":[220,4000],"shared_viewport":true},"page_size":200,"curve_points":2000,"scans":2,"history":if self.config["history_path"].is_string(){"sqlite+memory"}else{"memory_only"},"methods":["page.list","page.get","page.create","page.set","page.clone","page.delete","page.select","panel.add","panel.get","panel.set","panel.clone","panel.remove","series.add","series.set","series.remove","layout.set","history.read","history.search","history.context","history.curve","query.get","query.cancel"]}),
+                json!({"surface":self.config["surface"],"panels":["log","curve"],"layouts":["canvas","grid"],"canvas":{"coordinates":"pixels","zoom":[0.2,2.0],"panel_width":[320,4000],"panel_height":[220,4000],"shared_viewport":true},"page_size":200,"curve_points":2000,"scans":2,"history":if self.config["history_path"].is_string(){"sqlite+memory"}else{"memory_only"},"methods":["logs.tail","recording.start","recording.stop","page.list","page.get","page.create","page.set","page.clone","page.delete","page.select","panel.add","panel.get","panel.set","panel.clone","panel.remove","series.add","series.set","series.remove","layout.set","history.read","history.search","history.context","history.curve","query.get","query.cancel"]}),
             ),
             "state.get" | "status.get" => Ok(self.state()),
             "query.get" => self.query(&args, budget),
@@ -421,7 +548,7 @@ impl Engine {
         let catalog = self.client.streams().await?;
         let catalog = catalog.as_array().context("catalog")?.clone();
         let ids = Self::bindings(&catalog, args);
-        let path = self.config["history_path"].as_str().map(PathBuf::from);
+        let path = self.history_path(args);
         let (archive, error) = if let Some(p) = path.clone() {
             tokio::task::spawn_blocking(move || {
                 match HistoryReader::open(&p).and_then(|r| r.snapshot()) {
@@ -436,12 +563,12 @@ impl Engine {
         if let Some(snapshot) = &archive {
             let mut identity = self.archive_id.lock().unwrap();
             if identity
-                .as_ref()
+                .get(path.as_ref().unwrap())
                 .is_some_and(|id| id != &snapshot.archive_id)
             {
                 bail!("archive_identity_mismatch: archive was replaced during this runtime");
             }
-            *identity = Some(snapshot.archive_id.clone());
+            identity.insert(path.clone().unwrap(), snapshot.archive_id.clone());
         }
         let mut streams = Vec::new();
         let mut coverage = Vec::new();
@@ -466,9 +593,7 @@ impl Engine {
                 .get(id)
                 .map(|v| {
                     v.iter()
-                        .filter(|r| {
-                            r.epoch == epoch && (path.is_some() || r.seq >= oldest) && r.seq <= head
-                        })
+                        .filter(|r| r.epoch == epoch && r.seq <= head)
                         .map(|r| (r.seq, r.clone()))
                         .collect()
                 })
@@ -930,7 +1055,11 @@ fn scan(job: &Job, snapshot: &Snapshot, method: &str, args: &Value) -> Result<()
                 break;
             };
             scanned += 1;
-            for row in decoder.push(&record) {
+            for row in if args["text_only"] == true {
+                decoder.push_text(&record)
+            } else {
+                decoder.push(&record)
+            } {
                 if job.cancel.load(Ordering::Relaxed) {
                     return Ok(());
                 }

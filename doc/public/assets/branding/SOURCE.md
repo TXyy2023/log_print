@@ -6,6 +6,7 @@
 - Used by both READMEs, the documentation homepage/navigation/favicon, and the WebUI header/favicon.
 - Generated with the built-in imagegen tool; no specific model is asserted.
 - README transparent variants: `log-print-logo-transparent-light.svg` and `log-print-logo-transparent-dark.svg`. Both embed the unchanged original image and use the same luminance-based SVG alpha mask. The canvas has compact padding; foreground color switches with the viewer theme. White background and LP negative spaces become transparent. Raster imagegen cutouts were evaluated but rejected due to mask artifacts.
+- WebUI header: `frontend/public/log-print-mark.svg` reuses the dark transparent SVG and changes only its viewport to `380 282 494 492`, the same emblem crop as the favicon. The embedded original image and alpha mask are unchanged. The header stays dark in both UI themes.
 - The earlier banner below remains as a historical asset.
 
 ## Selected logo prompt {#selected-logo-prompt}

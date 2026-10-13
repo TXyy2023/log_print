@@ -279,6 +279,7 @@ struct PendingCall {
 }
 pub struct Core {
     runtime: RuntimeConfig,
+    imports: RwLock<BTreeMap<String, String>>,
     streams: RwLock<BTreeMap<String, Arc<Mutex<Stream>>>>,
     aliases: RwLock<BTreeMap<String, String>>,
     attachments: RwLock<BTreeMap<String, Vec<String>>>,
@@ -297,6 +298,7 @@ impl Core {
         };
         let core = Arc::new(Self {
             runtime,
+            imports: Default::default(),
             streams: Default::default(),
             aliases: Default::default(),
             attachments: Default::default(),
@@ -360,6 +362,9 @@ impl Core {
             .cloned()
     }
     fn role(&self, plugin: &str) -> Result<Role> {
+        if self.imports.read().unwrap().contains_key(plugin) {
+            return Ok(Role::Input);
+        }
         self.runtime
             .config
             .plugins
@@ -732,14 +737,46 @@ impl Core {
                     .collect::<Vec<_>>();
                 let connections = self.connections.lock().unwrap();
                 let reports = self.reports.lock().unwrap();
-                let plugins=self.runtime.config.plugins.iter().map(|p|json!({"id":p.id,"role":p.role,"connected":connections.contains_key(&p.id),"report":reports.get(&p.id)})).collect::<Vec<_>>();
+                let mut plugins=self.runtime.config.plugins.iter().map(|p|json!({"id":p.id,"role":p.role,"connected":connections.contains_key(&p.id),"report":reports.get(&p.id)})).collect::<Vec<_>>();
+                plugins.extend(self.imports.read().unwrap().keys().map(|id| json!({"id":id,"role":"input","connected":connections.contains_key(id),"report":reports.get(id)})));
                 Ok(
                     json!({"pid":std::process::id(),"protocol":PROTOCOL,"streams":states,"plugins":plugins,"config":self.runtime.config,"effective_core":self.runtime.config.core}),
                 )
             }
+            "input.register" => {
+                if plugin != "__admin__" {
+                    return Err(fault(
+                        "permission_denied",
+                        "management authentication required",
+                    ));
+                }
+                let id = args["id"].as_str().context("id required")?;
+                let token = args["token"].as_str().context("token required")?;
+                let name = args["name"].as_str().context("name required")?;
+                if !valid_id(id) || token.is_empty() || name.len() > 4096 {
+                    bail!("invalid import identity");
+                }
+                let mut imports = self.imports.write().unwrap();
+                if imports.len() >= 64 {
+                    bail!("import limit reached (64 per runtime)");
+                }
+                if imports.contains_key(id)
+                    || self.runtime.config.plugins.iter().any(|p| p.id == id)
+                {
+                    bail!("duplicate plugin identity");
+                }
+                let stream = Stream::new(id.into(), None, name.into(), vec![]);
+                let status = stream.status();
+                self.streams
+                    .write()
+                    .unwrap()
+                    .insert(stream.id.clone(), Arc::new(Mutex::new(stream)));
+                imports.insert(id.into(), token.into());
+                Ok(status)
+            }
             "plugin.status" => {
                 let id = args["plugin"].as_str().context("plugin required")?;
-                if !self.runtime.config.plugins.iter().any(|p| p.id == id) {
+                if self.role(id).is_err() {
                     return Err(fault("not_found", "plugin"));
                 }
                 Ok(
@@ -1041,6 +1078,12 @@ impl Core {
                     .plugin_tokens
                     .get(&hello.plugin)
                     .is_none_or(|t| *t != hello.token)
+                    && self
+                        .imports
+                        .read()
+                        .unwrap()
+                        .get(&hello.plugin)
+                        .is_none_or(|t| *t != hello.token)
                 {
                     return Err(fault(
                         "authentication_failed",
@@ -1209,6 +1252,39 @@ mod tests {
             generation,
             json!({"stream":id,"key":"same opaque key","source_seq":source_seq,"payload":payload}),
         )
+    }
+    #[tokio::test]
+    async fn import_registration_is_admin_only_and_allocates_an_isolated_input() {
+        let core = Core::new(runtime(TransportKind::Tcp)).unwrap();
+        let args = json!({"id":"import-test","token":"import-token","name":"file.log"});
+        assert!(core
+            .command("out", 1, "input.register", args.clone())
+            .await
+            .is_err());
+        let stream = core
+            .command("__admin__", 1, "input.register", args.clone())
+            .await
+            .unwrap();
+        assert_eq!(stream["description"], "file.log");
+        assert!(core
+            .command("__admin__", 1, "input.register", args)
+            .await
+            .is_err());
+        let id = claim(&core, "import-test", 2);
+        publish(&core, "import-test", 2, &id, 1, b"imported").unwrap();
+        assert!(core.can_read("import-test", &id).is_err());
+        assert!(publish(&core, "a", 1, &id, 1, b"wrong writer").is_err());
+        assert_eq!(
+            core.command(
+                "__admin__",
+                1,
+                "plugin.status",
+                json!({"plugin":"import-test"})
+            )
+            .await
+            .unwrap()["plugin"],
+            "import-test"
+        );
     }
     #[test]
     fn read_all_follows_dynamic_streams_but_cannot_publish() {

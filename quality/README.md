@@ -42,7 +42,7 @@ cargo run --locked -p log-print-quality -- docs doc/site/dist/public
 
 `tui-v2` 同时通过 portable-pty 启动真实终端，Windows 使用 ConPTY，不跳过交互。vt100 只解析实际输出，不模拟应用后端；验证键盘/鼠标、Unicode、终端大小、双视图、并发编辑、历史、断连、退出恢复和无 TTY 快照。
 
-GitHub `validate.yml` 的 Linux/macOS/Windows 每个任务均在全套之后安装 Chromium，执行 `cargo run --locked -p log-print-quality -- browser`：两个真实浏览器、VueFlow 拖拽/缩放、GridStack 兼容缩放、AG Grid 虚拟表格、过滤/历史、ECharts 缩放与配置恢复。`quality/artifacts/browser/` 保存成功或失败截图、trace.zip 和 browser.json，与命令日志一并上传。前端脚本只依赖精确锁定的 Playwright 开发依赖，运行时不需要它。
+GitHub `validate.yml` 的 Linux/macOS/Windows 每个任务均在全套之后安装 Chromium，执行 `cargo run --locked -p log-print-quality -- browser`：1440/1280 桌面与 390px 手机视口、虚拟日志表格、键盘定位、上下文、两种保存的逐字节下载校验、导入、主题与焦点恢复。`quality/artifacts/browser/` 保存成功或失败截图、trace.zip 和 browser.json，与命令日志一并上传。前端脚本只依赖精确锁定的 Playwright 开发依赖，运行时不需要它。
 
 单独执行浏览器验收：
 
@@ -58,7 +58,7 @@ cargo run --locked -p log-print-quality -- browser
 
 ## Rust 工具命令
 
-现役验收及故障注入程序均在 `src/`，无需 Python。浏览器交互保留 `tests/browser/workbench.mjs`（Playwright）；`archive/v1` 为历史原件，不参与当前验证。
+现役验收及故障注入程序均在 `src/`，无需 Python。浏览器交互保留 `tests/browser/log-viewer.mjs`（Playwright）；`archive/v1` 为历史原件，不参与当前验证。
 
 ```sh
 cargo run --locked -p log-print-quality -- suite protocol-v2

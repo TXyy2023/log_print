@@ -54,5 +54,7 @@
   "sdk/python.md",
   "zh/sdk/index.md",
   "zh/sdk/rust.md",
-  "zh/sdk/python.md"
+  "zh/sdk/python.md",
+  "assets/webui/log-viewer.png",
+  "assets/webui/log-viewer-mobile.png"
 ]

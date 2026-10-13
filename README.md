@@ -37,14 +37,14 @@ No cloud service or language model is required at runtime. AI agents can use the
 | Launch a program and collect stdout/stderr | `input-program`, preserving channel identity |
 | Capture new output from an existing tmux pane | `input-program` tmux mode on Unix |
 | Inspect current logs from a shell or agent | Stream discovery and bounded snapshot reads |
-| Arrange persistent Pages, log tables and curves | `output-webui` freeform canvas, synchronized through CLI |
-| Use the same workbench in a terminal | `output-tui`, including attachment to an existing WebUI |
+| Read, search, import and save local logs | `output-webui`, with virtual scrolling and historical context |
+| Arrange terminal log/curve panels | `output-tui`, using the shared Rust query engine |
 | Display or archive continuously | `output-raw`; `output-file` for raw files, JSONL and SQLite |
 | Add numbering, timestamps or source-sequence reordering | `output-transform`, publishing a separate derived stream |
 
-![WebUI workbench with log tables and curves](doc/public/assets/webui/workbench.png)
+![Local log viewer with source selection and search](doc/public/assets/webui/log-viewer.png)
 
-The workbench above uses synthetic data and CLI-arranged panels. [WebUI](doc/public/plugins/output-webui.md) and [TUI](doc/public/plugins/output-tui.md) share the Rust display/history engine. Optional SQLite archiving enables queries beyond Core's memory buffer.
+The screenshot uses explicitly marked fixture logs. [WebUI](doc/public/plugins/output-webui.md) provides a focused log reader; [TUI](doc/public/plugins/output-tui.md) uses the same Rust history engine with its own terminal presentation. Optional SQLite archiving enables queries beyond Core's memory buffer.
 
 Core buffers and routes logs in memory, using TCP by default or optional UDP. Inputs do not wait for Outputs, and slow consumers can lose overwritten records. **Published does not mean persisted.** Configure `output-file` and inspect its commit results when you need storage. Core restarts discard its memory, and `read` is not a persistent cursor. See [streams and persistence](doc/public/concepts.md).
 
@@ -153,7 +153,7 @@ The main program supervises the instance and child processes. The protocol defin
 cargo run --locked -p log-print-quality --
 ```
 
-The full suite needs Node.js 24/npm, Rust stable, rustfmt and Clippy. It covers Rust tests and real subprocess scenarios for the protocol, CLI lifecycle, inputs, transformations, archives, WebUI/TUI and failures. GitHub CI runs Linux, macOS and Windows, including real PTY/ConPTY terminal interactions and Chromium workbench tests. See [validation instructions](quality/README.md); the CI badge reports current main status. See the [0.1.3 release report](quality/release-0.1.3.md) for this release and the [original 0.1.2 report](quality/release-0.1.2.md) for historical validation.
+The full suite needs Node.js 24/npm, Rust stable, rustfmt and Clippy. It covers Rust tests and real subprocess scenarios for the protocol, CLI lifecycle, inputs, transformations, archives, WebUI/TUI and failures. GitHub CI runs Linux, macOS and Windows, including real PTY/ConPTY terminal interactions and Chromium log-viewer tests. See [validation instructions](quality/README.md); the CI badge reports current main status. See the [0.1.3 release report](quality/release-0.1.3.md) for this release and the [original 0.1.2 report](quality/release-0.1.2.md) for historical validation.
 
 Documentation changes must pass both root-path and GitHub Pages subpath builds, locale/link checks and public-content isolation. The [Documentation workflow](https://github.com/TXyy2023/log_print/actions/workflows/docs.yml) validates `dev` and `main`, and deploys `main` to GitHub Pages. Internal development notes remain local. See [site maintenance](doc/site/README.md).
 

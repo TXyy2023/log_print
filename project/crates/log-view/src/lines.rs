@@ -1,11 +1,12 @@
 use log_proto::Record;
 use serde_json::{json, Value};
 use std::collections::BTreeMap;
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct Lines {
     pending: BTreeMap<(String, String, String), Pending>,
     last: BTreeMap<String, u64>,
 }
+#[derive(Clone)]
 struct Pending {
     bytes: Vec<u8>,
     location: Value,
@@ -15,16 +16,18 @@ struct Pending {
 fn location(r: &Record, offset: usize) -> Value {
     json!({"stream":r.stream,"epoch":r.epoch,"seq":r.seq.to_string(),"offset":offset,"channel":r.channel,"key":r.key,"time":(r.observed_ts_ns/1_000_000).to_string(),"observed_ts_ns":r.observed_ts_ns.to_string(),"source_ts_ns":r.source_ts_ns.map(|n|n.to_string()),"source_seq":r.source_seq.map(|n|n.to_string()),"upstream":r.upstream.iter().map(|(k,v)|(k,v.to_string())).collect::<BTreeMap<_,_>>(),"upstream_epochs":r.upstream_epochs})
 }
-fn finish(p: Pending, partial: bool, gap: bool) -> Value {
+fn finish(p: Pending, partial: bool, gap: bool, hex: bool) -> Value {
     let mut value = p.location;
     value["kind"] = json!("line");
     value["text"] = json!(String::from_utf8_lossy(&p.bytes).trim_end_matches('\r'));
-    value["hex"] = json!(p
-        .bytes
-        .iter()
-        .map(|b| format!("{b:02x}"))
-        .collect::<Vec<_>>()
-        .join(" "));
+    if hex {
+        value["hex"] = json!(p
+            .bytes
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<Vec<_>>()
+            .join(" "));
+    }
     value["end_seq"] = json!(p.end_seq.to_string());
     value["end_offset"] = json!(p.end_offset);
     value["partial"] = json!(partial);
@@ -32,7 +35,20 @@ fn finish(p: Pending, partial: bool, gap: bool) -> Value {
     value
 }
 impl Lines {
+    pub fn preview(&self) -> Vec<Value> {
+        self.pending
+            .values()
+            .cloned()
+            .map(|p| finish(p, true, false, false))
+            .collect()
+    }
     pub fn push(&mut self, r: &Record) -> Vec<Value> {
+        self.push_mode(r, true)
+    }
+    pub fn push_text(&mut self, r: &Record) -> Vec<Value> {
+        self.push_mode(r, false)
+    }
+    fn push_mode(&mut self, r: &Record, hex: bool) -> Vec<Value> {
         let mut rows = Vec::new();
         if self
             .last
@@ -46,7 +62,7 @@ impl Lines {
                 .cloned()
                 .collect();
             for key in keys {
-                rows.push(finish(self.pending.remove(&key).unwrap(), true, true));
+                rows.push(finish(self.pending.remove(&key).unwrap(), true, true, hex));
             }
             rows.push(json!({"stream":r.stream,"epoch":r.epoch,"seq":r.seq.to_string(),"offset":0,"time":(r.observed_ts_ns/1_000_000).to_string(),"observed_ts_ns":r.observed_ts_ns.to_string(),"text":"[record gap]","kind":"gap","gap":true}));
         }
@@ -55,22 +71,30 @@ impl Lines {
             r.epoch.clone(),
             r.channel.clone().unwrap_or_default(),
         );
-        for (offset, byte) in r.payload.iter().enumerate() {
+        // Scan a slice per line/chunk. Do not clone stream/epoch/channel or
+        // perform a map lookup for each byte on the ingestion hot path.
+        let mut offset = 0;
+        while offset < r.payload.len() {
             let p = self.pending.entry(key.clone()).or_insert_with(|| Pending {
                 bytes: Vec::new(),
                 location: location(r, offset),
                 end_seq: r.seq,
                 end_offset: offset,
             });
+            let end = r.payload.len().min(offset + 64 * 1024 - p.bytes.len());
+            let newline = r.payload[offset..end].iter().position(|b| *b == b'\n');
+            let text_end = newline.map_or(end, |n| offset + n);
+            p.bytes.extend_from_slice(&r.payload[offset..text_end]);
+            offset = text_end + usize::from(newline.is_some());
             p.end_seq = r.seq;
-            p.end_offset = offset + 1;
-            if *byte == b'\n' {
-                rows.push(finish(self.pending.remove(&key).unwrap(), false, false));
-            } else {
-                p.bytes.push(*byte);
-                if p.bytes.len() >= 64 * 1024 {
-                    rows.push(finish(self.pending.remove(&key).unwrap(), true, false));
-                }
+            p.end_offset = offset;
+            if newline.is_some() || p.bytes.len() == 64 * 1024 {
+                rows.push(finish(
+                    self.pending.remove(&key).unwrap(),
+                    newline.is_none(),
+                    false,
+                    hex,
+                ));
             }
         }
         rows
@@ -78,7 +102,7 @@ impl Lines {
     pub fn flush(self) -> Vec<Value> {
         self.pending
             .into_values()
-            .map(|p| finish(p, true, false))
+            .map(|p| finish(p, true, false, true))
             .collect()
     }
 }

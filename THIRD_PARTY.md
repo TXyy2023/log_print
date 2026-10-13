@@ -4,6 +4,7 @@ Rust 依赖的实际版本和校验值由 Cargo.lock 锁定，可通过 `cargo m
 
 | 组件 | 用途 | 许可证 |
 |---|---|---|
+| Vue 3.5.43 | 离线 WebUI 日志界面 | MIT；[随资源分发的许可证](project/plugins/outputs/output-webui/frontend/public/THIRD_PARTY_LICENSES.md) |
 | Tokio / Serde / serde_json / Clap / UUID | 运行时、配置、CLI、身份 | 各库 MIT 或 MIT/Apache-2.0，按锁定 crate 元数据 |
 | rusqlite / SQLite | Core历史与output-file归档 | rusqlite MIT；SQLite public domain |
 | fs2 / sha2 | 独占锁、内容校验 | MIT/Apache-2.0 |

@@ -42,7 +42,7 @@
 
 Core 只做内存缓冲与转发，默认使用 TCP，也可显式选择 UDP。Input 发布不等待 Output；慢消费者可能遇到缓冲覆盖。**发布成功不等于已保存**，持久化需要配置 `output-file` 并检查保存结果。Core 重启会丢失内存内容，`read` 也不是持久游标。完整约定见[流、传输与保存](doc/public/zh/concepts.md)。
 
-本地 WebUI 支持全部流、持久化 Page、可自由摆放和缩放的日志/曲线窗口、CLI 精确编排，以及可选的 SQLite 全量上下文查询，见 [output-webui](doc/public/zh/plugins/output-webui.md)。同等显示与历史功能可在 [output-tui](doc/public/zh/plugins/output-tui.md) 终端工作台使用，也可连接现有 WebUI 同步控制。串口输入插件不在当前版本范围。旧 `log-print/1` 配置和客户端不能直接用于 0.1.3，迁移说明见[完整性与迁移](doc/public/zh/guides/recovery.md)。
+本地 [WebUI](doc/public/zh/plugins/output-webui.md) 支持流选择、虚拟日志表格、暂停、筛选高亮、上下文、文件上传和两种起点的持续保存；旧画布工作台前端已移除。[output-tui](doc/public/zh/plugins/output-tui.md) 保留独立的终端面板，通过共享 Rust 引擎读取日志与历史。串口输入插件不在当前版本范围。旧 `log-print/1` 配置和客户端不能直接用于 0.1.3，迁移说明见[完整性与迁移](doc/public/zh/guides/recovery.md)。
 
 ## 文档
 

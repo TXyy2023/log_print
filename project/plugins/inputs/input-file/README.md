@@ -15,3 +15,7 @@
 Core 的有限缓冲会覆盖旧记录，Input 不等待 Output 消费。静态快读不保证完整无损导入。轮转时不排空旧文件尾部；轮询之间发生多次替换、或截断后快速恢复成相同尾部内容，可能无法检测或补回。停止时尚未发送的字节也不保证送达。UDP 只报告本地发送，不能据此确认 Core 接收。
 
 主程序使用 `log-print start --config ...` 启动，按插件 ID 手动停止采集。业务配置不再接受旧 `stream` 字段。
+
+## WebUI 静态导入的确认窗口
+
+supervisor 为每个 WebUI 上传创建独立 input-file，仍走 Core 发布与 Output 读取。该模式显式设置 `commit_checkpoint`（output-file 的 raw 文件检查点）及 `commit_window`（1–64，默认 8），只允许 TCP + static。每批等待检查点 `confirmed_len`，并核对流身份及 incomplete；超时或输出失败不报告导入成功。supervisor 根据 Core 字节/记录容量缩小块与窗口，防止快读覆盖未归档数据。普通 static/follow 未配置检查点时保持原有独立输入语义。

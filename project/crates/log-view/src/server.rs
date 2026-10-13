@@ -104,6 +104,87 @@ async fn sse(State(engine): State<Arc<Engine>>, headers: HeaderMap) -> Response 
     let mut rx = engine.updates.subscribe();
     Sse::new(async_stream::stream! {yield Ok::<_,Infallible>(Event::default().event("state").json_data(engine.state()).unwrap());while let Ok(())|Err(tokio::sync::broadcast::error::RecvError::Lagged(_))=rx.recv().await {yield Ok(Event::default().event("state").json_data(engine.state()).unwrap())}}).keep_alive(KeepAlive::new().interval(Duration::from_secs(10))).into_response()
 }
+async fn upload(State(engine): State<Arc<Engine>>, request: axum::extract::Request) -> Response {
+    if !host(request.headers(), &engine)
+        || request
+            .headers()
+            .get(header::ORIGIN)
+            .and_then(|v| v.to_str().ok())
+            != Some(engine.url.trim_end_matches('/'))
+    {
+        return StatusCode::FORBIDDEN.into_response();
+    }
+    let Ok(_permit) = engine.uploads.clone().try_acquire_owned() else {
+        return StatusCode::TOO_MANY_REQUESTS.into_response();
+    };
+    let name = request
+        .headers()
+        .get("x-file-name")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("import.log")
+        .chars()
+        .take(200)
+        .collect::<String>();
+    let payload = match axum::body::to_bytes(request.into_body(), 64 * 1024 * 1024).await {
+        Ok(v) => v,
+        Err(_) => {
+            return (
+                StatusCode::PAYLOAD_TOO_LARGE,
+                Json(json!({"error":"file exceeds 64 MiB"})),
+            )
+                .into_response()
+        }
+    };
+    match engine.import_file(name, &payload).await {
+        Ok(v) => (StatusCode::ACCEPTED, Json(v)).into_response(),
+        Err(e) => (
+            StatusCode::BAD_REQUEST,
+            Json(json!({"error":format!("{e:#}")})),
+        )
+            .into_response(),
+    }
+}
+async fn download(
+    State(engine): State<Arc<Engine>>,
+    headers: HeaderMap,
+    axum::extract::Path(id): axum::extract::Path<String>,
+) -> Response {
+    if !host(&headers, &engine) {
+        return StatusCode::FORBIDDEN.into_response();
+    }
+    let Some(job) = engine.recordings.lock().unwrap().get(&id).cloned() else {
+        return StatusCode::NOT_FOUND.into_response();
+    };
+    if job.status.lock().unwrap()["state"] != "stopped" {
+        return (
+            StatusCode::CONFLICT,
+            "stop and commit the recording before downloading",
+        )
+            .into_response();
+    }
+    let Ok(mut file) = tokio::fs::File::open(&job.path).await else {
+        return StatusCode::NOT_FOUND.into_response();
+    };
+    let stream = async_stream::stream! {
+        use tokio::io::AsyncReadExt;
+        loop {
+            let mut buf = vec![0u8;65536];
+            match file.read(&mut buf).await {
+                Ok(0) => break,
+                Ok(n) => { buf.truncate(n); yield Ok::<_, std::io::Error>(axum::body::Bytes::from(buf)); },
+                Err(e) => { yield Err(e); break; }
+            }
+        }
+    };
+    (
+        [
+            (header::CONTENT_TYPE, "application/octet-stream"),
+            (header::CONTENT_DISPOSITION, "attachment; filename=logs.log"),
+        ],
+        axum::body::Body::from_stream(stream),
+    )
+        .into_response()
+}
 pub async fn serve(surface: &str, routes: Router<Arc<Engine>>) -> Result<()> {
     let (client, mut events, mut controls) = log_plugin_sdk::connect_env().await?;
     let mut config = client.config().clone();
@@ -171,7 +252,7 @@ pub async fn serve(surface: &str, routes: Router<Arc<Engine>>) -> Result<()> {
                     }
                     let _ = ingestion.updates.send(());
                 },
-                event=events.recv()=>match event {Some(CoreEvent::Record(r))=>ingestion.cache.lock().unwrap().push(r),Some(CoreEvent::Gap {stream,from,to,reason,..})=>{ingestion.cache.lock().unwrap().errors.insert(stream,format!("gap {from}..{to}: {reason}"));},Some(CoreEvent::Disconnected {stream,reason})=>{ingestion.cache.lock().unwrap().errors.insert(stream,reason);},None=>bail!("Core event channel closed")}
+                event=events.recv()=>match event {Some(CoreEvent::Record(r))=>{ingestion.cache.lock().unwrap().push(r);ingestion.data_ready.notify_waiters();},Some(CoreEvent::Gap {stream,from,to,reason,..})=>{ingestion.cache.lock().unwrap().errors.insert(stream,format!("gap {from}..{to}: {reason}"));},Some(CoreEvent::Disconnected {stream,reason})=>{ingestion.cache.lock().unwrap().errors.insert(stream,reason);},None=>bail!("Core event channel closed")}
             }
         }
         Ok::<(), anyhow::Error>(())
@@ -182,6 +263,7 @@ pub async fn serve(surface: &str, routes: Router<Arc<Engine>>) -> Result<()> {
         while let Some(control) = controls.recv().await {
             let method = control.method.as_str();
             let result = if method == "shutdown" {
+                ctl.stop_recordings().await;
                 Ok(json!({"stopping":true}))
             } else if method == "config.get" {
                 Ok(json!({"effective":ctl.config,"dynamic_fields":["pages"]}))
@@ -236,6 +318,8 @@ pub async fn serve(surface: &str, routes: Router<Arc<Engine>>) -> Result<()> {
         Ok::<(), anyhow::Error>(())
     });
     let app = Router::new()
+        .route("/api/import", post(upload))
+        .route("/api/recordings/{id}/download", get(download))
         .route("/api/state", get(state))
         .route("/api/control", post(control))
         .route("/api/events", get(sse))
@@ -255,6 +339,7 @@ pub async fn serve(surface: &str, routes: Router<Arc<Engine>>) -> Result<()> {
     let result = tokio::select! {r=&mut server=>r.map_err(Into::into),r=ingest=>r.context("ingest task")?,_=log_plugin_sdk::termination()=>Ok(())};
     stop.send_replace(true);
     engine.cancel_all();
+    engine.stop_recordings().await;
     controller.abort();
     log_plugin_sdk::finish(&client, &result).await;
     result

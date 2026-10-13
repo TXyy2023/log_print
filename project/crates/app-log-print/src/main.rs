@@ -325,7 +325,17 @@ impl Supervisor {
             json!({"plugin":id}),
         )
         .await?;
-        let child = Command::new(binary)
+        let mut command = Command::new(binary);
+        if Path::new(&managed.spec.bin)
+            .file_stem()
+            .and_then(|v| v.to_str())
+            == Some("output-webui")
+        {
+            command
+                .env("LOG_PRINT_MANAGER", &self.state.address)
+                .env("LOG_PRINT_MANAGER_TOKEN", &self.state.token);
+        }
+        let child = command
             .args(&managed.spec.args)
             .env("LOG_PRINT_CORE", &self.state.core_address)
             .env(
@@ -487,8 +497,63 @@ impl Supervisor {
                     )
                 }
             }
-            "plugin.start" => {
+            "webui.import.prepare" => {
+                if self.state.transport != log_proto::TransportKind::Tcp {
+                    bail!("file import requires TCP for acknowledged publication");
+                }
+                let web = args["web"].as_str().context("web required")?;
+                let spec = &self.plugins.get(web).context("unknown WebUI")?.spec;
+                if Path::new(&spec.bin).file_stem().and_then(|v| v.to_str()) != Some("output-webui")
+                {
+                    bail!("not a WebUI plugin");
+                }
+                let root = PathBuf::from(spec.config["state_path"].as_str().context("state path")?)
+                    .parent()
+                    .context("state directory")?
+                    .join("imports")
+                    .canonicalize()?;
+                let path = PathBuf::from(args["path"].as_str().context("path required")?)
+                    .canonicalize()?;
+                if path.parent() != Some(root.as_path()) || !path.is_file() {
+                    bail!("upload must be a regular file in this WebUI import directory");
+                }
+                resolve_binary("input-file", &self.config_dir)?;
+                let id = format!("import-{}", Uuid::new_v4());
+                let token = Uuid::new_v4().to_string();
+                let stream = self
+                    .core_rpc(
+                        "input.register",
+                        json!({"id":id,"token":token,"name":args["name"]}),
+                    )
+                    .await?;
+                let spec: PluginSpec = serde_json::from_value(
+                    json!({"id":id,"role":"input","bin":"input-file","autostart":false,"config":{"path":path,"mode":"static","chunk_bytes":self.config.core.max_payload_bytes.min(self.config.core.buffer_bytes / 8).clamp(1, 65536),"commit_window":self.config.core.buffer_records.div_ceil(4).clamp(1, 4)}}),
+                )?;
+                self.plugins.insert(
+                    id.clone(),
+                    Managed {
+                        spec,
+                        child: None,
+                        last_exit: None,
+                        last_success: None,
+                    },
+                );
+                self.tokens.insert(id.clone(), token);
+                Ok(json!({"plugin":id,"stream":stream}))
+            }
+            "webui.import.start" | "plugin.start" => {
                 let id = plugin_id()?;
+                if op == "webui.import.start" {
+                    let managed = self.plugins.get_mut(&id).context("unknown import")?;
+                    if !id.starts_with("import-") || managed.spec.bin != "input-file" {
+                        bail!("not an imported input-file");
+                    }
+                    let checkpoint = args["checkpoint"].as_str().context("checkpoint required")?;
+                    if !Path::new(checkpoint).is_file() {
+                        bail!("output-file checkpoint must exist before import starts");
+                    }
+                    managed.spec.config["commit_checkpoint"] = json!(checkpoint);
+                }
                 if let Some(stream) = args["stream"].as_str() {
                     self.core_rpc("plugin.attach", json!({"plugin":id,"stream":stream}))
                         .await?;

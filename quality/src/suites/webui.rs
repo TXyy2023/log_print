@@ -115,6 +115,172 @@ fn sse(url: &str) -> Value {
     serde_json::from_str(line.trim().strip_prefix("data: ").unwrap()).unwrap()
 }
 pub fn run(t: &mut Suite, kind: &str) {
+    t.case("basic_log_tail_and_recording_boundaries", || {
+        let td = tempfile::tempdir().unwrap();
+        let plugins = base(
+            kind,
+            json!({"state_path":td.path().join("pages.sqlite3")}),
+            None,
+        );
+        let c = Core::new("tcp", json!({"buffer_records":2}), plugins.clone());
+        let mut web = Plugin::new(&c, &plugins[2], &[]);
+        let url = s(&web.ready("serving")["url"]);
+        let stream = c.stream("source");
+        let mut writer = c.rpc("source");
+        until(|| arr(&request(&url, "", json!({}))["streams"]).len() == 1);
+        for n in 1..=4 {
+            writer.publish(&stream, format!("old-{n}\n").as_bytes(), json!({}));
+            let expected = n.to_string();
+            until(|| {
+                request(&url, "logs.tail", json!({"stream":stream}))["cursor"].as_str()
+                    == Some(expected.as_str())
+            });
+        }
+        let tail = request(&url, "logs.tail", json!({"stream":stream,"text":"old-1"}));
+        assert_eq!(texts(arr(&tail["rows"])), ["old-1"]);
+        assert_eq!(
+            request(&url, "logs.tail", json!({"stream":stream,"since":"4"}))["unchanged"],
+            true
+        );
+        let now = request(
+            &url,
+            "recording.start",
+            json!({"stream":stream,"mode":"now"}),
+        );
+        let earliest = request(
+            &url,
+            "recording.start",
+            json!({"stream":stream,"mode":"earliest"}),
+        );
+        writer.publish(&stream, "new-中文\nlast-no-newline".as_bytes(), json!({}));
+        until(|| request(&url, "logs.tail", json!({"stream":stream}))["cursor"] == "5");
+        assert!(texts(arr(
+            &request(&url, "logs.tail", json!({"stream":stream}))["rows"]
+        ))
+        .contains(&"last-no-newline".into()));
+        for (r, expected) in [
+            (&now, "new-中文\nlast-no-newline"),
+            (
+                &earliest,
+                "old-1\nold-2\nold-3\nold-4\nnew-中文\nlast-no-newline",
+            ),
+        ] {
+            let stopped = request(&url, "recording.stop", json!({"id":r["id"]}));
+            assert_eq!(stopped["state"], "stopped", "{stopped}");
+            assert_eq!(fs::read(s(&r["path"])).unwrap(), expected.as_bytes());
+            assert_eq!(stopped["writer"]["sqlite"]["incomplete"], false);
+            let download = client()
+                .get(format!("{url}/api/recordings/{}/download", s(&r["id"])))
+                .send()
+                .unwrap();
+            assert_eq!(download.bytes().unwrap(), expected.as_bytes());
+        }
+        web.stop();
+    });
+    t.case("recording_archive_prefix_and_commit_failure", || {
+        let td = tempfile::tempdir().unwrap();
+        let archive_path = td.path().join("history.sqlite");
+        let arch = archive(&archive_path);
+        let plugins = base(kind,json!({"state_path":td.path().join("pages.sqlite3"),"history_path":archive_path,"history_plugin":"archive"}),Some(arch.clone()));
+        let c = Core::new("tcp",json!({"buffer_records":2}),plugins.clone());
+        let mut archive_plugin = Plugin::new(&c,&arch,&[]);
+        archive_plugin.ready("archiving");
+        let stream = c.stream("source");
+        let mut writer = c.rpc("source");
+        for n in 1..=4 { writer.publish(&stream,format!("archived-{n}\n").as_bytes(),json!({})); pause(30); }
+        let db = Connection::open(&archive_path).unwrap();
+        until(||checkpoint(&db,&stream,5));
+        let mut web = Plugin::new(&c,&plugins[2],&[]);
+        let url = s(&web.ready("serving")["url"]);
+        let capture = request(&url,"recording.start",json!({"stream":stream,"mode":"earliest"}));
+        writer.publish(&stream,b"tail\n",json!({}));
+        let stopped = request(&url,"recording.stop",json!({"id":capture["id"]}));
+        assert_eq!(stopped["state"],"stopped","{stopped}");
+        assert_eq!(text(std::path::Path::new(capture["path"].as_str().unwrap())),"archived-1\narchived-2\narchived-3\narchived-4\ntail\n");
+        web.stop(); archive_plugin.stop();
+        c.admin().call("plugin.prepare",json!({"plugin":"web"}));
+        let mut web = Plugin::new(&c,&plugins[2],&[("LOG_PRINT_ARCHIVE_TESTING","1"),("LOG_PRINT_ARCHIVE_ERRORPOINT","file_write")]);
+        let url = s(&web.ready("serving")["url"]);
+        let capture = request(&url,"recording.start",json!({"stream":stream,"mode":"now"}));
+        writer.publish(&stream,b"cannot commit\n",json!({}));
+        let stopped = request(&url,"recording.stop",json!({"id":capture["id"]}));
+        assert_eq!(stopped["state"],"failed","{stopped}");
+        assert!(s(&stopped["error"]).contains("injected"));
+        assert_eq!(client().get(format!("{url}/api/recordings/{}/download",s(&capture["id"]))).send().unwrap().status(),409);
+        web.stop();
+    });
+    if kind == "webui" {
+        t.case("static_upload_through_input_core_output", || {
+            let app = App::native(&["--output-webui", "web"]);
+            let url = s(&app.control("web", "url", json!({}))["url"]);
+            assert_eq!(request(&url, "", json!({}))["import_enabled"], true);
+            assert_eq!(
+                client()
+                    .post(format!("{url}/api/import"))
+                    .body("blocked")
+                    .send()
+                    .unwrap()
+                    .status(),
+                403
+            );
+            // Exceeds the WebUI record cache. Verify full byte equality on disk
+            // and full-history access, rather than treating source EOF as success.
+            let payload = format!(
+                "FIRST 中文 <script>alert(1)</script>\n{}LAST",
+                "fixture line for static import\n".repeat(180000)
+            );
+            let started = std::time::Instant::now();
+            let response = client()
+                .post(format!("{url}/api/import"))
+                .header("Origin", &url)
+                .header("X-File-Name", "fixture.log")
+                .body(payload.clone())
+                .send()
+                .unwrap();
+            assert_eq!(response.status(), 202, "{}", response.text().unwrap());
+            // Read the state because the response body above is only evaluated on failure.
+            let state = eventually(60, || {
+                let state = request(&url, "", json!({}));
+                let imports = arr(&state["imports"]);
+                if imports.is_empty() {
+                    return None;
+                }
+                assert_ne!(imports[0]["state"], "failed", "{}", imports[0]);
+                (imports[0]["state"] == "complete").then_some(state)
+            });
+            let import_elapsed = started.elapsed();
+            let import = &state["imports"][0];
+            let recording = arr(&state["recordings"])
+                .iter()
+                .find(|r| r["id"] == import["recording"])
+                .unwrap();
+            assert_eq!(fs::read(s(&recording["path"])).unwrap(), payload.as_bytes());
+            let (found, _) = rows(
+                &url,
+                &job(
+                    &url,
+                    "history.read",
+                    json!({"streams":[import["stream"]],"text":"FIRST"}),
+                ),
+                30,
+            );
+            assert_eq!(found[0]["text"], "FIRST 中文 <script>alert(1)</script>");
+            assert_eq!(
+                arr(&app.manager().call("status", json!({}))["plugins"])
+                    .iter()
+                    .filter(|p| s(&p["id"]).starts_with("import-"))
+                    .count(),
+                1
+            );
+            println!(
+                "static import {} bytes committed in {:?}; including historical search {:?}",
+                payload.len(),
+                import_elapsed,
+                started.elapsed()
+            );
+        });
+    }
+
     t.case("shutdown_acknowledged_before_exit", || {
         // Exercise the shutdown/ingestion race with a single worker as well as
         // concurrent workers; every caller must receive the reply before exit.
@@ -1094,7 +1260,7 @@ pub fn browser() {
     fs::write(
         &source,
         (1..1201)
-            .map(|n| format!("temperature={n}\n"))
+            .map(|n| format!("[fixture] 2026-10-13 09:41:{:02} INFO [http] request completed method=GET path=/api/events status=200 duration={}ms temperature={n}\n", n % 60, n % 83))
             .collect::<String>(),
     )
     .unwrap();
@@ -1114,24 +1280,18 @@ pub fn browser() {
         std::env::consts::OS,
         crate::runner::stamp()
     ));
-    let memory = App::native(&[
-        "--input-file",
-        &format!("source={}", source.display()),
-        "--set",
-        "source.from_start=true",
-        "--output-webui",
-        "web",
-    ]);
+    let memory = App::native(&["--output-webui", "web"]);
     let memory_url = s(&memory.control("web", "url", json!({}))["url"]);
     let r = capture(
         std::process::Command::new("node")
-            .arg(root().join("quality/tests/browser/workbench.mjs"))
+            .arg(root().join("quality/tests/browser/log-viewer.mjs"))
             .arg(url)
             .arg(&a.state)
             .arg(bin("log-print"))
             .arg(artifact)
             .arg(memory_url)
             .arg(&memory.state)
+            .arg(&source)
             .current_dir(root()),
         180,
     );

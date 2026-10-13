@@ -6,6 +6,7 @@
 - 用于中英文 README、文档首页/导航栏/浏览器图标、WebUI 页头/浏览器图标。
 - 原设计由内置 imagegen 生成，不宣称具体模型。
 - README 透明版本：`log-print-logo-transparent-light.svg` 与 `log-print-logo-transparent-dark.svg`。两版均内嵌原始图片，以同一 SVG 亮度遮罩生成透明度，缩小画布留白，并根据阅读者的主题切换前景颜色；白底与 LP 镂空区域透明。imagegen 抠图候选因遮罩杂点未采用。
+- WebUI 页头的 `frontend/public/log-print-mark.svg` 复用深色透明版本，只将视口改为与 favicon 一致的 `380 282 494 492` 图形范围；内嵌原图与透明遮罩不变，页头在浅/深主题均使用深色背景。
 - 下方早期横幅继续保留为历史素材。
 
 ## 选定 Logo 提示词 {#selected-logo-prompt}

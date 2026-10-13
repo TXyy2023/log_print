@@ -22,6 +22,9 @@ struct Config {
     from_start: bool,
     chunk_bytes: usize,
     poll_ms: u64,
+    /// Opt-in static import flow control. Normal file inputs remain independent.
+    commit_checkpoint: Option<PathBuf>,
+    commit_window: u64,
 }
 impl Default for Config {
     fn default() -> Self {
@@ -31,6 +34,8 @@ impl Default for Config {
             from_start: false,
             chunk_bytes: 4096,
             poll_ms: 50,
+            commit_checkpoint: None,
+            commit_window: 8,
         }
     }
 }
@@ -42,6 +47,12 @@ fn config(v: &Value) -> Result<Config> {
     bounded("chunk_bytes", c.chunk_bytes, 1, log_proto::MAX_PAYLOAD)?;
     if !(1..=60000).contains(&c.poll_ms) {
         bail!("poll_ms must be 1..=60000")
+    }
+    if c.commit_checkpoint.is_some() && c.mode != Mode::Static {
+        bail!("commit_checkpoint requires static mode");
+    }
+    if !(1..=64).contains(&c.commit_window) {
+        bail!("commit_window must be 1..=64");
     }
     Ok(c)
 }
@@ -119,6 +130,9 @@ async fn main() -> Result<()> {
 }
 async fn run(cx: &mut log_plugin_sdk::Context, prepared: Prepared) -> Result<()> {
     let c = config(&cx.config)?;
+    if c.commit_checkpoint.is_some() && cx.client.transport() != log_proto::TransportKind::Tcp {
+        bail!("confirmed static import requires TCP");
+    }
     let stream = cx
         .client
         .stream_id()
@@ -208,16 +222,58 @@ async fn run(cx: &mut log_plugin_sdk::Context, prepared: Prepared) -> Result<()>
             }
             offset += n as u64;
             total_bytes += n as u64;
+            if c.commit_checkpoint.is_some() && source_seq.is_multiple_of(c.commit_window) {
+                await_commit(&c, &stream, total_bytes, &mut cx.shutdown).await?;
+            }
             anchor.extend_from_slice(&buf[..n]);
             if anchor.len() > 64 {
                 anchor.drain(..anchor.len() - 64);
             }
         } else if c.mode == Mode::Static {
+            if c.commit_checkpoint.is_some() {
+                await_commit(&c, &stream, total_bytes, &mut cx.shutdown).await?;
+            }
             cx.client.request("report", json!({"state":"source_eof","stream":stream,"bytes_sent":total_bytes,"chunks_sent":source_seq,"downstream_complete":false,"delivery":"transport-dependent; rolling buffer may overwrite unread records"})).await?;
             return Ok(());
         } else {
             tokio::select! { _=stopped(&mut cx.shutdown)=>return Ok(()), _=tokio::time::sleep(Duration::from_millis(c.poll_ms))=>{} }
         }
+    }
+}
+
+async fn await_commit(
+    c: &Config,
+    stream: &str,
+    bytes: u64,
+    shutdown: &mut tokio::sync::watch::Receiver<bool>,
+) -> Result<()> {
+    let path = c
+        .commit_checkpoint
+        .as_ref()
+        .context("checkpoint required")?;
+    let deadline = tokio::time::Instant::now() + Duration::from_secs(60);
+    loop {
+        match tokio::fs::read(path).await {
+            Ok(data) => {
+                let checkpoint: Value = serde_json::from_slice(&data)?;
+                if checkpoint["stream"] != stream || checkpoint["incomplete"] == true {
+                    bail!("static import checkpoint identity or coverage mismatch");
+                }
+                if checkpoint["confirmed_len"]
+                    .as_u64()
+                    .context("invalid commit checkpoint")?
+                    >= bytes
+                {
+                    return Ok(());
+                }
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+            Err(e) => return Err(e.into()),
+        }
+        if tokio::time::Instant::now() >= deadline {
+            bail!("static import timed out waiting for output-file commit");
+        }
+        tokio::select! { _=stopped(shutdown)=>bail!("static import interrupted before output commit"), _=tokio::time::sleep(Duration::from_millis(2))=>{} }
     }
 }
 

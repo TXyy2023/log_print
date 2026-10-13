@@ -1,94 +1,57 @@
 # output-webui
 
-本地 Rust/Axum 后端，离线 Vue 3 前端。浏览器直接连接本插件的 HTTP/SSE 服务；SDK 只运行在 Rust 后端，Core 凭据不会进入网页。默认绑定 `127.0.0.1:0`，就绪后通过 `log-print webui web url` 查看地址。
+单一的本地日志阅读界面：Vue 前端、Rust/Axum 后端，离线资源嵌入二进制。支持来源切换、实时跟随、暂停显示、字面筛选与高亮、历史分页、所选日志详情、上下文、文件导入和持续保存。旧工作台前端与备用入口已移除。
 
 ## 启动
 
 ```sh
-# 默认只有实时缓存，不声称拥有全量历史
+# 空实例，直接在浏览器导入日志文件
+log-print start --output-webui web
+log-print webui web url
+
+# 跟随一个文件
 log-print start --input-file source=./app.log --output-webui web
 
-# 目录内为本次运行创建一个新的 SQLite 归档，由 output-file 全流采集
+# 配套 SQLite 归档，提供超过内存缓存的历史
 log-print start --input-file source=./app.log --output-webui web --webui-archive web=./capture
 
-# 使用同一实例中已配置的 output-file SQLite 目标
+# 绑定同实例已配置的 output-file SQLite 目标
 log-print start --input-file source=./app.log --output-sqlite archive=./capture/run.sqlite \
   --output-webui web --webui-history web=archive
 ```
 
-两种归档参数互斥。已有文件不会覆盖或自动迁移。配套插件名称为 `web-archive`，使用 `read_all=true`、`discover_streams=true`、`fail_on_gap=false`。显式归档的订阅及 fail_on_gap 保持原配置。Output 就绪后才启动自动采集 Input；动态流可能在发现前已经发布，实际订阅起点会保存在流目录中。
+归档参数互斥，不覆盖已有文件。默认监听 `127.0.0.1:0`。可设置 `listen`、`state_path`；`history_path` 和 `runtime_id` 由 supervisor 生成。
 
-JSON 配置中，在 WebUI 的 `config` 内使用 `archive_dir` 或 `history_plugin`。可指定 `listen` 和 `state_path`。`history_path` 与 `runtime_id` 由 supervisor 生成，不应手写跨实例归档关联。
+## 阅读与定位
 
-```json
-{"plugins":[
-  {"id":"source","role":"input","bin":"input-file","streams":[{"id":"source"}],"config":{"path":"./app.log"}},
-  {"id":"web","role":"output","bin":"output-webui","read_all":true,"config":{"archive_dir":"./capture"}}
-]}
-```
+- 来源栏区分实时流与导入文件。大文件通过 Rust 后台查询，浏览器只显示有限数据。
+- 暂停只冻结显示，采集和保存继续。实时窗口最多 2,000 行；滚动离开末尾后可一键回到最新。
+- 关键词按字面匹配，支持只高亮或仅显示匹配。Enter/Shift Enter 在当前窗口或当前历史页内定位；仅高亮不重新扫描历史。
+- 点击日志后可复制文本、打开详情、读取前后 8 行上下文。位置列使用 Record 序号与字节偏移，不将一个 Record 冒充一行。
+- 历史查询固定读取边界，每页最多 200 行。时间列是采集时间，不是从原文推断的来源时间。缺口、归档故障与查询失败明确显示。
+- Ctrl/Cmd F 查找；日志列表支持方向键、PageUp/PageDown、Home/End，Enter 打开详情；Space 暂停/继续，Esc 关闭浮层。浅/深色模式、选中来源保存在本浏览器。
 
-## CLI 编排
+## 导入与保存
 
-无需编写 JSON。命令回复中的 UUID 可用于后续命令。命名参数 `--arg FIELD=VALUE` 支持嵌套列状态、图例选择等字段；`plugin call` 使用相同方法名。
+上传最多 64 MiB，要求 TCP supervisor。每个文件由独立 input-file 进程发布到 Core，再由 output-file 的 Archive 实现保存 raw 与 SQLite；输入按检查点确认限制在途数据。只有源 EOF、字节数相同且输出无缺口时才报告完成。导入完成后自动显示完整的可查询历史，失败保留上传原件。
 
-```sh
-log-print webui web streams
-log-print webui web capabilities
-log-print webui web page create --name monitor --title '运行监控' --theme dark
-log-print webui web page select --page monitor
-log-print webui web panel add --page monitor --kind log --title Logs --stream source --left 24 --top 24 --panel-width 760 --panel-height 480
-log-print webui web panel set --panel PANEL_UUID --text error --channel stderr --follow false --metadata true
-log-print webui web panel add --kind curve --title Temperature --left 808 --top 24 --panel-width 520 --panel-height 340
-log-print webui web series add --panel CURVE_UUID --name temperature \
-  --stream source --regex 'temperature=(?P<value>[0-9.]+)' --color '#50c8b8' --width 2
-log-print webui web series set --panel CURVE_UUID --series SERIES_UUID --field metrics.temperature
-log-print webui web panel set --panel CURVE_UUID --zoom-start 20 --zoom-end 80 --legend true
-log-print webui web page clone --page monitor --name monitor-copy
-log-print webui web page set --page monitor --title '主监控' --revision 8
-```
+“保存日志”提供两个明确起点：
 
-Page 支持 list/get/create/set/clone/delete/select；panel 支持 add/get/set/clone/remove；series 支持 add/set/remove。Page 的 UUID、唯一名称、标题、主题、顺序、布局、来源绑定、过滤器与曲线定义保存在独立的 SQLite 配置数据库（默认在实例状态目录 `.webui/WEB/pages.sqlite3`）。UUID、owner/alias 绑定在当前 Core 中解析；缺失来源显示“等待来源”。选中 Page、暂停、跟随、列状态、图表缩放和图例通过后端统一管理，所有浏览器同步。提交 SQLite 成功后才确认修改，网页自动携带 revision，CLI 可选择携带。
+- **从现在开始保存**：固定后端处理操作时的 Core head，保存后续原始日志。
+- **从最早可用数据保存**：补入可读归档、WebUI 缓存和 Core 数据，去重后继续记录新增内容。不可恢复的缺口不冒充完整历史。
 
-## 自由工作台
+“保存记录”中停止并提交后才能下载 `.log`。暂停、筛选与高亮不影响原始保存内容。文件位于 WebUI 状态目录 `recordings/<UUID>/`；文件保留在磁盘，运行内列表和导入流不在 supervisor 重启后自动重建。最多同时 4 个保存任务，每轮最多 64 个任务/导入流。
 
-新 Page 默认使用 Vue Flow 自由画布，支持像素位置、窗口尺寸、锁定、隐藏、共享平移缩放视口和缩略图。网页新增/复制面板默认平铺，拖动与缩放尺寸避让相邻面板并以 8 px 间距吸附；工作台菜单可紧凑排列已有面板。画布设置可显式启用重叠层级（`page set --allow-overlap true`）。触控板在表格或图表上捏合也缩放画布，普通滚动保留内容区交互。属性应用只提交改动字段，保留失败草稿并在属性栏解决同字段冲突；删除确认锚定目标面板菜单。原有 Page 在打开配置库时补全显示字段，保留 GridStack 模式及原网格坐标；切换模式分别保存两套坐标。来源目录、紧凑工具栏和按需打开的属性栏用于日常调试；日志虚拟表格与曲线不自行重造。
+## 工程与接口
 
-```sh
-log-print webui web panel clone --panel PANEL_UUID --title '错误监视' --text ERROR
-log-print webui web layout set --place LOG_UUID=24,24,760,480 --place CURVE_UUID=808,24,520,340
-log-print webui web page set --layout-mode canvas --view-x 24 --view-y 24 --view-zoom 0.8
-log-print webui web page set --show-grid true --snap true --show-minimap false --inspector-open false
-log-print webui web panel set --panel PANEL_UUID --font-size 13 --row-height 30 --hidden false --locked true
-```
+前端运行时依赖仅 Vue。组件和设计系统见 [DESIGN.md](DESIGN.md)。浏览器的查看状态独立；Rust 的共享配置和查询 API 继续供 CLI/TUI 使用，不代表旧画布界面仍存在。
 
-`layout.set` 原子提交多个矩形，`--revision` 可防止覆盖别人正在修改的布局。自由画布宽 320–4000 px、高 220–4000 px，缩放 20%–200%；锁定只限制网页手动拖动，CLI 仍可定位。所有已提交显示状态保存在 Rust 后端，两个浏览器的选择、布局、主题、过滤、视口同步。详见[工作台使用手册](../../../../doc/public/plugins/output-webui.md)。
+- `GET /api/state`、`GET /api/events`：来源、导入、保存与连接状态。
+- `POST /api/control`：`logs.tail`、`history.read/search/context`、`query.get/cancel`、`recording.start/stop`。
+- `POST /api/import`：原始 body，URI 编码 `X-File-Name`。
+- `GET /api/recordings/<id>/download`：已停止且成功提交的日志。
 
-## 固定历史查询
-
-```sh
-log-print webui web history read --stream source
-log-print webui web history search --stream source --regex '^ERROR'
-log-print webui web history context --stream source --epoch EPOCH --seq 123 --byte-offset 20 --before 10 --after 10
-log-print webui web history curve --stream source --regex 'temperature=(?P<value>[0-9.]+)' --time-from 1000000000 --time-end 2000000000
-log-print webui web history curve --page monitor --panel CURVE_UUID
-log-print webui web query get --query QUERY_UUID --offset 0 --limit 200
-log-print webui web query cancel --query QUERY_UUID
-```
-
-查询命令返回任务 ID。`query get` 提供进度、最多 200 行及 `next`，继续用固定任务 ID 翻页。文本/正则搜索扫描整个可用归档；上下文按分行结果定位，支持跨 Record、UTF-8 分片及独立 stdout/stderr。时间参数使用 Unix 纳秒，曲线时间坐标使用毫秒。历史曲线复用实时的数值提取，最多 2000 个绘制点，按区间保留首尾、极值和缺口；多条曲线共享点数预算。每条结果保留 stream/epoch/seq/字节偏移，序号与纳秒时间通过 HTTP 返回十进制字符串，避免 JavaScript 精度损失。
-
-查询固定归档提交水位和当前 Core epoch/head，按 stream+epoch+seq 合并去重。查询结果暂存在本插件的独立临时文件中，不写入 Page 数据库。最多同时运行两个扫描任务，保留最近 32 个任务；重启清除旧任务及历史定位，恢复页面配置并绑定本次来源。停止归档仍能读取已提交的前缀。无归档时，历史查询只使用当前 Core 内存范围，实时显示则使用 WebUI 的有限缓存。
-
-返回覆盖信息包括：归档身份、实际起点/提交水位、内存范围、未覆盖前缀、归档与内存之间的缺口、尚未提交范围、归档写入状态和错误。只读 Reader 兼容 SQLite schema 2/3，新归档为 schema 3；raw/JSONL/checkpoint 继续使用原格式。Core 不访问数据库。错误 epoch 不可查询，旧 Core 的归档不会自动绑定到新运行。
-
-## HTTP 与资源
-
-- `GET /api/state`：配置、流目录、运行身份；`GET /api/events`：SSE 同步。
-- `POST /api/control`：`{"method":"page.create","args":{"name":"monitor","revision":0}}`；与 CLI 共用控制和查询引擎。
-- `GET /api/data?query=UUID&offset=0&limit=200`：固定查询结果页。
-- 写请求要求 Origin 等于服务 URL，状态/数据接口验证 Host；Core token 留在 Rust 后端。
-- 默认每流缓存最多 4096 Records 或 4 MiB，总 Record 缓存 64 MiB（计入元数据），浏览器日志最多 200 行。暂停显示仍继续采集。暂停帧由 Rust 后端共享，后来打开的窗口也读取同一帧；暂停帧另外最多缓存 64 MiB，改变来源、过滤条件、曲线提取或历史位置时重新冻结。配置库不保存这些日志数据。
-- CLI 输出遵守当前 TCP/UDP 帧预算，必要时减少页面行数；超出单条或配置预算时明确提示使用 HTTP，不发送超限帧。
+写接口检查 Host/Origin，凭据只保留在 Rust 进程。Core 的滚动缓存与磁盘归档是不同范围；实时显示不是已保存证明。增量分行缓存每流最多 10,000 行或 2 MiB、总计 32 MiB，另计原有 Record 缓存。
 
 ## 构建与验收
 
@@ -97,10 +60,7 @@ npm ci --prefix project/plugins/outputs/output-webui/frontend
 npm run build --prefix project/plugins/outputs/output-webui/frontend
 cargo build --workspace --locked
 cargo run --locked -p log-print-quality --
+cargo run --locked -p log-print-quality -- browser
 ```
 
-`assets/` 已提交并嵌入二进制；最终用户运行无需 Node、CDN 或互联网。前端源码与 package-lock 提交到 Git。固定 Vue 3.5.43、Element Plus 2.14.7、Vue Flow Core 1.48.2 / NodeResizer 1.5.1 / MiniMap 1.5.4、Element Plus Icons 2.3.2、GridStack 14.0.0 官方 Vue 集成、AG Grid Community/Vue 36.2.0、ECharts 6.1.0；许可证文本见 `frontend/public/THIRD_PARTY_LICENSES.md`（随前端产物一起打包）。详细验收记录见 [VERIFICATION.md](VERIFICATION.md)。
-
-## 与终端同步
-
-使用 `log-print tui web attach` 可直接连接同一个后端，浏览器和终端共享 Page、配置和历史定位。WebUI/TUI 的状态与历史引擎在 `project/crates/log-view`，Core 凭据只留在 Output 后端。终端字体和曲线笔画按字符网格显示。
+`assets/` 是提交并嵌入的离线产物。浏览器验收使用真实 Rust 服务，覆盖 1440/1280 桌面与 390px 移动视口、查询/上下文、键盘/焦点、暂停、两种保存的逐字节校验、导入、错误与恢复。截图、trace 和 `browser.json` 保存到 `quality/artifacts/browser/`。历史验收记录不代表本次界面已通过跨平台验收。

@@ -1,96 +1,77 @@
-<span id="output-webui-workbench-and-history"></span>
+# output-webui：本地日志查看器 {#output-webui}
 
-# output-webui：自由工作台与历史上下文
+Vue 前端与 Rust 后端组成单一日志阅读界面。运行无需 Node、CDN 或互联网。来源选择、暂停、筛选、定位与保存都围绕同一条日志流完成。
 
-本地 Rust/Axum 后端通过当前 SDK 读取 Core。前端使用 Vue 3、Element Plus、Vue Flow 自由画布、GridStack 官方 Vue 集成、AG Grid Community 和 ECharts，构建产物嵌入 Rust 二进制，运行无需 Node、CDN 或互联网。
+![Log viewer](../../assets/webui/log-viewer.png)
+
+截图来自真实服务，内容为明确标记的测试日志。
+
+## 启动 {#start}
 
 ```sh
-log-print start --input-file source=./app.log --output-webui web
+# 导入静态文件
+log-print start --output-webui web
 log-print webui web url
+
+# 持续跟随文件，并启用完整归档
+log-print start --input-file source=./app.log --output-webui web --webui-archive web=./capture
 ```
 
-默认实时模式不承诺全量历史。需要完整上下文时，在启动命令加 `--webui-archive web=./capture` 创建本次全流 SQLite 归档，或用 `--output-sqlite archive=./capture/run.sqlite --webui-history web=archive` 绑定同实例显式归档。两种方式互斥，不覆盖已有文件。
+不启用归档时，只能读取当前保留的缓存。`--webui-archive` 创建本次运行的新 SQLite 归档；也可用 `--output-sqlite archive=./capture/run.sqlite --webui-history web=archive` 绑定同实例已有 output-file 配置。两种参数互斥，已有文件不会被覆盖。
 
-![工作台：日志与曲线自由布局](../../assets/webui/workbench.png)
+## 阅读日志 {#read}
 
-截图使用合成串口文本与温度/电压数据；窗口均由 CLI 编排。
+左侧选择实时来源或导入文件。顶部切换实时/历史：实时窗口最多显示 2,000 行；历史固定查询当前可读范围，每页最多 200 行。
 
-<span id="workbench-controls"></span>
+- **暂停显示**：停止刷新当前内容，后台采集与保存继续。滚动离开末尾后，“回到最新”恢复跟随。
+- **查找与筛选**：关键词按字面高亮；“仅显示匹配”过滤内容。Enter/Shift Enter 在当前窗口或当前历史页定位匹配，历史范围的过滤由 Rust 查询完成。
+- **日志详情**：点击行后打开详情，可复制原文、查看来源、记录序号、字节偏移和通道；“读取前后 8 行”恢复筛选之外的上下文。
+- **时间语义**：表格显示采集时间，正文中的来源时间保持原文。位置是记录序号与字节偏移，一个传输 Record 不一定是一行。
+- **覆盖边界**：缓存覆盖、归档故障和缺口明确提示。正在显示不等于已经保存；已被所有存储丢弃的数据无法恢复。
 
-## 工作台操作
+## 文件导入 {#import}
 
-左栏列出 Page、面板和所有来源；点击来源即可创建绑定该流的日志窗口。画布只显示配置中的日志和曲线，面板标题用于移动，选中后通过边角调整尺寸。右侧属性面板集中设置位置、尺寸、来源、通道、字体和行高，点击「应用」后提交。过滤、暂停、跟随、历史定位等常用操作保留在窗口内；归档覆盖详情从窗口底部展开。
+点击“导入日志文件”或把一个文件拖入页面。支持最多 64 MiB，需要 TCP supervisor。文件通过独立 input-file → Core → Output 处理，并按持久化检查点限制在途数据。源 EOF、输出字节数和缺口状态共同确认完成。
 
-新 Page 默认使用自由画布。网页新增和复制的面板优先填入同一行，空间不足再换行；拖动与调整尺寸默认避让其他面板，边缘吸附保留 8 px 间距。工作台菜单的「紧凑排列面板」整理已有面板，保留锁定位置。旧布局不会自动重排；需要叠放时，可在画布设置启用「允许面板重叠」（CLI：`page set --allow-overlap true`），再使用置顶/置底。CLI 显式指定的几何位置仍按原值保存。
+每个导入文件都有自己的流，完成后自动进入历史视图；大于实时缓存的内容仍可查询。失败保留上传原件并显示原因。UTF-8 是当前展示方式，原始保存不修改字节。
 
-快捷键 `V` 选择、`H` 平移、`0` 适应全部、`+`/`-` 缩放。指针在日志或曲线上时，触控板捏合仍缩放整个画布；普通滑动在日志区滚动日志，在空白区或面板标题上平移画布。平移工具开启时，面板上的滑动也平移画布；曲线普通滚轮及时间滑块保留图表交互。侧栏、属性栏、缩略图和点阵均可关闭。
+## 持续保存 {#record}
 
-属性栏的「应用」只提交改动字段。视口或其他字段的修改不阻止应用；同一字段发生冲突时，在属性栏选择采用当前值或保留自己的修改。切换面板、关闭属性栏及请求失败均保留本浏览器会话中的属性草稿（刷新前请应用）。删除确认贴着目标面板菜单出现，不遮住整个工作台；仅删除面板配置，不删除日志。
+“保存日志”让用户选择起点：
 
-已有 Page 自动保留原来的 12 列 GridStack 布局；可以从工作台菜单切换「自由画布 / 网格布局」。两套几何位置分别保存，切换不会把旧网格坐标覆盖成像素坐标。旧配置的过滤器、来源绑定和曲线定义保留。
-
-<span id="pages-and-cli-control"></span>
-
-## Page 与 CLI
-
-AI 或脚本可仅通过 CLI 编排界面，无需操作浏览器或手写 JSON。`page get` / `panel get` 查询当前配置，命令返回的 UUID 用于后续操作，`capabilities` 返回布局能力和限制。
-
-```sh
-log-print webui web page create --name monitor --title '设备诊断' --layout-mode canvas
-log-print webui web page select --page monitor
-log-print webui web panel add --kind log --title '串口日志' --stream source \
-  --left 24 --top 24 --panel-width 760 --panel-height 480
-log-print webui web panel add --kind curve --title '温度趋势' --stream source \
-  --left 808 --top 24 --panel-width 520 --panel-height 340
-log-print webui web series add --panel CURVE_UUID --name temperature \
-  --regex 'temperature=(?P<value>[0-9.]+)' --color '#4777c4' --width 2
-log-print webui web panel set --panel LOG_UUID --font-size 13 --row-height 30 --follow true
-log-print webui web panel clone --panel LOG_UUID --title '错误监视' --text ERROR
-log-print webui web panel set --panel LOG_UUID --hidden false --locked false --z-index 3
-log-print webui web layout set --page monitor \
-  --place LOG_UUID=24,24,760,480 --place CURVE_UUID=808,24,520,340
-log-print webui web page set --page monitor --view-x 24 --view-y 24 --view-zoom 0.8 \
-  --show-grid true --snap true --show-minimap false --sidebar-open true --inspector-open false
-```
-
-| 显示状态 | 命名参数与范围 |
+| 起点 | 行为 |
 | --- | --- |
-| 布局模式 | `--layout-mode canvas\|grid` |
-| 自由画布几何 | `--left` / `--top` 支持负数及小数，范围 ±1,000,000；`--panel-width` 320–4000；`--panel-height` 220–4000，单位 px |
-| 网格几何 | 原 `--x` / `--y` / `--w` / `--h`，12 列网格 |
-| 原子布局 | 重复 `--place UUID=LEFT,TOP,WIDTH,HEIGHT`；任何一项非法时整批不修改 |
-| 层级与可见性 | `--z-index` 0–1,000,000；`--hidden true\|false`；`--locked true\|false` |
-| 排版 | `--font-size` 10–24；`--row-height` 22–56 |
-| 画布视口 | `--view-x` / `--view-y` ±1,000,000；`--view-zoom` 0.2–2；`--tool select\|pan` |
-| 页面显示 | `--theme light\|dark`、`--show-grid`、`--snap`、`--show-minimap`、`--sidebar-open`、`--inspector-open`；布尔参数显式给 true 或 false |
-| 当前选择 | `--active-panel UUID` 或 `--clear-active-panel` |
+| 从现在开始保存 | 固定后端收到操作时的 Core head，保存后续原始日志 |
+| 从最早可用数据保存 | 合并可读归档、WebUI 与 Core 缓存，去重补入历史，继续保存新增内容 |
 
-页面配置、布局、视口、显示设置、过滤规则、曲线定义和当前页面独立存入 SQLite。Vue Flow/GridStack 拖拽与缩放、AG Grid 列设置、ECharts 缩放与图例均提交 Rust 后端，CLI 与所有浏览器通过同一引擎同步；视口也共享。网页编辑携带起始 revision，过期提交被拒绝并恢复已提交状态；CLI 可用 `--revision` 做同样检查。手动锁定限制网页拖动，CLI 仍可精确更新位置。
+在“保存记录”里查看状态、数据量和来源。点击“停止并保存”后排空到停止水位并提交；成功后可下载 `.log` 或查看本机文件路径。筛选和暂停不影响保存内容，缺口不会被标成完整历史。
 
-来源绑定保存 owner/alias，在本次 Core 解析 UUID；缺失来源显示“等待来源”。冷启动恢复配置，重新绑定当前运行，不读取上次运行的日志。支持日志多流、通道、文本/正则过滤和文本/十六进制显示；曲线支持多条定义、正则命名捕获组 value 或 JSON 字段路径、时间范围、坐标范围、颜色及线宽。
+文件位于 WebUI 状态目录 `recordings/<UUID>/`。文件保留在磁盘；运行内列表和导入流不在 supervisor 重启后自动重建。最多同时 4 个保存任务，每轮最多 64 个任务/导入流。
 
-<span id="historical-context-and-coverage"></span>
+## 快捷键与小屏幕 {#keyboard}
 
-## 全量上下文与覆盖边界
+| 快捷键 | 操作 |
+| --- | --- |
+| Ctrl/Cmd F | 聚焦查找 |
+| Enter / Shift Enter（搜索框内） | 下一个 / 上一个匹配 |
+| ↑ / ↓、PageUp / PageDown、Home / End（日志列表内） | 选择与定位日志 |
+| Enter（日志列表内） | 查看所选日志详情 |
+| Space（非输入控件内） | 暂停 / 继续显示 |
+| Esc | 关闭浮层 |
+| ? | 打开帮助 |
+
+手机来源栏和详情以抽屉显示，保存记录从底部展开；长行只在日志区域横向滚动。浅/深色主题和选中来源保存在本浏览器。过滤词和当前选中行属于本次查看状态，不在刷新后恢复。
+
+## CLI 与后端接口 {#cli}
 
 ```sh
-log-print webui web history search --stream source --regex ERROR
-log-print webui web history context --stream source --epoch EPOCH --seq 123 --byte-offset 20 --before 10 --after 10
-log-print webui web history curve --stream source --field metrics.temperature
+log-print webui web streams
+log-print webui web history read --stream source
+log-print webui web history search --stream source --regex '^ERROR'
+log-print webui web history context --stream source --epoch EPOCH --seq 123 --byte-offset 20 --before 8 --after 8
 log-print webui web query get --query QUERY_UUID --offset 0 --limit 200
-log-print webui web query cancel --query QUERY_UUID
 ```
 
-历史命令返回任务 ID。查询固定 SQLite 提交水位和 Core epoch/head，合并、去重后分页，每条结果保留 Record 身份和字节偏移；实时和历史共用跨 Record 分行与数值提取逻辑。上下文支持独立 stdout/stderr。最多两个后台扫描同时运行，日志页最多 200 行，历史曲线最多 2000 个绘制点。CLI 还受 TCP/UDP 帧预算限制。
+查询结果使用固定任务 ID 分页。HTTP 使用 `POST /api/control`；`logs.tail` 支持 stream/text/limit/since，`recording.start` 接受 stream 与 mode（now/earliest），`recording.stop` 接受 id。
 
-界面和 CLI 明确返回归档起点/提交水位、内存范围、未覆盖前缀、缺口、尚未提交和归档故障。停止归档后仍能读取已提交前缀。没有归档时，历史查询只使用 Core 当前内存。新 SQLite 归档为 schema 3，只读兼容 schema 2；原 raw/JSONL 格式不变，已有档案不自动迁移。Core 不访问数据库。
-
-默认每流缓存 4096 Records 或 4 MiB，总记录缓存 64 MiB。浏览器只保留有限结果页；暂停显示仍继续采集。查询临时文件与 Page 数据库分开，重启清除临时定位。
-
-完整命令见 [CLI 参考](../reference/cli.md)，JSON 字段见 [配置参考](../reference/configuration.md)，归档原有设置见 [output-file](output-file.md)。
-
-<span id="share-a-workbench-with-a-terminal"></span>
-
-## 与终端同步
-
-使用 `log-print tui web attach` 可直接连接同一个后端，浏览器和终端共享 Page、配置和历史定位。WebUI/TUI 的状态与历史引擎在 `project/crates/log-view`，Core 凭据只留在 Output 后端。终端字体和曲线笔画按字符网格显示。
+旧工作台前端、画布/图表组件和备用入口已移除。CLI/TUI 继续使用共享 Rust 查询与配置引擎，当前浏览器查看状态独立。写请求验证 Host/Origin，凭据不进入浏览器。

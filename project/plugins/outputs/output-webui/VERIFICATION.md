@@ -1,3 +1,5 @@
+> 历史记录：本文件描述旧工作台的验收。2026-10-13 起当前 WebUI 已替换为单一日志阅读界面，当前设计与视觉验收边界见 [DESIGN.md](DESIGN.md)。
+
 # output-webui 工作台验收 — 2026-10-02
 
 本版使用 log-print/2、Rust/Axum 后端和内嵌 Vue 前端。此次执行环境为 macOS 26.5 arm64、Rust 1.92.0、Python 3.14.1；浏览器为 Codex 内置浏览器的独立页面。持续输入为明确标注的合成串口文本、temperature/voltage 与事件数据，不代表真实硬件采集。

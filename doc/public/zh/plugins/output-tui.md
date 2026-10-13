@@ -33,7 +33,7 @@ log-print tui web attach
 log-print tui term attach --snapshot --width 140 --height 36
 ```
 
-独立启动 WebUI 和 TUI 插件会获得各自的 Page 数据库。需要相同页面时，直接 attach 已有 WebUI。Page 数据库只能由一个后端打开，多视图连接后端，不直接打开 SQLite。
+独立启动 WebUI 和 TUI 插件会获得各自的 Page 数据库。需要相同后端配置时，直接 attach 已有 WebUI 后端。当前浏览器日志阅读器使用独立查看状态，不渲染这些终端 Page。Page 数据库只能由一个后端打开，多视图连接后端，不直接打开 SQLite。
 
 <span id="pages-and-cli"></span>
 
@@ -83,9 +83,9 @@ log-print tui term query get --query QUERY_UUID --offset 0 --limit 200
 
 Page 名称、主题、顺序、来源绑定、自由布局、过滤、列配置、曲线、历史定位、暂停及当前选择均由后端持久化；默认在实例状态目录下的 `.tui/`。JSON 配置字段与 WebUI 相同：`state_path`、`listen`、`archive_dir`、`history_plugin`。本次流 UUID/epoch 变化后，按 owner/alias 重新绑定来源；不会自动将旧运行归档当成本次历史。
 
-画布坐标保持 WebUI 的像素单位，100% 时按 **8 px/列、16 px/行** 映射。终端支持自由位置、大小、叠放、隐藏、锁定、平移和缩放；旧 12 列 GridStack 配置也能显示。终端不足 40×12 时提示扩大窗口。日志为有界表格；曲线以 Braille 字符绘制，缺口会断线。
+持久化画布坐标使用像素单位，100% 时按 **8 px/列、16 px/行** 映射。终端支持自由位置、大小、叠放、隐藏、锁定、平移和缩放；旧 12 列 GridStack 配置也能显示。终端不足 40×12 时提示扩大窗口。日志为有界表格；曲线以 Braille 字符绘制，缺口会断线。
 
-终端使用字符网格，字体大小由终端程序控制，无法逐面板设置物理字体大小或按像素绘制线宽；这些设置仍可通过 CLI 编辑、持久化，并在浏览器中生效。行高和列宽按字符网格换算。左右键横向浏览列，精确列宽、排序、图例及所有附加字段可以通过命令面板编辑。长命令支持 Unicode、方向键、Home/End 和安全粘贴。
+终端使用字符网格，字体大小由终端程序控制，无法逐面板设置物理字体大小或按像素绘制线宽；这些设置仍可通过 CLI 编辑、持久化，用于兼容配置；当前浏览器日志阅读器不渲染面板样式。行高和列宽按字符网格换算。左右键横向浏览列，精确列宽、排序、图例及所有附加字段可以通过命令面板编辑。长命令支持 Unicode、方向键、Home/End 和安全粘贴。
 
 <span id="history-resources-and-failures"></span>
 
@@ -106,4 +106,4 @@ cargo build --workspace --bins --examples --locked
 cargo run --locked -p log-print-quality -- suite tui-v2
 ```
 
-Linux/macOS 使用真实 PTY，Windows 使用 ConPTY，覆盖键盘、中文、鼠标拖拽、resize、并发 revision、双视图、退出清理、断连、无 TTY、快照和历史。相同的十项后端进程验收分别对 WebUI/TUI 执行。GitHub 三系统矩阵另跑真实 Chromium 的双浏览器、VueFlow/GridStack、AG Grid、ECharts 与布局恢复测试，保存截图和 trace。
+Linux/macOS 使用真实 PTY，Windows 使用 ConPTY，覆盖键盘、中文、鼠标拖拽、resize、并发 revision、双视图、退出清理、断连、无 TTY、快照和历史。共享后端进程验收分别对 WebUI/TUI 执行。GitHub 三系统矩阵另跑真实 Chromium 的桌面/手机布局、键盘导航、上下文、文件导入和日志保存测试，保存截图和 trace。

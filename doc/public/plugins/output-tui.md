@@ -27,14 +27,14 @@ log-print start --input-file source=./app.log \
 The supervisor starts background collection and a loopback API; `attach` starts a terminal view connected to it. `q` or Ctrl-C exits only that view. Collection, other terminals and background queries continue. Stop the instance with `log-print stop`. Exiting the terminal view restores the cursor, mouse capture and original terminal mode.
 
 ```sh
-# Share an existing WebUI backend with browsers
+# Attach to an existing shared Rust backend
 log-print tui web attach
 
 # Automation, pipes or non-TTY use: one plain-text frame, without ANSI
 log-print tui term attach --snapshot --width 140 --height 36
 ```
 
-Separately launched WebUI and TUI plugins have separate Page databases. Attach to an existing WebUI to share its Pages. Only one backend opens a Page database; multiple views connect to that backend rather than opening SQLite themselves.
+Separately launched WebUI and TUI plugins have separate Page databases. Attach to an existing WebUI backend to use its persisted Page configuration. The current browser log viewer has independent viewing state and does not render these terminal Pages. Only one backend opens a Page database; multiple views connect to that backend rather than opening SQLite themselves.
 
 <span id="页面与-cli"></span>
 
@@ -84,9 +84,9 @@ Replace placeholders with returned UUIDs. In the terminal, `:` opens the same na
 
 The backend persists Page names, themes, ordering, bindings, freeform layout, filters, columns, curves, history position, pause and selection. The default database directory is `.tui/` under the instance state directory. JSON fields match WebUI: `state_path`, `listen`, `archive_dir`, `history_plugin`. When stream UUID/epoch changes, bindings resolve again by owner/alias; archives from an old run are not automatically treated as current history.
 
-Canvas coordinates keep WebUI pixel units. At 100%, the mapping is **8 px per column and 16 px per row**. Panels support free positioning, resizing, stacking, hiding, locking, panning and zooming. Legacy 12-column GridStack layouts also render. Terminals smaller than 40×12 show a resize prompt. Logs use bounded tables; curves use Braille characters and break across gaps.
+Persisted canvas coordinates use pixel units. At 100%, the mapping is **8 px per column and 16 px per row**. Panels support free positioning, resizing, stacking, hiding, locking, panning and zooming. Legacy 12-column GridStack layouts also render. Terminals smaller than 40×12 show a resize prompt. Logs use bounded tables; curves use Braille characters and break across gaps.
 
-Physical font size belongs to the terminal application, and per-panel pixel font sizes or line widths cannot be reproduced exactly. Those settings remain editable and persistent through CLI and take effect in browsers. Row and column dimensions map to the character grid. Left/right arrows scroll columns horizontally. Exact column widths, sorting, legend and additional fields can be edited through the command palette. Long commands support Unicode, arrows, Home/End and safe paste.
+Physical font size belongs to the terminal application, and per-panel pixel font sizes or line widths cannot be reproduced exactly. Those settings remain editable and persistent through CLI for compatibility; the current browser log reader does not render panel styles. Row and column dimensions map to the character grid. Left/right arrows scroll columns horizontally. Exact column widths, sorting, legend and additional fields can be edited through the command palette. Long commands support Unicode, arrows, Home/End and safe paste.
 
 <span id="历史、资源与故障"></span>
 
@@ -107,4 +107,4 @@ cargo build --workspace --bins --examples --locked
 cargo run --locked -p log-print-quality -- suite tui-v2
 ```
 
-Linux/macOS use real PTYs; Windows uses ConPTY. Tests cover keys, Chinese input, mouse dragging, resize, concurrent revisions, two views, cleanup, disconnect, non-TTY snapshots and history. The same ten backend process scenarios run against both WebUI and TUI. The three-OS GitHub matrix also runs real Chromium checks for two synchronized browser views, Vue Flow/GridStack, AG Grid, ECharts and layout restoration, saving screenshots and traces.
+Linux/macOS use real PTYs; Windows uses ConPTY. Tests cover keys, Chinese input, mouse dragging, resize, concurrent revisions, two views, cleanup, disconnect, non-TTY snapshots and history. Shared backend scenarios run against both WebUI and TUI. The three-OS GitHub matrix also runs Chromium log-viewer checks for desktop/mobile layouts, keyboard navigation, context, uploads and recordings, saving screenshots and traces.
